@@ -29,7 +29,7 @@ module Cryptol.TypeCheck.Solver.Class
 import qualified LibBF as FP
 
 import Cryptol.TypeCheck.Type hiding (tSub)
-import Cryptol.TypeCheck.SimpType (tAdd,tSub,tWidth,tMax)
+import Cryptol.TypeCheck.SimpType (tSub,tWidth,tMax)
 import Cryptol.TypeCheck.Solver.Types
 import Cryptol.Utils.RecordMap
 
@@ -78,9 +78,6 @@ solveZeroInst ty = case tNoUser ty of
   -- Zero Integer
   TCon (TC TCInteger) [] -> SolvedIf []
 
-  -- Zero (Z n)
-  TCon (TC TCIntMod) [n] -> SolvedIf [ pFin n, n >== tOne ]
-
   -- Zero Real
 
   -- Zero Rational
@@ -118,9 +115,6 @@ solveLogicInst ty = case tNoUser ty of
 
   -- Logic Integer fails
   TCon (TC TCInteger) [] -> Unsolvable
-
-  -- Logic (Z n) fails
-  TCon (TC TCIntMod) [_] -> Unsolvable
 
   -- Logic Rational fails
   TCon (TC TCRational) [] -> Unsolvable
@@ -167,9 +161,6 @@ solveRingInst ty = case tNoUser ty of
 
   -- Ring Integer
   TCon (TC TCInteger) [] -> SolvedIf []
-
-  -- Ring (Z n)
-  TCon (TC TCIntMod) [n] -> SolvedIf [ pFin n, n >== tOne ]
 
   -- Ring Rational
   TCon (TC TCRational) [] -> SolvedIf []
@@ -252,9 +243,6 @@ solveFieldInst ty = case tNoUser ty of
 
   -- Field Real
 
-  -- Field (Z n)
-  TCon (TC TCIntMod) [n] -> SolvedIf [ pPrime n ]
-
   -- Field ([n]a) fails
   TCon (TC TCSeq) [_, _] -> Unsolvable
 
@@ -285,9 +273,6 @@ solveRoundInst ty = case tNoUser ty of
 
   -- Round Integer fails
   TCon (TC TCInteger) [] -> Unsolvable
-
-  -- Round (Z n) fails
-  TCon (TC TCIntMod) [_] -> Unsolvable
 
   -- Round Rational
   TCon (TC TCRational) [] -> SolvedIf []
@@ -335,9 +320,6 @@ solveEqInst ty = case tNoUser ty of
   -- ValidFloat e p => Eq (Float e p)
   TCon (TC TCFloat) [e,p] -> SolvedIf [ pValidFloat e p ]
 
-  -- Eq (Z n)
-  TCon (TC TCIntMod) [n] -> SolvedIf [ pFin n, n >== tOne ]
-
   -- (fin n, Eq a) => Eq [n]a
   TCon (TC TCSeq) [n,a] -> SolvedIf [ pFin n, pEq a ]
 
@@ -371,9 +353,6 @@ solveCmpInst ty = case tNoUser ty of
 
   -- Cmp Rational
   TCon (TC TCRational) [] -> SolvedIf []
-
-  -- Cmp (Z n) fails
-  TCon (TC TCIntMod) [_] -> Unsolvable
 
   -- ValidFloat e p => Cmp (Float e p)
   TCon (TC TCFloat) [e,p] -> SolvedIf [ pValidFloat e p ]
@@ -423,9 +402,6 @@ solveSignedCmpInst ty = case tNoUser ty of
 
   -- SignedCmp Integer fails
   TCon (TC TCInteger) [] -> Unsolvable
-
-  -- SignedCmp (Z n) fails
-  TCon (TC TCIntMod) [_] -> Unsolvable
 
   -- SignedCmp Rational fails
   TCon (TC TCRational) [] -> Unsolvable
@@ -517,10 +493,6 @@ solveLiteralInst val ty
         | otherwise -> Unsolved
 
 
-      -- (fin val, fin m, m >= val + 1) => Literal val (Z m)
-      TCon (TC TCIntMod) [modulus] ->
-        SolvedIf [ pFin val, pFin modulus, modulus >== tAdd val tOne ]
-
       -- (fin bits, bits >= width n) => Literal n [bits]
       TCon (TC TCSeq) [bits, elTy]
         | TCon (TC TCBit) [] <- ety ->
@@ -564,10 +536,6 @@ solveLiteralLessThanInst val ty
                _ -> Unsolvable
 
         | otherwise -> Unsolved
-
-      -- (fin val, fin m, m >= val) => LiteralLessThan val (Z m)
-      TCon (TC TCIntMod) [modulus] ->
-        SolvedIf [ pFin val, pFin modulus, modulus >== val ]
 
       -- (fin bits, bits >= lg2 n) => LiteralLessThan n [bits]
       TCon (TC TCSeq) [bits, elTy]

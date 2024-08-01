@@ -517,7 +517,6 @@ parseValue FTInteger cvs =
   case SBV.genParse SBV.KUnbounded cvs of
     Just (x, cvs') -> (VarInteger x, cvs')
     Nothing        -> panic "Cryptol.Symbolic.parseValue" [ "no integer" ]
-parseValue (FTIntMod _) cvs = parseValue FTInteger cvs
 parseValue FTRational cvs =
   fromMaybe (panic "Cryptol.Symbolic.parseValue" ["no rational"]) $
   do (n,cvs')  <- SBV.genParse SBV.KUnbounded cvs

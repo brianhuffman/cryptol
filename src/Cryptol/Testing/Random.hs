@@ -155,7 +155,6 @@ randomValue sym ty =
     TVBit         -> Just (randomBit sym)
     TVInteger     -> Just (randomInteger sym)
     TVRational    -> Just (randomRational sym)
-    TVIntMod m    -> Just (randomIntMod sym m)
     TVFloat e p   -> Just (randomFloat sym e p)
     TVSeq n TVBit -> Just (randomWord sym n)
     TVSeq n el ->
@@ -209,13 +208,6 @@ randomInteger sym w g =
   let (n, g1) = if w < 100 then (fromInteger w, g) else randomSize 8 100 g
       (i, g2) = randomR (- 256^n, 256^n) g1
   in (VInteger <$> integerLit sym i, g2)
-
-{-# INLINE randomIntMod #-}
-
-randomIntMod :: (Backend sym, RandomGen g) => sym -> Integer -> Gen g sym
-randomIntMod sym modulus _ g =
-  let (i, g') = randomR (0, modulus-1) g
-  in (VInteger <$> integerLit sym i, g')
 
 {-# INLINE randomRational #-}
 
@@ -465,7 +457,6 @@ typeSize ty = case ty of
   TVBit -> Just 2
   TVInteger -> Nothing
   TVRational -> Nothing
-  TVIntMod n -> Just n
   TVFloat e p -> Just (2 ^ (e+p))
   TVArray{} -> Nothing
   TVStream{} -> Nothing
@@ -488,7 +479,6 @@ typeValues ty =
     TVBit       -> [ VBit False, VBit True ]
     TVInteger   -> []
     TVRational  -> []
-    TVIntMod n  -> [ VInteger x | x <- [ 0 .. (n-1) ] ]
     TVFloat e p -> [ VFloat (floatFromBits e p v) | v <- [0 .. 2^(e+p) - 1] ]
     TVArray{}   -> []
     TVStream{}  -> []

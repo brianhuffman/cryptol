@@ -33,7 +33,6 @@
 > import qualified Data.Text as T (pack)
 > import LibBF (BigFloat)
 > import qualified LibBF as FP
-> import qualified GHC.Num.Compat as Integer
 > import qualified Data.List as List
 >
 > import Cryptol.ModuleSystem.Name (asPrim,nameIdent)
@@ -82,7 +81,6 @@ are as follows:
 |:------------------|:------------------|:----------------------------|
 | `Bit`             | booleans          | `TVBit`                     |
 | `Integer`         | integers          | `TVInteger`                 |
-| `Z n`             | integers modulo n | `TVIntMod n`                |
 | `Rational`        | rationals         | `TVRational`                |
 | `Float e p`       | floating point    | `TVFloat`                   |
 | `Array`           | arrays            | `TVArray`                   |
@@ -709,11 +707,11 @@ by corresponding type classes:
 >                       ringExp aty a =<< cryToInteger ety e
 >
 >   -- Field
->   , "/."         ~> binary (fieldBinary ratDiv zDiv
+>   , "/."         ~> binary (fieldBinary ratDiv
 >                                         (fpBin FP.bfDiv fpImplicitRound)
 >                             )
 >
->   , "recip"      ~> unary (fieldUnary ratRecip zRecip fpRecip)
+>   , "recip"      ~> unary (fieldUnary ratRecip fpRecip)
 >
 >   -- Round
 >   , "floor"      ~> unary (roundUnary floor
@@ -764,11 +762,6 @@ by corresponding type classes:
 >                     VRational <$> appOp2 ratioOp
 >                                          (fromVInteger <$> l)
 >                                          (fromVInteger <$> r)
->
->   -- Z n
->   , "fromZ"      ~> vFinPoly $ \n -> pure $
->                     VFun $ \x ->
->                     VInteger . flip mod n . fromVInteger <$> x
 >
 >   -- Sequences
 >   , "#"          ~> vFinPoly $ \front -> pure $
@@ -1051,7 +1044,6 @@ For functions, `zero` returns the constant function that returns
 > zero :: TValue -> Value
 > zero TVBit          = VBit False
 > zero TVInteger      = VInteger 0
-> zero TVIntMod{}     = VInteger 0
 > zero TVRational     = VRational 0
 > zero (TVFloat e p)  = VFloat (fpToBF e p FP.bfPosZero)
 > zero TVArray{}      = evalPanic "zero" ["Array type not in `Zero`"]
@@ -1073,10 +1065,6 @@ Given a literal integer, construct a value of a type that can represent that lit
 >   where
 >    go TVInteger  = pure (VInteger i)
 >    go TVRational = pure (VRational (fromInteger i))
->    go (TVIntMod n)
->         | i < n = pure (VInteger i)
->         | otherwise = evalPanic "literal"
->                            ["Literal out of range for type Z " ++ show n]
 >    go (TVSeq w a)
 >         | isTBit a = pure (vWord w i)
 >    go ty = evalPanic "literal" [show ty ++ " cannot represent literals"]
@@ -1125,7 +1113,6 @@ at the same positions.
 >                                | (f, fty) <- canonicalFields fields ]
 >         TVFun _ bty  -> pure $ VFun (\v -> go bty (appFun val v))
 >         TVInteger    -> evalPanic "logicUnary" ["Integer not in class Logic"]
->         TVIntMod _   -> evalPanic "logicUnary" ["Z not in class Logic"]
 >         TVArray{}    -> evalPanic "logicUnary" ["Array not in class Logic"]
 >         TVRational   -> evalPanic "logicUnary" ["Rational not in class Logic"]
 >         TVFloat{}    -> evalPanic "logicUnary" ["Float not in class Logic"]
@@ -1163,7 +1150,6 @@ at the same positions.
 >                               r' <- r
 >                               go bty (fromVFun l' v) (fromVFun r' v)
 >         TVInteger    -> evalPanic "logicBinary" ["Integer not in class Logic"]
->         TVIntMod _   -> evalPanic "logicBinary" ["Z not in class Logic"]
 >         TVArray{}    -> evalPanic "logicBinary" ["Array not in class Logic"]
 >         TVRational   -> evalPanic "logicBinary" ["Rational not in class Logic"]
 >         TVFloat{}    -> evalPanic "logicBinary" ["Float not in class Logic"]
@@ -1194,8 +1180,6 @@ False]`, but to `error "foo"`.
 >           evalPanic "arithNullary" ["Bit not in class Ring"]
 >         TVInteger ->
 >           VInteger <$> i
->         TVIntMod n ->
->           VInteger . flip mod n <$> i
 >         TVRational ->
 >           VRational <$> q
 >         TVFloat e p ->
@@ -1232,8 +1216,6 @@ False]`, but to `error "foo"`.
 >           VInteger <$> appOp1 iop (fromVInteger <$> val)
 >         TVArray{} ->
 >           evalPanic "arithUnary" ["Array not in class Ring"]
->         TVIntMod n ->
->           VInteger <$> appOp1 (\i -> flip mod n <$> iop i) (fromVInteger <$> val)
 >         TVRational ->
 >           VRational <$> appOp1 qop (fromVRational <$> val)
 >         TVFloat e p ->
@@ -1268,8 +1250,6 @@ False]`, but to `error "foo"`.
 >           evalPanic "arithBinary" ["Bit not in class Ring"]
 >         TVInteger ->
 >           VInteger <$> appOp2 iop (fromVInteger <$> l) (fromVInteger <$> r)
->         TVIntMod n ->
->           VInteger <$> appOp2 (\i j -> flip mod n <$> iop i j) (fromVInteger <$> l) (fromVInteger <$> r)
 >         TVRational ->
 >           VRational <$> appOp2 qop (fromVRational <$> l) (fromVRational <$> r)
 >         TVFloat e p ->
@@ -1357,25 +1337,20 @@ a reciprocal operator and a field division operator (not to be
 confused with integral division).
 
 > fieldUnary :: (Rational -> E Rational) ->
->               (Integer -> Integer -> E Integer) ->
 >               (Integer -> Integer -> BigFloat -> E BigFloat) ->
 >               TValue -> E Value -> E Value
-> fieldUnary qop zop flop ty v = case ty of
+> fieldUnary qop flop ty v = case ty of
 >   TVRational  -> VRational <$> appOp1 qop (fromVRational <$> v)
->   TVIntMod m  -> VInteger <$> appOp1 (zop m) (fromVInteger <$> v)
 >   TVFloat e p -> VFloat . fpToBF e p <$> appOp1 (flop e p) (fromVFloat <$> v)
 >   _ -> evalPanic "fieldUnary" [show ty ++ " is not a Field type"]
 >
 > fieldBinary ::
 >    (Rational -> Rational -> E Rational) ->
->    (Integer -> Integer -> Integer -> E Integer) ->
 >    (Integer -> Integer -> BigFloat -> BigFloat -> E BigFloat) ->
 >    TValue -> E Value -> E Value -> E Value
-> fieldBinary qop zop flop ty l r = case ty of
+> fieldBinary qop flop ty l r = case ty of
 >   TVRational  -> VRational <$>
 >                    appOp2 qop (fromVRational <$> l) (fromVRational <$> r)
->   TVIntMod m  -> VInteger <$>
->                    appOp2 (zop m) (fromVInteger <$> l) (fromVInteger <$> r)
 >   TVFloat e p -> VFloat . fpToBF e p <$>
 >                       appOp2 (flop e p) (fromVFloat <$> l) (fromVFloat <$> r)
 >   _ -> evalPanic "fieldBinary" [show ty ++ " is not a Field type"]
@@ -1387,16 +1362,6 @@ confused with integral division).
 > ratRecip :: Rational -> E  Rational
 > ratRecip 0 = cryError DivideByZero
 > ratRecip x = pure (recip x)
->
-> zRecip :: Integer -> Integer -> E Integer
-> zRecip m x =
->   case Integer.integerRecipMod x m of
->     Just r  -> pure r
->     Nothing -> cryError DivideByZero
->
-> zDiv :: Integer -> Integer -> Integer -> E Integer
-> zDiv m x y = f <$> zRecip m y
->   where f yinv = (x * yinv) `mod` m
 
 Round
 -----
@@ -1454,8 +1419,6 @@ bits to the *left* of that position are equal.
 >       compare <$> (fromVBit <$> l) <*> (fromVBit <$> r)
 >     TVInteger ->
 >       compare <$> (fromVInteger <$> l) <*> (fromVInteger <$> r)
->     TVIntMod _ ->
->       compare <$> (fromVInteger <$> l) <*> (fromVInteger <$> r)
 >     TVRational ->
 >       compare <$> (fromVRational <$> l) <*> (fromVRational <$> r)
 >     TVFloat{} ->
@@ -1504,8 +1467,6 @@ fields are compared in alphabetical order.
 >     TVBit ->
 >       evalPanic "lexSignedCompare" ["invalid type"]
 >     TVInteger ->
->       evalPanic "lexSignedCompare" ["invalid type"]
->     TVIntMod _ ->
 >       evalPanic "lexSignedCompare" ["invalid type"]
 >     TVRational ->
 >       evalPanic "lexSignedCompare" ["invalid type"]

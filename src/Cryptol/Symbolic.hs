@@ -146,7 +146,6 @@ predArgTypes qtype schema@(Forall ts ps ty)
 data FinType
     = FTBit
     | FTInteger
-    | FTIntMod Integer
     | FTRational
     | FTFloat Integer Integer
     | FTSeq Integer FinType
@@ -163,7 +162,6 @@ finType ty =
   case ty of
     TVBit               -> Just FTBit
     TVInteger           -> Just FTInteger
-    TVIntMod n          -> Just (FTIntMod n)
     TVRational          -> Just FTRational
     TVFloat e p         -> Just (FTFloat e p)
     TVSeq n t           -> FTSeq n <$> finType t
@@ -184,7 +182,6 @@ finTypeToType fty =
   case fty of
     FTBit             -> tBit
     FTInteger         -> tInteger
-    FTIntMod n        -> tIntMod (tNum n)
     FTRational        -> tRational
     FTFloat e p       -> tFloat (tNum e) (tNum p)
     FTSeq l ety       -> tSeq (tNum l) (finTypeToType ety)
@@ -201,7 +198,6 @@ unFinType fty =
   case fty of
     FTBit             -> TVBit
     FTInteger         -> TVInteger
-    FTIntMod n        -> TVIntMod n
     FTRational        -> TVRational
     FTFloat e p       -> TVFloat e p
     FTSeq n ety       -> TVSeq n (unFinType ety)
@@ -294,8 +290,6 @@ freshVar fns tp =
     FTRational    -> VarRational
                         <$> freshIntegerVar fns Nothing Nothing
                         <*> freshIntegerVar fns (Just 1) Nothing
-    FTIntMod 0    -> panic "freshVariable" ["0 modulus not allowed"]
-    FTIntMod m    -> VarInteger  <$> freshIntegerVar fns (Just 0) (Just (m-1))
     FTFloat e p   -> VarFloat    <$> freshFloatVar fns e p
     FTSeq n FTBit -> VarWord     <$> freshWordVar fns (toInteger n)
     FTSeq n t     -> VarFinSeq (toInteger n) <$> sequence (genericReplicate n (freshVar fns t))
@@ -429,10 +423,6 @@ varToExpr prims = go
         prim (if b then "True" else "False")
 
       (FTInteger, VarInteger i) ->
-        -- This works uniformly for values of type Integer or Z n
-        ETApp (ETApp (prim "number") (tNum i)) (finTypeToType ty)
-
-      (FTIntMod _, VarInteger i) ->
         -- This works uniformly for values of type Integer or Z n
         ETApp (ETApp (prim "number") (tNum i)) (finTypeToType ty)
 

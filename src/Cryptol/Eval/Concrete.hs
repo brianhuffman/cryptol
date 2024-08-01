@@ -121,8 +121,6 @@ toExpr prims t0 v0 = findOne (go t0 v0)
         pure (prim (if b then "True" else "False"))
       (TVInteger, VInteger i) ->
         pure $ ETApp (ETApp (prim "number") (tNum i)) tInteger
-      (TVIntMod n, VInteger i) ->
-        pure $ ETApp (ETApp (prim "number") (tNum i)) (tIntMod (tNum n))
 
       (TVRational, VRational (SRational n d)) ->
         do let n' = ETApp (ETApp (prim "number") (tNum n)) tInteger

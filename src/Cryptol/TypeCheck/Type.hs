@@ -572,11 +572,6 @@ tIsInteger ty = case tNoUser ty of
                   TCon (TC TCInteger) [] -> True
                   _                      -> False
 
-tIsIntMod :: Type -> Maybe Type
-tIsIntMod ty = case tNoUser ty of
-                 TCon (TC TCIntMod) [n] -> Just n
-                 _                      -> Nothing
-
 tIsRational :: Type -> Bool
 tIsRational ty =
   case tNoUser ty of
@@ -745,9 +740,6 @@ tRational  = TCon (TC TCRational) []
 
 tFloat   :: Type -> Type -> Type
 tFloat e p = TCon (TC TCFloat) [ e, p ]
-
-tIntMod :: Type -> Type
-tIntMod n = TCon (TC TCIntMod) [n]
 
 tArray :: Type -> Type -> Type
 tArray a b = TCon (TC TCArray) [a, b]
@@ -1171,8 +1163,6 @@ instance PP (WithNames Type) where
           (TCBit,   [])       -> text "Bit"
           (TCInteger, [])     -> text "Integer"
           (TCRational, [])    -> text "Rational"
-
-          (TCIntMod, [n])     -> optParens (prec > 3) $ text "Z" <+> go 5 n
 
           (TCSeq,   [t1,TCon (TC TCBit) []]) -> brackets (go 0 t1)
           (TCSeq,   [t1,t2])  -> optParens (prec > 4)

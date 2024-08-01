@@ -30,27 +30,6 @@ primitive type Bit : *
 primitive type Integer : *
 
 /**
- * 'Z n' is the type of integers, modulo 'n'.
- *
- * The values of 'Z n' may be thought of as equivalence
- * classes of integers according to the equivalence
- * 'x ~ y' iff 'n' divides 'x - y'.  'Z n' naturally
- * forms a ring, but does not support integral division
- * or indexing.
- *
- * However, you may use the 'fromZ' operation
- * to project values in 'Z n' into the integers if such operations
- * are required.  This will compute the reduced representative
- * of the equivalence class. In other words, 'fromZ' computes
- * the (unique) integer value 'i'  where '0 <= i < n' and
- * 'i' is in the given equivalence class.
- *
- * If the modulus 'n' is prime, 'Z n' also
- * supports computing inverses and forms a field.
- */
-primitive type {n : #} (fin n, n >= 1) => Z n : *
-
-/**
  * 'Rational' is the type of rational numbers.
  * Rational numbers form a Field (and thus a Ring).
  *
@@ -342,8 +321,6 @@ primitive type Ring : * -> Prop
  * Converts an unbounded integer to a value in a Ring using the following rules:
  *   * to bitvector type [n]:
  *     the value is reduced modulo 2^^n,
- *   * to Z n:
- *     the value is reduced modulo n,
  *   * floating point types:
  *     the value is rounded to the nearest representable value,
  *   * sequences other than bitvectors:
@@ -778,14 +755,6 @@ primitive toSignedInteger : {n} (fin n, n >= 1) => [n] -> Integer
  * 'ratio x y = (fromInteger x /. fromInteger y) : Rational'
  */
 primitive ratio : Integer -> Integer -> Rational
-
-
-// Zn specific operations ----------------------------------------------------
-
-/**
- * Converts an integer modulo n to an unbounded integer in the range 0 to n-1.
- */
-primitive fromZ : {n} (fin n, n >= 1) => Z n -> Integer
 
 
 // Sequence operations -------------------------------------------------------

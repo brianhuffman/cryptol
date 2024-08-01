@@ -564,18 +564,10 @@ simpleExpr                     :: { Expr PName }
 
 -- An expression without an obvious end marker
 longExpr                       :: { Expr PName }
-  : 'if' ifBranches 'else' exprNoWhere   { at ($1,$4) $ mkIf (reverse $2) $4 }
+  : 'if' expr 'then' expr 'else' exprNoWhere { at ($1,$6) $ EIf $2 $4 $6 }
   | '\\' iapats '->' exprNoWhere         { at ($1,$4) $ EFun emptyFunDesc (reverse $2) $4 }
   | 'case' expr 'of' 'v{' vcaseBranches 'v}' {at ($1,$6) (ECase $2 (reverse $5))}
   | 'case' expr 'of' '{' caseBranches '}' { at ($1,$6) (ECase $2 (reverse $5)) }
-
-
-ifBranches                     :: { [(Expr PName, Expr PName)] }
-  : ifBranch                      { [$1] }
-  | ifBranches '|' ifBranch       { $3 : $1 }
-
-ifBranch                       :: { (Expr PName, Expr PName) }
-  : expr 'then' expr              { ($1, $3) }
 
 vcaseBranches                  :: { [CaseAlt PName] }
   : caseBranch                    { [$1] }

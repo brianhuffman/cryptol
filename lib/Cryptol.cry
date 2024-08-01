@@ -976,9 +976,9 @@ sortBy le ((xs : [n/2]a) # (ys : [n/^2]a)) = zs.0
   where
     xs' = if `(n/2)  == 1 then xs else sortBy le xs
     ys' = if `(n/^2) == 1 then ys else sortBy le ys
-    zs  = [ if i == `(n/2)        then (ys'@j, i  , j+1)
-             | j == `(n/^2)       then (xs'@i, i+1, j  )
-             | le (xs'@i) (ys'@j) then (xs'@i, i+1, j  )
+    zs  = [ if i == `(n/2)        then (ys'@j, i  , j+1) else
+            if j == `(n/^2)       then (xs'@i, i+1, j  ) else
+            if le (xs'@i) (ys'@j) then (xs'@i, i+1, j  )
             else                       (ys'@j, i  , j+1)
           | (_, i, j) <- take`{n} ([ (undefined, 0, 0) ] # zs)
           ]

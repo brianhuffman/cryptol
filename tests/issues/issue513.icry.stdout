@@ -14,8 +14,8 @@ Main::test =
       /* Recursive */
       Main::$mono : [1 + a]
       Main::$mono =
-        (Cryptol::#) 1 a Bit <> [Cryptol::False] [y | i <- Cryptol::zero [a] <>
-                                                    | y <- Main::$mono]
+        (Cryptol::#) 1 a Bit [Cryptol::False] [y | i <- Cryptol::zero [a] <>
+                                                 | y <- Main::$mono]
 
 
 

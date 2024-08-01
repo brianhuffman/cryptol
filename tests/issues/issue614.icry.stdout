@@ -8,7 +8,7 @@ Loading module Main
       • (==) (precedence 20, non-associative)
     are not compatible.
     You may use explicit parentheses to disambiguate.
-[error] at issue614.cry:5:29--5:30 and issue614.cry:5:33--5:35
+[error] at issue614.cry:5:15--5:16 and issue614.cry:5:19--5:21
     The fixities of
       • (<) (precedence 30, non-associative)
       • (<=) (precedence 30, non-associative)

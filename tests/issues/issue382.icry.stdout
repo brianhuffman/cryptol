@@ -40,7 +40,7 @@ Loading module Cryptol
 
 [error] at issue382.icry:7:1--7:3:
   Type mismatch:
-    Expected type: inf
+    Expected type: 100
     Inferred type: 0
     When checking length of sequence
 

@@ -13,7 +13,7 @@ parameter
 
 
   type w : #
-  type constraint (fin w, w >= 1)
+  type constraint (w >= 1)
 
 
 
@@ -21,7 +21,7 @@ parameter
   (i.e. the number of words in K) */
 
   type j : #
-  type constraint (fin j, j >= 17)
+  type constraint (j >= 17)
 
   H0 : [8][w]
   K  : [j][w]
@@ -84,14 +84,13 @@ private
     6.4.2 SHA-512 Hash Computation (w==64, j=80)
   */
   messageSchedule_Common : [16][w] -> [j][w]
-  messageSchedule_Common Mi = take W
+  messageSchedule_Common Mi = W
     where
-    W : [inf][_]
     W = Mi # [ w1 + sigma_0 w2 + w3 + sigma_1 w4
-             | w1 <- W
-             | w2 <- drop`{1} W
-             | w3 <- drop`{9} W
-             | w4 <- drop`{14} W
+             | w1 <- take`{j-16} W
+             | w2 <- take`{j-16} (drop`{1} W)
+             | w3 <- take`{j-16} (drop`{9} W)
+             | w4 <- take`{j-16} (drop`{14} W)
              ]
 
 
@@ -132,7 +131,7 @@ private
   processBlock_Common H Mi = compress_Common H (messageSchedule_Common Mi)
 
 
-  SHA_2_Common' : {L} (fin L) => [L][16][w] -> [8][w]
+  SHA_2_Common' : {L} [L][16][w] -> [8][w]
   SHA_2_Common' blocks = hash ! 0
     where
     hash = [H0] # [ processBlock_Common h b | h <- hash | b <- blocks]

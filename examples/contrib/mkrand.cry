@@ -65,10 +65,10 @@ seedUnit = (0 :[63]) # (1:[1]) # (0:[64])
 /*
  *  Field - Unfold an application of Rule 30 to a seed
  */
-field: Seg -> [inf]Seg
+field: {n} (n >= 1) => Seg -> [n]Seg
 field s = new
   where
-    new = [s] # [ rule30 row | row <- new]
+    new = [s] # [ rule30 row | row <- take`{n-1} new]
     rule30 r = [ a ^ (b || c) | a <- r >>> 1
                               | b <- r
                               | c <- r <<< 1
@@ -85,22 +85,22 @@ sha30 s = take`{0x80} (drop`{0x80} [ r @ ((((length r) / 2)-1):[8]) | r <- field
 /*
  * RAND - Seed XOR (SHA30 Seed)
  */
-rands : Seg -> [inf]Seg
+rands : {n} (n >= 1) => Seg -> [n]Seg
 rands s = rest
   where
      rand p = p ^ (sha30 p)
-     rest = [rand s] # [rand x | x <- rest]
+     rest = [rand s] # [rand x | x <- take`{n-1} rest]
 
 
 /* Break segments into bytes */
-randBytes : Seg -> [inf][8]
-randBytes s = groupBy`{8} (join (rands s))
+randBytes : {n} Seg -> [n][8]
+randBytes s = take (groupBy`{8} (join (rands`{1 + n/^16} s)))
 
 
 /* XOR a byte string into a random byte string, using the given seed */
 randXOR : {n} Seg ->  String n -> String n
 randXOR seed src = [s ^ r | s <- src
-                          | r <- randBytes seed
+                          | r <- randBytes`{n} seed
                    ]
 
 /* OTP example */
@@ -113,7 +113,7 @@ property otp_encdec =
             , 0xed, 0x50, 0xc2, 0x1b
             , 0x11, 0x0e, 0x70]
 
-otp_involutive : {len} (fin len) => String len -> Bit
+otp_involutive : {len} String len -> Bit
 otp_involutive msg = randXOR seedUnit (randXOR seedUnit msg) == msg
 
 property otp_involutive_32 msg = otp_involutive (msg : String 32)

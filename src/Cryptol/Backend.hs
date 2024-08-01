@@ -33,7 +33,6 @@ module Cryptol.Backend
   , iteRational
   ) where
 
-import qualified Control.Exception as X
 import Control.Monad.IO.Class
 import Data.Kind (Type)
 
@@ -224,7 +223,6 @@ enumerateIntBits :: Backend sym =>
   SInteger sym ->
   SEval sym (Integer, [SBit sym])
 enumerateIntBits sym (Nat n) idx = enumerateIntBits' sym n idx
-enumerateIntBits _sym Inf _ = liftIO (X.throw (UnsupportedSymbolicOp "unbounded integer shifting"))
 
 -- | This type class defines a collection of operations on bits, words and integers that
 --   are necessary to define generic evaluator primitives that operate on both concrete

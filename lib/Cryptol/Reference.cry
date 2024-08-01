@@ -4,7 +4,7 @@ module Cryptol::Reference where
  * Performs multiplication of polynomials over GF(2).
  * Reference implementation.
  */
-pmult : {u, v} (fin u, fin v) => [1 + u] -> [1 + v] -> [1 + u + v]
+pmult : {u, v} [1 + u] -> [1 + v] -> [1 + u + v]
 pmult x y = last zs
   where
     zs = [0] # [ (z << 1) ^ (if yi then 0 # x else 0) | yi <- y | z <- zs ]
@@ -13,7 +13,7 @@ pmult x y = last zs
  * Performs division of polynomials over GF(2).
  * Reference implementation.
  */
-pdiv : {u, v} (fin u, fin v) => [u] -> [v] -> [u]
+pdiv : {u, v} [u] -> [v] -> [u]
 pdiv x y = [ z ! degree | z <- zs ]
   where
     degree : [width v]
@@ -30,7 +30,7 @@ pdiv x y = [ z ! degree | z <- zs ]
  * Performs modulus of polynomials over GF(2).
  * Reference implementation.
  */
-pmod : {u, v} (fin u, fin v) => [u] -> [1 + v] -> [v]
+pmod : {u, v} [u] -> [1 + v] -> [v]
 pmod x y = if y == 0 then 0/0 else last zs
   where
     degree : [width v]
@@ -40,8 +40,8 @@ pmod x y = if y == 0 then 0/0 else last zs
     reduce : [1 + v] -> [1 + v]
     reduce u = if u ! degree then u ^ y else u
 
-    powers : [inf][1 + v]
-    powers = [reduce 1] # [ reduce (p << 1) | p <- powers ]
+    powers : [u][1 + v]
+    powers = take`{u} ([reduce 1] # [ reduce (p << 1) | p <- powers ])
 
     zs = [0] # [ z ^ (if xi then tail p else 0) | xi <- reverse x | p <- powers | z <- zs ]
 
@@ -52,7 +52,7 @@ pmod x y = if y == 0 then 0/0 else last zs
  *
  * Reference implementation.
  */
-foldl : {n, a, b} (fin n) => (a -> b -> a) -> a -> [n]b -> a
+foldl : {n, a, b} (a -> b -> a) -> a -> [n]b -> a
 foldl f z bs = last (scanl f z bs)
 
 /**
@@ -71,6 +71,6 @@ scanl f z bs = as
  *
  * Reference implementation.
  */
-iterate : {a} (a -> a) -> a -> [inf]a
+iterate : {a, n} (a -> a) -> a -> [1+n]a
 iterate f z = xs
-  where xs = [z] # [ f x | x <- xs ]
+  where xs = [z] # [ f x | x <- take`{n} xs ]

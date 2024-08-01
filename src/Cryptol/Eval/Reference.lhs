@@ -246,7 +246,6 @@ Operations on Values
 > vFinPoly f = VNumPoly g
 >   where
 >     g (Nat n) = f n
->     g Inf     = evalPanic "vFinPoly" ["Expected finite numeric type"]
 
 
 Environments
@@ -478,7 +477,6 @@ variable to a different element of the match's list.
 >       idxs :: [Integer]
 >       idxs =
 >         case evalNumType (envTypes env) len of
->         Inf   -> [0 ..]
 >         Nat n -> [0 .. n-1]
 
 > lenMatch :: Env -> Match -> Nat'
@@ -861,7 +859,6 @@ by corresponding type classes:
 >                     VPoly    $ \ty    -> pure $
 >                     let f i = literal i ty in
 >                     case bound of
->                       Inf -> VList Inf (map f [first ..])
 >                       Nat bound' ->
 >                         let len = bound' - first in
 >                         VList (Nat len) (map f (genericTake len [first ..]))
@@ -883,7 +880,6 @@ by corresponding type classes:
 >                     let f i = literal i ty in
 >                     let vs  = [ f (first + i*stride) | i <- [0..] ] in
 >                     case bound of
->                       Inf -> VList Inf vs
 >                       Nat bound' ->
 >                         let len = (bound'-first+stride-1) `div` stride in
 >                         VList (Nat len) (genericTake len vs)
@@ -918,19 +914,21 @@ by corresponding type classes:
 >                           (map f (genericTake len [first, next ..]))
 >
 >   , "infFrom"    ~> VPoly $ \ty -> pure $
+>                     vFinPoly $ \n -> pure $
 >                     VFun $ \first ->
 >                     do x <- cryToInteger ty first
 >                        let f i = literal (x + i) ty
->                        pure $ VList Inf (map f [0 ..])
+>                        pure $ VList (Nat n) (map f (genericTake n [0 ..]))
 >
 >   , "infFromThen"~> VPoly $ \ty -> pure $
+>                     vFinPoly $ \n -> pure $
 >                     VFun $ \first -> pure $
 >                     VFun $ \next ->
 >                     do x <- cryToInteger ty first
 >                        y <- cryToInteger ty next
 >                        let diff = y - x
 >                            f i = literal (x + diff * i) ty
->                        pure $ VList Inf (map f [0 ..])
+>                        pure $ VList (Nat n) (map f (genericTake n [0 ..]))
 >
 >   -- Miscellaneous:
 >   , "parmap"     ~> VPoly $ \_a -> pure $
@@ -1056,7 +1054,6 @@ For functions, `zero` returns the constant function that returns
 > zero (TVFloat e p)  = VFloat (fpToBF e p FP.bfPosZero)
 > zero TVArray{}      = evalPanic "zero" ["Array type not in `Zero`"]
 > zero (TVSeq n ety)  = VList (Nat n) (genericReplicate n (pure (zero ety)))
-> zero (TVStream ety) = VList Inf (repeat (pure (zero ety)))
 > zero (TVTuple tys)  = VTuple (map (pure . zero) tys)
 > zero (TVRec fields) = VRecord [ (f, pure (zero fty))
 >                               | (f, fty) <- canonicalFields fields ]
@@ -1117,7 +1114,6 @@ at the same positions.
 >       case ty of
 >         TVBit        -> VBit . op . fromVBit <$> val
 >         TVSeq w ety  -> VList (Nat w) . map (go ety) . fromVList <$> val
->         TVStream ety -> VList Inf . map (go ety) . fromVList <$> val
 >         TVTuple etys -> VTuple . zipWith go etys . fromVTuple <$> val
 >         TVRec fields ->
 >              do val' <- val
@@ -1143,10 +1139,6 @@ at the same positions.
 >           VList (Nat w) <$> (zipWith (go ety) <$>
 >                                 (fromVList <$> l) <*>
 >                                 (fromVList <$> r))
->         TVStream ety ->
->           VList Inf <$> (zipWith (go ety) <$>
->                              (fromVList <$> l) <*>
->                              (fromVList <$> r))
 >         TVTuple etys ->
 >           VTuple <$> (zipWith3 go etys <$>
 >                              (fromVTuple <$> l) <*>
@@ -1205,8 +1197,6 @@ False]`, but to `error "foo"`.
 >         TVSeq w a
 >           | isTBit a  -> vWord w <$> i
 >           | otherwise -> pure $ VList (Nat w) (genericReplicate w (go a))
->         TVStream a ->
->           pure $ VList Inf (repeat (go a))
 >         TVFun _ ety ->
 >           pure $ VFun (const (go ety))
 >         TVTuple tys ->
@@ -1241,8 +1231,6 @@ False]`, but to `error "foo"`.
 >         TVSeq w a
 >           | isTBit a  -> vWord w <$> (iop =<< (fromVWord =<< val))
 >           | otherwise -> VList (Nat w) . map (go a) . fromVList <$> val
->         TVStream a ->
->           VList Inf . map (go a) . fromVList <$> val
 >         TVFun _ ety ->
 >           pure $ VFun (\x -> go ety (appFun val x))
 >         TVTuple tys ->
@@ -1283,10 +1271,6 @@ False]`, but to `error "foo"`.
 >                VList (Nat w) <$> (zipWith (go a) <$>
 >                                     (fromVList <$> l) <*>
 >                                     (fromVList <$> r))
->         TVStream a ->
->           VList Inf <$> (zipWith (go a) <$>
->                            (fromVList <$> l) <*>
->                            (fromVList <$> r))
 >         TVFun _ ety ->
 >           pure $ VFun (\x -> go ety (appFun l x) (appFun r x))
 >         TVTuple tys ->
@@ -1465,8 +1449,6 @@ bits to the *left* of that position are equal.
 >     TVSeq _w ety ->
 >       lexList =<< (zipWith (lexCompare ety) <$>
 >                      (fromVList <$> l) <*> (fromVList <$> r))
->     TVStream _ ->
->       evalPanic "lexCompare" ["invalid type"]
 >     TVFun _ _ ->
 >       evalPanic "lexCompare" ["invalid type"]
 >     TVTuple etys ->
@@ -1519,8 +1501,6 @@ fields are compared in alphabetical order.
 >       | otherwise ->
 >           lexList =<< (zipWith (lexSignedCompare ety) <$>
 >                            (fromVList <$> l) <*> (fromVList <$> r))
->     TVStream _ ->
->       evalPanic "lexSignedCompare" ["invalid type"]
 >     TVFun _ _ ->
 >       evalPanic "lexSignedCompare" ["invalid type"]
 >     TVTuple etys ->
@@ -1542,7 +1522,6 @@ Sequences
 > generateV len f = VList len [ f i | i <- idxs ]
 >   where
 >    idxs = case len of
->             Inf   -> [ 0 .. ]
 >             Nat n -> [ 0 .. n-1 ]
 
 
@@ -1565,9 +1544,6 @@ amount, but as lazy as possible in the list values.
 > shiftLV :: Nat' -> TValue -> E Value -> Integer -> Value
 > shiftLV w a v amt =
 >   case w of
->     Inf   -> generateV Inf $ \i ->
->                do vs <- fromVList <$> v
->                   indexFront Inf vs (i + amt)
 >     Nat n -> generateV (Nat n) $ \i ->
 >                if i + amt < n then
 >                  do vs <- fromVList <$> v
@@ -1645,7 +1621,6 @@ length of the list produces a run-time error.
 > indexFront w vs ix =
 >   case w of
 >     Nat n | 0 <= ix && ix < n -> genericIndex vs ix
->     Inf   | 0 <= ix -> genericIndex vs ix
 >     _ -> cryError (InvalidIndex (Just ix))
 >
 > indexBack :: Nat' -> [E Value] -> Integer -> E Value
@@ -1653,7 +1628,6 @@ length of the list produces a run-time error.
 >   case w of
 >     Nat n | 0 <= ix && ix < n -> genericIndex vs (n - ix - 1)
 >           | otherwise -> cryError (InvalidIndex (Just ix))
->     Inf               -> evalPanic "indexBack" ["unexpected infinite sequence"]
 >
 > updatePrim :: (Nat' -> Integer -> Integer) -> Value
 > updatePrim op =
@@ -1678,7 +1652,6 @@ length of the list produces a run-time error.
 > updateFront _ j = j
 >
 > updateBack :: Nat' -> Integer -> Integer
-> updateBack Inf _j = evalPanic "Unexpected infinite sequence in updateEnd" []
 > updateBack (Nat n) j = n - j - 1
 
 Floating Point Numbers
@@ -1819,8 +1792,6 @@ Pretty Printing
 >     VFloat fl -> text (show (FP.fpPP opts fl))
 >     VList l vs ->
 >       case l of
->         Inf -> ppList (map (ppEValue opts)
->                   (take (useInfLength opts) vs) ++ [text "..."])
 >         Nat n ->
 >           -- For lists of defined bits, print the value as a numeral.
 >           case traverse isBit vs of

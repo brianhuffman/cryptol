@@ -11,7 +11,6 @@ import HMAC
 pbkdf2 : {pwBytes, saltBytes, dkLenBits, C}
          ( 64 >= width (8 * pwBytes)
          , dkLenBits >= 1
-         , fin dkLenBits
          , C >= 1
          , 16 >= width C
          , 32 >= width (4 + saltBytes)

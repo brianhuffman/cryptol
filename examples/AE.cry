@@ -13,7 +13,7 @@ parameter
   type p : #          // Number of blocks to process at once
   type tagAmount : #
 
-  type constraint (fin p, fin n, n >= tagAmount)
+  type constraint (n >= tagAmount)
 
   // Process a single block using this key and tweak
   tweak_cipher : K -> { nonce : [n], state : A, z : [64] } -> [n] -> [n]
@@ -58,13 +58,13 @@ property
 type Int = [64]
 
 encrypt :
-  {m} fin m => K -> Nonce -> A -> [m * (p * n)] -> [m * (p * n) + tagAmount]
+  {m} K -> Nonce -> A -> [m * (p * n)] -> [m * (p * n) + tagAmount]
 encrypt key nonce state inputMsg = encMsg # tag
 
   where
   encMsg = join rest.0.message
 
-  tag = take (Tag key (tweak (1 - final.1)) final.0.state)
+  tag = take`{tagAmount} (Tag key (tweak (1 - final.1)) final.0.state)
 
   final = steps ! 0
 

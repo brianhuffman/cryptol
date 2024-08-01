@@ -6,7 +6,7 @@ module Base64 where
 
 type Enc64 n = 4*(((3-(n%3))%3) + n)/3
 
-base64enc : {n,m,padZ} (4*(padZ + n)/3 == m, fin n, fin m, padZ == (3-(n%3))%3, 2>=padZ)
+base64enc : {n,m,padZ} (4*(padZ + n)/3 == m, padZ == (3-(n%3))%3, 2>=padZ)
           => [n][8] -> [Enc64 n][8]
 base64enc ns = take `{m} (chunks # padEq)
  where
@@ -17,7 +17,7 @@ base64enc ns = take `{m} (chunks # padEq)
 alphabet = ['A'..'Z'] # ['a'..'z'] # ['0'..'9'] # "+/"
 
 
-base64chunks : {n} (fin n) => [n*3][8] -> [n*4][8]
+base64chunks : {n} [n*3][8] -> [n*4][8]
 base64chunks m = [basify x |  x <- ns]
  where
   ns = split (join m) : [_][6]
@@ -29,7 +29,7 @@ base64chunks m = [basify x |  x <- ns]
 // padding because that would require the type, n, to depend on the value
 // (dependant types). Instead we return possibly excess bytes and, separetely,
 // the number of pad bytes (0,1 or 2) as a value.
-base64dec : {n,m} (fin m, 4*n == 3*m, fin n) => [m][8] -> ([n][8],[2])
+base64dec : {n,m} (4*n == 3*m) => [m][8] -> ([n][8],[2])
 base64dec ms = (split (join [debase x | x <- ms]), nrEq)
  where
  nrEq : [2]

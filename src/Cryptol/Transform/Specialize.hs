@@ -300,7 +300,6 @@ freshName n _ =
 --         PEqual   -> "eq"
 --         PNeq     -> "neq"
 --         PGeq     -> "geq"
---         PFin     -> "fin"
 --         PHas sel -> "sel_" ++ showSel sel
 --         PArith   -> "arith"
 --         PCmp     -> "cmp"

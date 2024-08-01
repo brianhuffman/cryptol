@@ -1,3 +1,0 @@
-testme : {a} [_][a]
-testme = [undefined] # [ undefined | i <- take `{a} [0 ... ]
-                                   | y <- testme ]

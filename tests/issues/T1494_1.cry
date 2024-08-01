@@ -1,7 +1,7 @@
 
 parameter
   type n : #
-  type constraint P = (fin n, n > 0)
+  type constraint P = (n > 0)
   type constraint P
 
 

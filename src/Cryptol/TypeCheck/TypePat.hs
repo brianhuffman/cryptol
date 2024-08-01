@@ -2,7 +2,7 @@
 {-# OPTIONS_GHC -Wno-incomplete-uni-patterns #-}
 {-# LANGUAGE Safe #-}
 module Cryptol.TypeCheck.TypePat
-  ( aInf, aNat, aNat'
+  ( aNat, aNat'
 
   , anAdd, (|-|), aMul, (|^|), (|/|), (|%|)
   , aMin, aMax
@@ -24,7 +24,7 @@ module Cryptol.TypeCheck.TypePat
   , aRec
   , (|->|)
 
-  , aFin, (|=|), (|/=|), (|>=|)
+  , (|=|), (|/=|), (|>=|)
   , aAnd
   , aTrue
 
@@ -33,7 +33,6 @@ module Cryptol.TypeCheck.TypePat
   , module Cryptol.Utils.Patterns
   ) where
 
-import Control.Applicative((<|>))
 import Control.Monad
 import Cryptol.Utils.Ident (Ident)
 import Cryptol.Utils.Patterns
@@ -71,17 +70,13 @@ tp f ar = tcon (PC f) ar
 
 --------------------------------------------------------------------------------
 
-aInf :: Pat Type ()
-aInf = tc TCInf ar0
-
 aNat :: Pat Type Integer
 aNat = \a -> case tNoUser a of
                TCon (TC (TCNum n)) _ -> return n
                _                     -> mzero
 
 aNat' :: Pat Type Nat'
-aNat' = \a -> (Inf <$  aInf a)
-          <|> (Nat <$> aNat a)
+aNat' = \a -> (Nat <$> aNat a)
 
 anAdd :: Pat Type (Type,Type)
 anAdd = tf TCAdd ar2
@@ -161,9 +156,6 @@ aRec = \a -> case tNoUser a of
 (|->|) :: Pat Type (Type,Type)
 (|->|) = tc TCFun ar2
 --------------------------------------------------------------------------------
-
-aFin :: Pat Prop Type
-aFin = tp PFin ar1
 
 (|=|) :: Pat Prop (Type,Type)
 (|=|) = tp PEqual ar2

@@ -11,7 +11,6 @@ module Common::GCM where
 parameter
   /** Key size */
   type K : #
-  type constraint (fin K)
 
   /** Size of initialization vector */
   type IV : #
@@ -57,12 +56,14 @@ enc_dec K IV A P = (C,T)
   Y0 = ifWidth`{96} IV (\IV96 -> IV96 # 1)
                        (GHASH H [] IV)
 
-  Ys = [Y0] # [ y+1 | y <- Ys ]
+  Ys : [1 + n /^ 128][128]
+  Ys = [Y0] # [ y+1 | y <- take Ys ]
 
+  Cs : [n /^ 128][128]
   Cs = [ p ^ E K y | p <- blockify P | y <- drop`{1} Ys ]
   C  = unblockify Cs
 
-  T = take (GHASH H A C ^ E K Y0)
+  T = take`{T} (GHASH H A C ^ E K Y0)
 
 
 /** Section 2.3, equation (2) */
@@ -92,17 +93,17 @@ mult X Y = reverse (pmod (pmult (reverse X) (reverse Y)) irred)
 
 /** Create blocks as described in the spec, first paragraph of Section 2.3.
 Basically we split into 128-bit chunk and pad the last one with 0. */
-blockify : {n} (fin n) => [n] -> [n /^ 128][128]
+blockify : {n} [n] -> [n /^ 128][128]
 blockify msg = split (msg # 0)
 
 /** Join back the blocks, dropping any additional padding. */
-unblockify : {n} (fin n) => [n /^ 128][128] -> [n]
+unblockify : {n} [n /^ 128][128] -> [n]
 unblockify ms = take (join ms)
 
 
-ifWidth : {w,n,a} (fin n, fin w) => [n] -> ([w] -> a) -> a -> a
+ifWidth : {w,n,a} [n] -> ([w] -> a) -> a -> a
 ifWidth thing yep nope = if `w == (`n : [max (width w) (width n)])
-                            then yep (take (thing # (zero : [inf])))
+                            then yep (take (thing # (zero : [w])))
                             else nope
 
 

@@ -63,7 +63,7 @@ improveLit impSkol prop =
 -- Invariant:
 -- the substitions should be already applied to the new sub-goals, if any.
 improveEq :: Bool -> Ctxt -> Prop -> Match (Subst,[Prop])
-improveEq impSkol fins prop =
+improveEq impSkol _fins prop =
   do (lhs,rhs) <- (|=|) prop
      rewrite lhs rhs <|> rewrite rhs lhs
   where
@@ -84,8 +84,7 @@ improveEq impSkol fins prop =
         <|> do (s,v) <- matches t (anAdd, __, aTVar)
                valid v s
 
-  valid v s = do let i = typeInterval (intervals fins) s
-                 guard (considerVar v && v `Set.notMember` fvs s && iIsFin i)
+  valid v s = do guard (considerVar v && v `Set.notMember` fvs s)
                  return (v,s)
 
   considerVar x = impSkol || isFreeTV x

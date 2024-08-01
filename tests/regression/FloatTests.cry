@@ -2,7 +2,7 @@ module FloatTests where
 
 import Float
 
-section : {n} fin n => [n][8] -> [78][8]
+section : {n} [n][8] -> [78][8]
 section x = "-- " # take`{min 60 n} x # repeat '-'
 
 type Small  = Float 3 2
@@ -11,7 +11,7 @@ type Large  = Float 60 5000
 
 property roundTrip x  = fpFromBits (fpToBits x) =.= x
 
-roundTrip2 : {e : #, p : #} (fin e, fin p, ValidFloat e p) => [e + p] -> Bool
+roundTrip2 : {e : #, p : #} (ValidFloat e p) => [e + p] -> Bool
 property roundTrip2 x = fpToBits num == x \/ num =.= fpNaN
                           where num = fpFromBits x : Float e p
 property eqRefl1 x    = x =.= x
@@ -25,7 +25,7 @@ property eqProp x y   = ~(x == y) \/
 property leqRefl x    = x <= x \/ x =.= fpNaN
 
 
-roundTripRational : {e,p} (fin e, fin p, ValidFloat e p) => Float e p -> Bool
+roundTripRational : {e,p} (ValidFloat e p) => Float e p -> Bool
 property roundTripRational x =
   ~(fpIsFinite x) \/
   (fpFromRational rne (fpToRational x) =.= x) \/

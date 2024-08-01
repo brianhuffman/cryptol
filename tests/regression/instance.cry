@@ -27,8 +27,8 @@ zeroInteger = zero
 zeroRational : Rational
 zeroRational = zero
 
-/** instance (fin n, n >= 1) => Zero (Z n) */
-zeroZ : {n} (fin n, n >= 1) => Z n
+/** instance (n >= 1) => Zero (Z n) */
+zeroZ : {n} (n >= 1) => Z n
 zeroZ = zero
 
 /** instance Zero [n] */
@@ -109,12 +109,12 @@ ringInteger = negate
 ringRational : Rational -> Rational
 ringRational = negate
 
-/** instance (fin n, n >= 1) => Ring (Z n) */
-ringZ : {n} (fin n, n >= 1) => Z n -> Z n
+/** instance (n >= 1) => Ring (Z n) */
+ringZ : {n} (n >= 1) => Z n -> Z n
 ringZ = negate
 
-/** instance (fin n) => Ring [n] */
-ringWord : {n} (fin n) => [n] -> [n]
+/** instance Ring [n] */
+ringWord : {n} [n] -> [n]
 ringWord = negate
 
 // NOTE: 'instance Ring a => Ring [n]a' holds for any type 'a'
@@ -128,8 +128,8 @@ ringSeqInteger = negate
 ringSeqRational : {n} [n]Rational -> [n]Rational
 ringSeqRational = negate
 
-/** instance (fin k, k >= 1) => Ring [n](Z k) */
-ringSeqZ : {n, k} (fin k, k >= 1) => [n](Z k) -> [n](Z k)
+/** instance (k >= 1) => Ring [n](Z k) */
+ringSeqZ : {n, k} (k >= 1) => [n](Z k) -> [n](Z k)
 ringSeqZ = negate
 
 /** instance (Ring [k]a) => Ring [n][k]a */
@@ -187,8 +187,8 @@ ringRecord = negate
 integralInteger : Integer -> Integer -> Integer
 integralInteger = (%)
 
-/** instance (fin n) => Integral [n] */
-integralWord : {n} (fin n) => [n] -> [n] -> [n]
+/** instance Integral [n] */
+integralWord : {n} [n] -> [n] -> [n]
 integralWord = (%)
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -232,16 +232,16 @@ eqInteger = (==)
 eqRational : Rational -> Rational -> Bit
 eqRational = (==)
 
-/** instance (fin n, n >= 1) => Eq (Z n) */
-eqZ : {n} (fin n, n >= 1) => Z n -> Z n -> Bit
+/** instance (n >= 1) => Eq (Z n) */
+eqZ : {n} (n >= 1) => Z n -> Z n -> Bit
 eqZ = (==)
 
-/** instance (fin n) => Eq [n] */
-eqWord : {n} (fin n) => [n] -> [n] -> Bit
+/** instance Eq [n] */
+eqWord : {n} [n] -> [n] -> Bit
 eqWord = (==)
 
-/** instance (fin n, Eq a) => Eq [n]a */
-eqSeq : {n, a} (fin n, Eq a) => [n]a -> [n]a -> Bit
+/** instance (Eq a) => Eq [n]a */
+eqSeq : {n, a} (Eq a) => [n]a -> [n]a -> Bit
 eqSeq = (==)
 
 /** instance (ValidFloat e p) => Eq (Float e p) */
@@ -279,12 +279,12 @@ cmpInteger = (<)
 cmpRational : Rational -> Rational -> Bit
 cmpRational = (<)
 
-/** instance (fin n) => Cmp [n] */
-cmpWord : {n} (fin n) => [n] -> [n] -> Bit
+/** instance Cmp [n] */
+cmpWord : {n} [n] -> [n] -> Bit
 cmpWord = (<)
 
-/** instance (fin n, Cmp a) => Cmp [n]a */
-cmpSeq : {n, a} (fin n, Cmp a) => [n]a -> [n]a -> Bit
+/** instance (Cmp a) => Cmp [n]a */
+cmpSeq : {n, a} (Cmp a) => [n]a -> [n]a -> Bit
 cmpSeq = (<)
 
 /** instance (ValidFloat e p) => Cmp (Float e p) */
@@ -310,31 +310,31 @@ cmpRecord = (<)
 ////////////////////////////////////////////////////////////////////////////////
 // Cmp
 
-/** instance (fin n, n >= 1) => SignedCmp [n] */
-signedCmpWord : {n} (fin n, n >= 1) => [n] -> [n] -> Bit
+/** instance (n >= 1) => SignedCmp [n] */
+signedCmpWord : {n} (n >= 1) => [n] -> [n] -> Bit
 signedCmpWord = (<$)
 
-// NOTE: 'instance (fin n, SignedCmp a) => SignedCmp ([n]a)' holds for
+// NOTE: 'instance (SignedCmp a) => SignedCmp ([n]a)' holds for
 // any type 'a' distinct from 'Bit'.
 
-/** instance (fin n, SignedCmp [k]a) => SignedCmp [n][k]a */
-signedCmpSeqSeq : {n, k, a} (fin n, SignedCmp ([k]a)) => [n][k]a -> [n][k]a -> Bit
+/** instance (SignedCmp [k]a) => SignedCmp [n][k]a */
+signedCmpSeqSeq : {n, k, a} (SignedCmp ([k]a)) => [n][k]a -> [n][k]a -> Bit
 signedCmpSeqSeq = (<$)
 
-/** instance (fin n) => SignedCmp [n]() */
-signedCmpSeqUnit : {n} (fin n) => [n]() -> [n]() -> Bit
+/** instance SignedCmp [n]() */
+signedCmpSeqUnit : {n} [n]() -> [n]() -> Bit
 signedCmpSeqUnit = (<$)
 
 /** instance (SignedCmp a, SignedCmp b) => SignedCmp [n](a, b) */
-signedCmpSeqTuple : {n, a, b} (fin n, SignedCmp a, SignedCmp b) => [n](a, b) -> [n](a, b) -> Bit
+signedCmpSeqTuple : {n, a, b} (SignedCmp a, SignedCmp b) => [n](a, b) -> [n](a, b) -> Bit
 signedCmpSeqTuple = (<$)
 
 /** instance SignedCmp [n]{} */
-signedCmpSeqEmpty : {n} (fin n) => [n]{} -> [n]{} -> Bit
+signedCmpSeqEmpty : {n} [n]{} -> [n]{} -> Bit
 signedCmpSeqEmpty = (<$)
 
 /** instance (SignedCmp a, SignedCmp b) => SignedCmp [n]{x : a, y : b} */
-signedCmpSeqRecord : {n, a, b} (fin n, SignedCmp a, SignedCmp b) => [n]{x : a, y : b} -> [n]{x : a, y : b} -> Bit
+signedCmpSeqRecord : {n, a, b} (SignedCmp a, SignedCmp b) => [n]{x : a, y : b} -> [n]{x : a, y : b} -> Bit
 signedCmpSeqRecord = (<$)
 
 /** instance SignedCmp () */
@@ -360,20 +360,20 @@ signedCmpRecord = (<$)
 literalBit : {val} (1 >= val) => Bit
 literalBit = `val
 
-/** instance (fin val) => Literal val Integer */
-literalInteger : {val} (fin val) => Integer
+/** instance Literal val Integer */
+literalInteger : {val : #} Integer
 literalInteger = `val
 
-/** instance (fin val) => Literal val Rational */
-literalRational : {val} (fin val) => Rational
+/** instance Literal val Rational */
+literalRational : {val : #} Rational
 literalRational = `val
 
-/** instance (fin val, fin n, n >= 1, n > val) => Literal val (Z n) */
-literalZ : {val, n} (fin val, fin n, n >= 1, n > val) => Z n
+/** instance (n >= 1, n > val) => Literal val (Z n) */
+literalZ : {val, n} (n >= 1, n > val) => Z n
 literalZ = `val
 
-/** instance (fin val, fin n, n >= width val) => Literal val [n] */
-literalWord : {val, n} (fin val, fin n, n >= width val) => [n]
+/** instance (n >= width val) => Literal val [n] */
+literalWord : {val, n} (n >= width val) => [n]
 literalWord = `val
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -391,10 +391,10 @@ literalLessThanInteger = [0..<val]
 literalLessThanRational : {val} [val]Rational
 literalLessThanRational = [0..<val]
 
-/* instance (fin n, n >= 1, n >= val) => LiteralLessThan val (Z n) */
-literalLessThanZ : {val, n} (fin n, n >= 1, n >= val) => [val](Z n)
+/* instance (n >= 1, n >= val) => LiteralLessThan val (Z n) */
+literalLessThanZ : {val, n} (n >= 1, n >= val) => [val](Z n)
 literalLessThanZ = [0..<val]
 
-/* instance (fin n, n >= lg2 val) => LiteralLessThan val [n] */
-literalLessThanWord : {val, n} (fin n, n >= lg2 val) => [val][n]
+/* instance (n >= lg2 val) => LiteralLessThan val [n] */
+literalLessThanWord : {val, n} (n >= lg2 val) => [val][n]
 literalLessThanWord = [0..<val]

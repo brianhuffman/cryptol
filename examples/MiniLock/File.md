@@ -59,8 +59,7 @@ The header format is:
 type MiniLockBytes nrRecip fileSize = 8 + 4 + 89 + (DecryptInfoSize + 1) * nrRecip + EncryptedBytes fileSize - 1
 
 minilock : {nrRecip, fileNameBytes, msgBytes}
-        ( fin nrRecip, fin fileNameBytes, fin msgBytes  // All the values are finite
-        , nrRecip >= 1, 22 >= width nrRecip             // Between 1 and 4M recipients
+        ( nrRecip >= 1, 22 >= width nrRecip             // Between 1 and 4M recipients
         , 63 >= width msgBytes                          // Messages leq 2^63 bytes
         , fileNameBytes >= 1, 256 >= fileNameBytes      // Between 1 and 256 byte file name
         ) =>
@@ -91,8 +90,7 @@ private
 
   // encrypt chunks results in the ciphertext AND poly1305 tag for each chunk.
   encryptChunks : {chunks,rem}
-                  (fin chunks, fin rem
-                  , 32 >= width rem
+                  ( 32 >= width rem
                   , 64 >= width chunks)
                => [32][8] -> [16][8] -> [256][8] -> [chunks]Chunk -> [rem][8]
                -> [4 + 16 + 256 + chunks*((2^^20) + 4 + 16) + 4 + 16 + rem][8]
@@ -101,7 +99,7 @@ private
     fullNonce0 = nonce # put64le zero
     encChunk0  = put32le 256      # crypto_secretbox c0 key fullNonce0 : [4 + 16 + 256][8]
 
-    nonces     = [nonce # put64le i | i <- [1...]]
+    nonces     = [nonce # put64le i | i <- [1...] : [chunks]_]
     ctChunks   = [put32le (2^^20) # crypto_secretbox cnk key n | n <- nonces | cnk <- cs]
 
     nFinal     =  nonce # put64le ((`chunks + 1) || 0x8000000000000000)
@@ -163,7 +161,7 @@ fileinfo inside a decryptInfo field as such:
 >              }
 
 ```cryptol
-  mkHeader : {nrRecip} (fin nrRecip, nrRecip >= 1)
+  mkHeader : {nrRecip} (nrRecip >= 1)
             => [nrRecip](MinilockID,[24][8])
             -> (Private25519, Public25519)
             -> (Private25519, Public25519)
@@ -207,8 +205,7 @@ fileinfo inside a decryptInfo field as such:
   type FullChunks bytes = bytes / ChunkSize
   type Rem bytes = bytes - FullChunks bytes * ChunkSize
 
-  mkChunks :  {bytes} ( fin bytes )
-           => [bytes][8] -> ([FullChunks bytes]Chunk, [Rem bytes][8])
+  mkChunks : {bytes} [bytes][8] -> ([FullChunks bytes]Chunk, [Rem bytes][8])
   mkChunks pt = (cs,lst)
     where cs   = split (take `{front = FullChunks bytes * ChunkSize, back = Rem bytes} pt)
           lst = drop `{FullChunks bytes * ChunkSize} pt
@@ -223,16 +220,16 @@ The above code used some custom utility functions, which appear below.
   put64le : [64] -> [8][8]
   put64le x = reverse (split x)
 
-  quote : {m} (fin m) => [m][8] -> [m+2][8]
+  quote : {m} [m][8] -> [m+2][8]
   quote m = "\"" # m # "\""
 
-  brace : {m} (fin m) => [m][8] -> [m+2][8]
+  brace : {m} [m][8] -> [m+2][8]
   brace m = "{" # m # "}"
 
-  quote64 : {m} (fin m) => [m][8] -> [4*(m + (3 - m % 3) % 3)/3 + 2][8]
+  quote64 : {m} [m][8] -> [4*(m + (3 - m % 3) % 3)/3 + 2][8]
   quote64 m = quote (base64enc m)
 
-  jsonPair : {m,n} (fin m) => [m][8] -> [n][8] -> [3+m+n][8]
+  jsonPair : {m,n} [m][8] -> [n][8] -> [3+m+n][8]
   jsonPair m n = quote m # ":" # n
 
 // Encrypt a file such that one recipient

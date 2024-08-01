@@ -146,9 +146,6 @@ improveByDefaultingWithPure as ps =
   classify leqs fins others (prop : more) =
       case tNoUser (goal prop) of
 
-        -- We found a `fin` constraint.
-        TCon (PC PFin) [ _ ] -> classify leqs (prop : fins) others more
-
         -- Things of the form: x >= T(x) are not defaulted.
         TCon (PC PGeq) [ TVar x, t ]
           | x `elem` as && x `Set.notMember` freeRHS ->

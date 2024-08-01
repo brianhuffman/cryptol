@@ -6,17 +6,17 @@ type o2 = 32
 
 type nn = v1 + o1 + o2
 
-nats : {n} (fin n) => [n][width n]
+nats : {n} [n][width n]
 nats = take`{n} [0 .. n]
 
-vzero : {n} (fin n, n > 0) => [n]Fld
+vzero : {n} (n > 0) => [n]Fld
 vzero = [ zero | _ <- nats`{n=n} ]
 
 build1item : [width nn] -> [width nn] -> Fld
 build1item i j =
   if i == j then
     1
-  else        
+  else
     0
 
 build2 : [v1][v1]Fld -> [v1][o1]Fld -> [v1][o2]Fld ->

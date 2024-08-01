@@ -6,6 +6,6 @@ Constraint Synonyms
     
   type constraint (<=>) i j = (i <= j, i >= j)
   type constraint Both p q = (p, q)
-  type constraint Fin2 i j = Both (fin i) (fin j)
-  type constraint T n = (fin n, n >= 1)
+  type constraint Pos2 i j = Both (i > 0) (j > 0)
+  type constraint T n = n >= 1
    

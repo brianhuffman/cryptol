@@ -84,11 +84,6 @@ ecNumberV sym =
   PPrim
   case valT of
     Nat v -> mkLit sym ty v
-    _ -> evalPanic "Cryptol.Eval.Prim.evalConst"
-             ["Unexpected Inf in constant."
-             , show valT
-             , show ty
-             ]
 
 
 {-# SPECIALIZE intV :: Concrete -> Integer -> TValue -> Eval (GenValue Concrete)
@@ -227,12 +222,6 @@ ringBinary sym opw opi opz opq opfp = loop
                                       (fromSeq "ringBinary left" l) <*>
                                       (fromSeq "ringBinary right" r)))
 
-    TVStream a ->
-      -- streams
-      VStream <$> (join (zipSeqMap sym (loop a) Inf <$>
-                             (fromSeq "ringBinary left" l) <*>
-                             (fromSeq "ringBinary right" r)))
-
     -- functions
     TVFun _ ety ->
       lam sym $ \ x -> loop' ety (fromVFun sym l x) (fromVFun sym r x)
@@ -308,9 +297,6 @@ ringUnary sym opw opi opz opq opfp = loop
               VWord w . wordVal <$> sWithCallStack sym stk (opw w wx)
       | otherwise -> VSeq w <$> (mapSeqMap sym (loop a) (Nat w) =<< fromSeq "ringUnary" v)
 
-    TVStream a ->
-      VStream <$> (mapSeqMap sym (loop a) Inf =<< fromSeq "ringUnary" v)
-
     -- functions
     TVFun _ ety ->
       lam sym $ \ y -> loop' ety (fromVFun sym v y)
@@ -376,10 +362,6 @@ ringNullary sym opw opi opz opq opfp = loop
           | otherwise ->
              do v <- sDelay sym (loop a)
                 pure $ VSeq w $ indexSeqMap \_i -> v
-
-        TVStream a ->
-             do v <- sDelay sym (loop a)
-                pure $ VStream $ indexSeqMap \_i -> v
 
         TVFun _ b ->
              do v <- sDelay sym (loop b)
@@ -759,8 +741,6 @@ cmpValue sym fb fw fi fz fq ff = cmp
                            (enumerateSeqMap n (fromVSeq v1))
                            (enumerateSeqMap n (fromVSeq v2))
                            k
-        TVStream _    -> panic "Cryptol.Prims.Value.cmpValue"
-                                [ "Infinite streams are not comparable" ]
         TVFun _ _     -> panic "Cryptol.Prims.Value.cmpValue"
                                [ "Functions are not comparable" ]
         TVTuple tys   -> cmpValues tys (fromVTuple v1) (fromVTuple v2) k
@@ -922,10 +902,6 @@ zeroV sym ty = case ty of
            do z <- sDelay sym (zeroV sym ety)
               pure $ VSeq w (indexSeqMap \_i -> z)
 
-  TVStream ety ->
-     do z <- sDelay sym (zeroV sym ety)
-        pure $ VStream (indexSeqMap \_i -> z)
-
   -- functions
   TVFun _ bty ->
      do z <- sDelay sym (zeroV sym bty)
@@ -971,14 +947,6 @@ joinSeq sym (Nat parts) each TVBit val
               (joinWords sym parts each . fmap (fromWordVal "joinV") =<< val)
        pure (VWord (parts*each) w)
 
--- infinite sequence of words
-joinSeq sym Inf each TVBit val
-  = return $ VStream $ indexSeqMap $ \i ->
-      do let (q,r) = divMod i each
-         xs <- val
-         ys <- fromWordVal "join seq" <$> lookupSeqMap xs q
-         VBit <$> indexWordValue sym ys r
-
 -- finite or infinite sequence of non-words
 joinSeq _sym parts each _a val
   = return $ vSeq $ indexSeqMap $ \i -> do
@@ -989,7 +957,6 @@ joinSeq _sym parts each _a val
   where
   len = parts `nMul` (Nat each)
   vSeq = case len of
-           Inf    -> VStream
            Nat n  -> VSeq n
 
 
@@ -1019,15 +986,10 @@ takeV ::
   SEval sym (GenValue sym)
 takeV sym front back a val =
   case front of
-    Inf -> val
     Nat front' ->
       case back of
         Nat back' | isTBit a ->
           do w <- delayWordValue sym front' (takeWordVal sym front' back' =<< (fromWordVal "takeV" <$> val))
-             pure (VWord front' w)
-
-        Inf | isTBit a ->
-          do w <- delayWordValue sym front' (bitmapWordVal sym front' . fmap fromVBit =<< (fromSeq "takeV" =<< val))
              pure (VWord front' w)
 
         _ ->
@@ -1070,23 +1032,9 @@ splitV sym parts each a val =
           val' <- sDelay sym (fromWordVal "splitV" <$> val)
           return $ VSeq p $ indexSeqMap $ \i ->
             VWord e <$> (extractWordVal sym e ((p-i-1)*e) =<< val')
-       (Inf, e) | isTBit a -> do
-          val' <- sDelay sym (fromSeq "splitV" =<< val)
-          return $ VStream $ indexSeqMap $ \i ->
-            VWord e <$> bitmapWordVal sym e (indexSeqMap $ \j ->
-              let idx = i*e + toInteger j
-               in idx `seq` do
-                      xs <- val'
-                      fromVBit <$> lookupSeqMap xs idx)
        (Nat p, e) -> do
           val' <- sDelay sym (fromSeq "splitV" =<< val)
           return $ VSeq p $ indexSeqMap $ \i ->
-            return $ VSeq e $ indexSeqMap $ \j -> do
-              xs <- val'
-              lookupSeqMap xs (e * i + j)
-       (Inf  , e) -> do
-          val' <- sDelay sym (fromSeq "splitV" =<< val)
-          return $ VStream $ indexSeqMap $ \i ->
             return $ VSeq e $ indexSeqMap $ \j -> do
               xs <- val'
               lookupSeqMap xs (e * i + j)
@@ -1128,19 +1076,8 @@ transposeV sym a b c xs
          do xs' <- fromSeq "transposeV" xs
             ys <- lookupSeqMap xs' ai
             case ys of
-              VStream ys' -> fromVBit <$> lookupSeqMap ys' bi
               VWord _ wv  -> indexWordValue sym wv bi
               _ -> evalPanic "transpose" ["expected sequence of bits"])
-
-  | isTBit c, Inf <- a = -- [inf][b]Bit -> [b][inf]Bit
-      return $ bseq $ indexSeqMap $ \bi ->
-        return $ VStream $ indexSeqMap $ \ai ->
-         do xs' <- fromSeq "transposeV" xs
-            ys  <- lookupSeqMap xs' ai
-            case ys of
-              VStream ys' -> lookupSeqMap ys' bi
-              VWord _ wv  -> VBit <$> indexWordValue sym wv bi
-              _ -> evalPanic "transpose" ["expected sequence of bits"]
 
   | otherwise = -- [a][b]c -> [b][a]c
       return $ bseq $ indexSeqMap $ \bi ->
@@ -1154,11 +1091,9 @@ transposeV sym a b c xs
   bseq =
         case b of
           Nat nb -> VSeq nb
-          Inf    -> VStream
   aseq =
         case a of
           Nat na -> VSeq na
-          Inf    -> VStream
 
 
 {-# INLINE ccatV #-}
@@ -1186,18 +1121,6 @@ ccatV sym front (Nat back) TVBit l r =
                 (do l' <- fromWordVal "ccatV left"  <$> l
                     r' <- fromWordVal "ccatV right" <$> r
                     joinWordVal sym l' r')
-
--- Infinite bitstream
-ccatV sym front Inf TVBit l r =
-  do l'' <- sDelay sym (asBitsMap sym  . fromWordVal "ccatV left" <$> l)
-     r'' <- sDelay sym (fromSeq "ccatV right" =<< r)
-     pure $ VStream $ indexSeqMap $ \i ->
-      if i < front then do
-        ls <- l''
-        VBit <$> lookupSeqMap ls i
-      else do
-        rs <- r''
-        lookupSeqMap rs (i-front)
 
 -- streams/sequences of nonbits
 ccatV sym front back elty l r =
@@ -1261,11 +1184,6 @@ logicBinary sym opb opw = loop
                                     (fromSeq "logicBinary left" l)
                                     <*> (fromSeq "logicBinary right" r)))
 
-    TVStream aty ->
-        VStream <$> (join (zipSeqMap sym (loop aty) Inf <$>
-                          (fromSeq "logicBinary left" l) <*>
-                          (fromSeq "logicBinary right" r)))
-
     TVTuple etys -> do
         ls <- mapM (sDelay sym) (fromVTuple l)
         rs <- mapM (sDelay sym) (fromVTuple r)
@@ -1320,10 +1238,6 @@ logicUnary sym opb opw = loop
          | otherwise
               -> VSeq w <$> (mapSeqMap sym (loop ety) (Nat w) =<< fromSeq "logicUnary" val)
 
-         -- streams
-    TVStream ety ->
-         VStream <$> (mapSeqMap sym (loop ety) Inf =<< fromSeq "logicUnary" val)
-
     TVTuple etys ->
       do as <- mapM (sDelay sym) (fromVTuple val)
          return $ VTuple (zipWith loop' etys as)
@@ -1348,11 +1262,6 @@ assertIndexInBounds ::
   Either (SInteger sym) (WordValue sym) {- ^ Index value -} ->
   SEval sym ()
 
--- All nonnegative integers are in bounds for an infinite sequence
-assertIndexInBounds sym Inf (Left idx) =
-  do ppos <- bitComplement sym =<< intLessThan sym idx =<< integerLit sym 0
-     assertSideCondition sym ppos (InvalidIndex (integerAsLit sym idx))
-
 -- If the index is an integer, test that it
 -- is nonnegative and less than the concrete value of n.
 assertIndexInBounds sym (Nat n) (Left idx) =
@@ -1361,9 +1270,6 @@ assertIndexInBounds sym (Nat n) (Left idx) =
      pn <- intLessThan sym idx n'
      p <- bitAnd sym ppos pn
      assertSideCondition sym p (InvalidIndex (integerAsLit sym idx))
-
--- Bitvectors can't index out of bounds for an infinite sequence
-assertIndexInBounds _sym Inf (Right _) = return ()
 
 -- Can't index out of bounds for a sequence that is
 -- longer than the expressible index values
@@ -1390,12 +1296,10 @@ indexPrim sym dir int_op word_op =
    do vs <- xs >>= \case
                VWord _ w  -> return $ indexSeqMap (\i -> VBit <$> indexWordValue sym w i)
                VSeq _ vs  -> return vs
-               VStream vs -> return vs
                _ -> evalPanic "Expected sequence value" ["indexPrim"]
       let vs' = case (len, dir) of
                   (_    , IndexForward)  -> vs
                   (Nat n, IndexBackward) -> reverseSeqMap n vs
-                  (Inf  , IndexBackward) -> evalPanic "Expected finite sequence" ["!"]
       idx' <- asIndex sym "index" ix <$> idx
       assertIndexInBounds sym len idx'
       case idx' of
@@ -1425,8 +1329,6 @@ updatePrim sym updateWord updateSeq =
                              (do w <- fromWordVal "updatePrim" <$> xs; updateWord len eltTy w idx' val)
         (Nat n, _    ) -> VSeq n <$> delaySeqMap sym
                              (do vs <- fromSeq "updatePrim" =<< xs; updateSeq len eltTy vs idx' val)
-        (Inf  , _    ) -> VStream <$> delaySeqMap sym
-                             (do vs <- fromSeq "updatePrim" =<< xs; updateSeq len eltTy vs idx' val)
 
 {-# INLINE fromToV #-}
 -- @[ 0 .. 10 ]@
@@ -1441,7 +1343,6 @@ fromToV sym =
       (Nat first', Nat lst') ->
         let len = 1 + (lst' - first')
         in mkSeq sym (Nat len) ty $ indexSeqMap $ \i -> f (first' + i)
-      _ -> evalPanic "fromToV" ["invalid arguments"]
 
 {-# INLINE fromThenToV #-}
 -- @[ 0, 1 .. 10 ]@
@@ -1458,7 +1359,6 @@ fromThenToV sym =
       (Nat first', Nat next', Nat _lst', Nat len') ->
         let diff = next' - first'
         in mkSeq sym (Nat len') ty $ indexSeqMap $ \i -> f (first' + i*diff)
-      _ -> evalPanic "fromThenToV" ["invalid arguments"]
 
 {-# INLINE fromToLessThanV #-}
 -- @[ 0 .. <10 ]@
@@ -1471,7 +1371,6 @@ fromToLessThanV sym =
     let !f = mkLit sym ty
         ss = indexSeqMap $ \i -> f (first + i)
     in case bound of
-         Inf        -> return $ VStream ss
          Nat bound' -> mkSeq sym (Nat (bound' - first)) ty ss
 
 {-# INLINE fromToByV #-}
@@ -1499,7 +1398,6 @@ fromToByLessThanV sym =
     let !f = mkLit sym ty
         ss = indexSeqMap $ \i -> f (first + i*stride)
      in case bound of
-          Inf -> return $ VStream ss
           Nat bound' -> mkSeq sym (Nat ((bound' - first + stride - 1) `div` stride)) ty ss
 
 
@@ -1533,10 +1431,11 @@ fromToDownByGreaterThanV sym =
 infFromV :: Backend sym => sym -> Prim sym
 infFromV sym =
   PTyPoly \ty ->
+  PFinPoly \n ->
   PFun    \x ->
   PPrim
     do mx <- sDelay sym x
-       return $ VStream $ indexSeqMap $ \i ->
+       return $ VSeq n $ indexSeqMap $ \i ->
          do x' <- mx
             i' <- integerLit sym i
             addV sym ty x' =<< intV sym i' ty
@@ -1545,6 +1444,7 @@ infFromV sym =
 infFromThenV :: Backend sym => sym -> Prim sym
 infFromThenV sym =
   PTyPoly \ty ->
+  PFinPoly \n ->
   PFun    \first ->
   PFun    \next ->
   PPrim
@@ -1553,7 +1453,7 @@ infFromThenV sym =
                    y <- next
                    d <- subV sym ty y x
                    pure (x,d))
-       return $ VStream $ indexSeqMap $ \i -> do
+       return $ VSeq n $ indexSeqMap $ \i -> do
          (x,d) <- mxd
          i' <- integerLit sym i
          addV sym ty x =<< mulV sym ty d =<< intV sym i' ty
@@ -1577,14 +1477,12 @@ shiftRightReindex _sz i shft =
 rotateLeftReindex :: Nat' -> Integer -> Integer -> Maybe Integer
 rotateLeftReindex sz i shft =
    case sz of
-     Inf -> evalPanic "cannot rotate infinite sequence" []
      Nat n -> Just ((i+shft) `mod` n)
 
 {-# INLINE rotateRightReindex #-}
 rotateRightReindex :: Nat' -> Integer -> Integer -> Maybe Integer
 rotateRightReindex sz i shft =
    case sz of
-     Inf -> evalPanic "cannot rotate infinite sequence" []
      Nat n -> Just ((i+n-shft) `mod` n)
 
 
@@ -1646,7 +1544,6 @@ intShifter sym nm wop reindex m a xs idx =
   case xs of
     VWord w x  -> VWord w <$> shiftWordByInteger sym wop (reindex m) x idx
     VSeq w vs  -> VSeq w  <$> shiftSeqByInteger sym (mergeValue sym) (reindex m) (zeroV sym a) m vs idx
-    VStream vs -> VStream <$> shiftSeqByInteger sym (mergeValue sym) (reindex m) (zeroV sym a) m vs idx
     _ -> evalPanic "expected sequence value in shift operation" [nm]
 
 
@@ -1665,14 +1562,12 @@ wordShifter sym nm wop reindex m a xs idx =
   case xs of
     VWord w x  -> VWord w <$> shiftWordByWord sym wop (reindex m) x idx
     VSeq w vs  -> VSeq w  <$> shiftSeqByWord sym (mergeValue sym) (reindex m) (zeroV sym a) (Nat w) vs idx
-    VStream vs -> VStream <$> shiftSeqByWord sym (mergeValue sym) (reindex m) (zeroV sym a) Inf     vs idx
     _ -> evalPanic "expected sequence value in shift operation" [nm]
 
 
 
 {-# INLINE shiftShrink #-}
 shiftShrink :: Backend sym => sym -> Nat' -> TValue -> SInteger sym -> SEval sym (SInteger sym)
-shiftShrink _sym Inf _ x = return x
 shiftShrink sym (Nat w) _ x =
   do w' <- integerLit sym w
      p  <- intLessThan sym w' x
@@ -1680,7 +1575,6 @@ shiftShrink sym (Nat w) _ x =
 
 {-# INLINE rotateShrink #-}
 rotateShrink :: Backend sym => sym -> Nat' -> TValue -> SInteger sym -> SEval sym (SInteger sym)
-rotateShrink _sym Inf _ _ = panic "rotateShrink" ["expected finite sequence in rotate"]
 rotateShrink sym (Nat 0) _ _ = integerLit sym 0
 rotateShrink sym (Nat w) _ x =
   do w' <- integerLit sym w
@@ -1812,7 +1706,6 @@ scanlV sym =
     do sm <- case v of
             VSeq _ m   -> scan n f z m
             VWord _ wv -> scan n f z (VBit <$> asBitsMap sym wv)
-            VStream m  -> scan n f z m
             _ -> panic "Cryptol.Eval.Generic.scanlV" ["Expected sequence"]
        mkSeq sym (nAdd (Nat 1) n) a sm
 

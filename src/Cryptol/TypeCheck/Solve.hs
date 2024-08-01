@@ -397,7 +397,7 @@ buildSolverCtxt ps0 =
  saturateProps gs (p:ps)
    | Set.member p gs = saturateProps gs ps
    | Just (n,_) <- pIsLiteral p =
-       let gs' = Set.fromList [p, pFin n] <> gs
+       let gs' = Set.fromList [p] <> gs
         in saturateProps gs' ps
    | otherwise =
         let gs' = Set.singleton p <> superclassSet p <> gs

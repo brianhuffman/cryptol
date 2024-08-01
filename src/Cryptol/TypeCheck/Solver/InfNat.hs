@@ -22,14 +22,13 @@ import GHC.Generics (Generic)
 import Control.DeepSeq
 
 -- | Natural numbers with an infinity element
-data Nat' = Nat Integer | Inf
+newtype Nat' = Nat Integer
             deriving (Show, Eq, Ord, Generic, NFData)
 
 fromNat :: Nat' -> Maybe Integer
 fromNat n' =
   case n' of
     Nat i -> Just i
-    _     -> Nothing
 
 
 
@@ -38,8 +37,6 @@ fromNat n' =
 
 
 nAdd :: Nat' -> Nat' -> Nat'
-nAdd Inf _           = Inf
-nAdd _ Inf           = Inf
 nAdd (Nat x) (Nat y) = Nat (x + y)
 
 {-| Some algebraic properties of interest:
@@ -52,10 +49,6 @@ nAdd (Nat x) (Nat y) = Nat (x + y)
 
 -}
 nMul :: Nat' -> Nat' -> Nat'
-nMul (Nat 0) _       = Nat 0
-nMul _ (Nat 0)       = Nat 0
-nMul Inf _           = Inf
-nMul _ Inf           = Inf
 nMul (Nat x) (Nat y) = Nat (x * y)
 
 
@@ -69,26 +62,17 @@ nMul (Nat x) (Nat y) = Nat (x * y)
 -}
 nExp :: Nat' -> Nat' -> Nat'
 nExp _ (Nat 0)       = Nat 1
-nExp Inf _           = Inf
-nExp (Nat 0) Inf     = Nat 0
-nExp (Nat 1) Inf     = Nat 1
-nExp (Nat _) Inf     = Inf
 nExp (Nat x) (Nat y) = Nat (x ^ y)
 
 nMin :: Nat' -> Nat' -> Nat'
-nMin Inf x            = x
-nMin x Inf            = x
 nMin (Nat x) (Nat y)  = Nat (min x y)
 
 nMax :: Nat' -> Nat' -> Nat'
-nMax Inf _            = Inf
-nMax _ Inf            = Inf
 nMax (Nat x) (Nat y)  = Nat (max x y)
 
 {- | @nSub x y = Just z@ iff @z@ is the unique value
 such that @Add y z = Just x@.  -}
 nSub :: Nat' -> Nat' -> Maybe Nat'
-nSub Inf (Nat _)              = Just Inf
 nSub (Nat x) (Nat y)
   | x >= y                    = Just (Nat (x - y))
 nSub _ _                      = Nothing
@@ -111,39 +95,30 @@ We don't allow `Inf` in the first argument for two reasons:
 -}
 nDiv :: Nat' -> Nat' -> Maybe Nat'
 nDiv _       (Nat 0)  = Nothing
-nDiv Inf _            = Nothing
 nDiv (Nat x) (Nat y)  = Just (Nat (div x y))
-nDiv (Nat _) Inf      = Just (Nat 0)
 
 nMod :: Nat' -> Nat' -> Maybe Nat'
 nMod _       (Nat 0)  = Nothing
-nMod Inf     _        = Nothing
 nMod (Nat x) (Nat y)  = Just (Nat (mod x y))
-nMod (Nat x) Inf      = Just (Nat x)          -- inf * 0 + x = 0 + x
 
 -- | @nCeilDiv msgLen blockSize@ computes the least @n@ such that
 -- @msgLen <= blockSize * n@. It is undefined when @blockSize = 0@,
 -- or when @blockSize = inf@. @inf@ divided by any positive
 -- finite value is @inf@.
 nCeilDiv :: Nat' -> Nat' -> Maybe Nat'
-nCeilDiv _       Inf      = Nothing
 nCeilDiv _       (Nat 0)  = Nothing
-nCeilDiv Inf     (Nat _)  = Just Inf
 nCeilDiv (Nat x) (Nat y)  = Just (Nat (- div (- x) y))
 
 -- | @nCeilMod msgLen blockSize@ computes the least @k@ such that
 -- @blockSize@ divides @msgLen + k@. It is undefined when @blockSize = 0@
 -- or @blockSize = inf@.  @inf@ modulus any positive finite value is @0@.
 nCeilMod :: Nat' -> Nat' -> Maybe Nat'
-nCeilMod _       Inf      = Nothing
 nCeilMod _       (Nat 0)  = Nothing
-nCeilMod Inf     (Nat _)  = Just (Nat 0)
 nCeilMod (Nat x) (Nat y)  = Just (Nat (mod (- x) y))
 
 -- | Rounds up.
 -- @lg2 x = y@, iff @y@ is the smallest number such that @x <= 2 ^ y@
 nLg2 :: Nat' -> Nat'
-nLg2 Inf      = Inf
 nLg2 (Nat 0)  = Nat 0
 nLg2 (Nat n)  = case genLog n 2 of
                   Just (x,exact) | exact     -> Nat x
@@ -154,7 +129,6 @@ nLg2 (Nat n)  = case genLog n 2 of
 -- | @nWidth n@ is number of bits needed to represent all numbers
 -- from 0 to n, inclusive. @nWidth x = nLg2 (x + 1)@.
 nWidth :: Nat' -> Nat'
-nWidth Inf      = Inf
 nWidth (Nat n)  = Nat (widthInteger n)
 
 

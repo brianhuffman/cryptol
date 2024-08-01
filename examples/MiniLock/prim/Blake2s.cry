@@ -92,13 +92,12 @@ round r ms v = vs ! 0
 //        bb == block bytes (64, 1024 bits)
 //        dd == nr Blocks
 
-blake2s : {ll,nn} (fin ll, 32 >= nn, 64 >= width ll)
+blake2s : {ll,nn} (32 >= nn, 64 >= width ll)
       => [ll][8] -> [nn*8]
 blake2s m = blake2s' `{ll=ll,nn=nn} m
 
 blake2s' : {ll,dd,nn}
-         (fin ll
-         , 32  >= nn
+         ( 32  >= nn
          , dd  == (max 1 ((ll+63)/64)) - 1
          , 64 >= width ll
          )
@@ -116,7 +115,7 @@ blake2s' m = take `{nn*8} (blake2sFinish ({ state = (hs!0).state, counter = `ll}
  lastBlock  =
     if (`ll == (zero:[64]))
         then zero // Special case full zero block for empty messages
-        else mkBlock ((split (join (partialBlock # (zero : [inf][8]))))@0)
+        else mkBlock ((split`{parts=ll/^64 - dd} (join (partialBlock # (zero : [ll%^64][8]))))@0)
 
  h : Context
  h  = { state = [IV@0 ^ `0x01010000 ^ `nn] # drop `{1} IV, counter = 0 }
@@ -152,7 +151,7 @@ bytes x = split x : [_] [8]
 
 
 // XXX can probably do a cleaner merge-sort style update.
-updateVector : {a, b, c} (c >= width (a-1), a >= 1, fin a, fin c) => [a]b -> ([c], b) -> [a]b
+updateVector : {a, b, c} (c >= width (a-1), a >= 1) => [a]b -> ([c], b) -> [a]b
 updateVector orig idxNew = vs
  where
  idx = idxNew.0
@@ -420,11 +419,11 @@ property katsPass = ~zero ==
                         ]
 
 
-nthKat : {n} (fin n, 8 >= width n) => Bit
+nthKat : {n} (8 >= width n) => Bit
 nthKat = blake2s (nthKatInput `{n}) == kats @ (`n : [8])
 
-nthKatInput : {n} (fin n) => [n][8]
-nthKatInput = take ([0 ... ] : [inf][8])
+nthKatInput : {n} [n][8]
+nthKatInput = [0 ... ]
 
 kats = [ 0x69217a3079908094e11121d042354a7c1f55b6482ca1a51e1b250dfd1ed0eef9
        , 0xe34d74dbaf4ff4c6abd871cc220451d2ea2648846c7757fbaac82fe51ad64bea

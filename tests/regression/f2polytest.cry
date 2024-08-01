@@ -1,12 +1,12 @@
 import Cryptol::Reference as Ref
 
-pmult_equiv : {u, v} (fin u, fin v) => [1+u] -> [1+v] -> Bit
+pmult_equiv : {u, v} [1+u] -> [1+v] -> Bit
 pmult_equiv x y = pmult x y == Ref::pmult x y
 
-pdiv_equiv : {u, v} (fin u, fin v) => [u] -> [v] -> Bit
+pdiv_equiv : {u, v} [u] -> [v] -> Bit
 pdiv_equiv x y = y == 0 \/ pdiv x y == Ref::pdiv x y
 
-pmod_equiv : {u, v} (fin u, fin v) => [u] -> [1+v] -> Bit
+pmod_equiv : {u, v} [u] -> [1+v] -> Bit
 pmod_equiv x y = y == 0 \/ pmod x y == Ref::pmod x y
 
 // an arbitrary collection of test sizes

@@ -3,7 +3,7 @@ initL : [1][32]
 initS = [0]
 initL = [0]
 ss = [ (s + a + b) <<< 3   | s <- initS # ss
-	                       | a <- [1] # ss
+	                       | a <- take`{back=1} ([1] # ss)
 	                       | b <- [0] # ls ]
 ls = [ (l + a + b) <<< (a + b)
                         | l <- initL # ls
@@ -22,7 +22,7 @@ keyX key = ss @@ [ 0 .. 6 ]
     initL = split (join key)
     ss = [ (s + a + b) <<< 3
                     | s <- initS # ss
-				    | a <- [1] # ss
+				    | a <- [1] # take`{back=1} ss
 				    | b <- [0] # ls ]
     ls = [ (l + a + b) <<< (a + b)
                     | l <- initL # ls

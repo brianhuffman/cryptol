@@ -33,7 +33,6 @@ evalPrim sym nm p = case p of
   PFloatFun f -> flam sym (evalPrim sym nm . f)
   PTyPoly f   -> tlam sym (evalPrim sym nm . f)
   PNumPoly f  -> nlam sym (evalPrim sym nm . f)
-  PFinPoly f  -> nlam sym (\case Inf -> panic "PFin" ["Unexpected `inf`", show nm];
-                                 Nat n -> evalPrim sym nm (f n))
+  PFinPoly f  -> nlam sym (\case Nat n -> evalPrim sym nm (f n))
   PPrim m     -> m
   PVal v      -> pure v

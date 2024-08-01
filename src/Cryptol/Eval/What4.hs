@@ -542,7 +542,6 @@ indexFront_int sym mblen _a xs _ix idx
     maxIdx =
       case mblen of
         Nat n -> Just (n - 1)
-        Inf   -> Nothing
 indexFront_segs ::
   W4.IsSymExprBuilder sym =>
   What4 sym ->
@@ -627,7 +626,6 @@ updateBackSym ::
   Either (SInteger (What4 sym)) (WordValue (What4 sym)) ->
   SEval (What4 sym) (Value sym) ->
   SEval (What4 sym) (SeqMap (What4 sym) (GenValue (What4 sym)))
-updateBackSym _ Inf _ _ _ _ = evalPanic "Expected finite sequence" ["updateBackSym"]
 
 updateBackSym sym (Nat n) _eltTy vs (Left idx) val =
   case W4.asInteger idx of
@@ -655,7 +653,6 @@ updateFrontSym_word ::
   Either (SInteger (What4 sym)) (WordValue (What4 sym)) ->
   SEval (What4 sym) (GenValue (What4 sym)) ->
   SEval (What4 sym) (WordValue (What4 sym))
-updateFrontSym_word _ Inf _ _ _ _ = evalPanic "Expected finite sequence" ["updateFrontSym_word"]
 
 updateFrontSym_word sym (Nat n) _eltTy w (Left idx) val =
   do idx' <- wordFromInt sym n idx
@@ -673,7 +670,6 @@ updateBackSym_word ::
   Either (SInteger (What4 sym)) (WordValue (What4 sym)) ->
   SEval (What4 sym) (GenValue (What4 sym)) ->
   SEval (What4 sym) (WordValue (What4 sym))
-updateBackSym_word _ Inf _ _ _ _ = evalPanic "Expected finite sequence" ["updateFrontSym_word"]
 
 updateBackSym_word sym (Nat n) _eltTy w (Left idx) val =
   do idx' <- wordFromInt sym n idx

@@ -454,7 +454,7 @@ type SType  = Type
 superclassSet :: Prop -> Set Prop
 
 superclassSet (TCon (PC PPrime) [n]) =
-  Set.fromList [ pFin n, n >== tTwo ]
+  Set.fromList [ n >== tTwo ]
 
 superclassSet (TCon (PC p0) [t]) = go p0
   where
@@ -537,15 +537,11 @@ tIsNat' :: Type -> Maybe Nat'
 tIsNat' ty =
   case tNoUser ty of
     TCon (TC (TCNum x)) [] -> Just (Nat x)
-    TCon (TC TCInf)     [] -> Just Inf
     _                      -> Nothing
 
 tIsNum :: Type -> Maybe Integer
 tIsNum ty = do Nat x <- tIsNat' ty
                return x
-
-tIsInf :: Type -> Bool
-tIsInf ty = tIsNat' ty == Just Inf
 
 tIsVar :: Type -> Maybe TVar
 tIsVar ty = case tNoUser ty of
@@ -611,11 +607,6 @@ tSplitFun f t0 = go t0 []
                      Just (a,b) -> go a (go b xs)
                      Nothing    -> ty : xs
 
-
-pIsFin :: Prop -> Maybe Type
-pIsFin ty = case tNoUser ty of
-              TCon (PC PFin) [t1] -> Just t1
-              _                   -> Nothing
 
 pIsPrime :: Prop -> Maybe Type
 pIsPrime ty = case tNoUser ty of
@@ -723,12 +714,8 @@ tOne      = tNum (1 :: Int)
 tTwo     :: Type
 tTwo      = tNum (2 :: Int)
 
-tInf     :: Type
-tInf      = TCon (TC TCInf) []
-
 tNat'    :: Nat' -> Type
 tNat' n'  = case n' of
-              Inf   -> tInf
               Nat n -> tNum n
 
 tNominal :: NominalType -> [Type] -> Type
@@ -906,22 +893,12 @@ pSplitAnd p0 = go [p0]
       TCon (PC PTrue) _    -> go qs
       _                    -> q : go qs
 
-pFin :: Type -> Prop
-pFin ty =
-  case tNoUser ty of
-    TCon (TC (TCNum _)) _ -> pTrue
-    TCon (TC TCInf)     _ -> tError prop -- XXX: should we be doing this here??
-    _                     -> prop
-  where
-  prop = TCon (PC PFin) [ty]
-
 pValidFloat :: Type -> Type -> Type
 pValidFloat e p = TCon (PC PValidFloat) [e,p]
 
 pPrime :: Type -> Prop
 pPrime ty =
   case tNoUser ty of
-    TCon (TC TCInf) _ -> tError prop
     _ -> prop
   where
   prop = TCon (PC PPrime) [ty]
@@ -946,10 +923,6 @@ pNegNumeric prop =
 
             -- not (x >= y)  <=>  x /= y and y >= x
             PGeq -> [TCon (PC PNeq) tys, TCon (PC PGeq) (reverse tys)]
-
-            -- not (fin x)  <=>  x == Inf
-            PFin | [ty] <- tys -> [ty =#= tInf]
-                 | otherwise -> bad
 
             -- not True  <=>  0 == 1
             PTrue -> [TCon (PC PEqual) [tZero, tOne]]
@@ -1167,7 +1140,6 @@ instance PP (WithNames Type) where
       TCon (TC tc) ts ->
         case (tc,ts) of
           (TCNum n, [])       -> integer n
-          (TCInf,   [])       -> text "inf"
           (TCBit,   [])       -> text "Bit"
           (TCInteger, [])     -> text "Integer"
           (TCRational, [])    -> text "Rational"
@@ -1190,7 +1162,6 @@ instance PP (WithNames Type) where
           (PEqual, [t1,t2])   -> go 0 t1 <+> text "==" <+> go 0 t2
           (PNeq ,  [t1,t2])   -> go 0 t1 <+> text "!=" <+> go 0 t2
           (PGeq,  [t1,t2])    -> go 0 t1 <+> text ">=" <+> go 0 t2
-          (PFin,  [t1])       -> optParens (prec > 3) $ text "fin" <+> (go 5 t1)
           (PPrime,  [t1])     -> optParens (prec > 3) $ text "prime" <+> (go 5 t1)
           (PHas x, [t1,t2])   -> ppSelector x <+> text "of"
                                <+> go 0 t1 <+> text "is" <+> go 0 t2

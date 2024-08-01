@@ -29,7 +29,6 @@ module Cryptol.Backend.SeqMap
   , indexSeqMap
   , lookupSeqMap
   , finiteSeqMap
-  , infiniteSeqMap
   , enumerateSeqMap
   , streamSeqMap
   , reverseSeqMap
@@ -52,7 +51,6 @@ import qualified Control.Exception as X
 import Control.Monad
 import Control.Monad.IO.Class
 import Data.Bits
-import Data.List
 import Data.IORef
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
@@ -112,12 +110,6 @@ finiteSeqMap sym xs =
    UpdateSeqMap
       (Map.fromList (zip [0..] xs))
       (IndexSeqMap (\i -> invalidIndex sym i))
-
--- | Generate an infinite sequence map from a stream of values
-infiniteSeqMap :: Backend sym => sym -> [SEval sym a] -> SEval sym (SeqMap sym a)
-infiniteSeqMap sym xs =
-   -- TODO: use an int-trie?
-   memoMap sym Inf (IndexSeqMap $ \i -> genericIndex xs i)
 
 -- | Create a finite list of length @n@ of the values from @[0..n-1]@ in
 --   the given the sequence emap.

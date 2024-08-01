@@ -894,7 +894,7 @@ inferCArm _ [m] =
 inferCArm armNum (m : ms) =
   do (m1, x, t, n)  <- inferMatch m
      (ms', ds, n')  <- withMonoType (x,t) (inferCArm armNum ms)
-     newGoals CtComprehension [ pFin n' ]
+     newGoals CtComprehension []
      return (m1 : ms', Map.insertWith (\_ old -> old) x t ds, tMul n n')
 
 {- | @inferBinds isTopLevel isRec binds@ performs inference for a

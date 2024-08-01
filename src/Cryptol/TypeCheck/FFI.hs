@@ -27,7 +27,7 @@ toFFIFunType (Forall params _ t) =
   case go $ tRebuild' False t of
     Just (Right (props, fft)) -> Right
       -- Remove duplicate constraints
-      (nubOrd $ map (fin . TVar . TVBound) params ++ props, fft)
+      (nubOrd props, fft)
     Just (Left errs) -> Left $ FFITypeError t $ FFIBadComponentTypes errs
     Nothing -> Left $ FFITypeError t FFINotFunction
   where go (TCon (TC TCFun) [argType, retType]) = Just
@@ -65,7 +65,7 @@ toFFIType t =
     TCon (TC TCBit) [] -> Right ([], FFIBool)
     (toFFIBasicType -> Just r) -> (\fbt -> ([], FFIBasic fbt)) <$> r
     TCon (TC TCSeq) _ ->
-      (\(szs, fbt) -> (map fin szs, FFIArray szs fbt)) <$> go t
+      (\(szs, fbt) -> ([], FFIArray szs fbt)) <$> go t
       where go (toFFIBasicType -> Just r) =
               case r of
                 Right fbt -> Right ([], fbt)
@@ -107,6 +107,3 @@ toFFIBasicType t =
     TCon (TC TCRational) [] -> Just $ Right $ FFIBasicRef FFIRational
     _ -> Nothing
   where integer = Just . Right . FFIBasicRef . FFIInteger
-
-fin :: Type -> Prop
-fin t = TCon (PC PFin) [t]

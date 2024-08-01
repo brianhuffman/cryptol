@@ -1,34 +1,18 @@
 Loading module Cryptol
 
-[error] at issue582.icry:1:1--1:18:
-  • Unsolvable constraint:
-      fin inf
-        arising from
-        use of partial type function (/^)
-        at issue582.icry:1:1--1:18
-[False, False, False, False, False, ...]
-
-[error] at issue582.icry:3:1--3:16:
+[error] at issue582.icry:1:1--1:16:
   • Unsolvable constraint:
       0 >= 1
         arising from
         use of partial type function (/^)
-        at issue582.icry:3:1--3:16
+        at issue582.icry:1:1--1:16
 
-[error] at issue582.icry:4:1--4:18:
-  • Unsolvable constraint:
-      fin inf
-        arising from
-        use of partial type function (%^)
-        at issue582.icry:4:1--4:18
-0x0
-
-[error] at issue582.icry:6:1--6:16:
+[error] at issue582.icry:2:1--2:16:
   • Unsolvable constraint:
       0 >= 1
         arising from
         use of partial type function (%^)
-        at issue582.icry:6:1--6:16
+        at issue582.icry:2:1--2:16
 Loading module Cryptol
 Loading module Main
 
@@ -38,10 +22,6 @@ Loading module Main
     we need to show that
       for any type i, j
       the following constraints hold:
-        • fin j
-            arising from
-            use of partial type function (/^)
-            at issue582.cry:1:7--1:21
         • j >= 1
             arising from
             use of partial type function (/^)
@@ -52,10 +32,6 @@ Loading module Main
     we need to show that
       for any type i, j
       the following constraints hold:
-        • fin j
-            arising from
-            use of partial type function (%^)
-            at issue582.cry:4:7--4:21
         • j >= 1
             arising from
             use of partial type function (%^)

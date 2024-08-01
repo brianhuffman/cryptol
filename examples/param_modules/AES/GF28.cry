@@ -6,7 +6,7 @@ type GF28 = [8]
 irreducible = <| x^^8 + x^^4 + x^^3 + x + 1 |>
 
 /** Sum up a bunch of GF28 values */
-gf28Add : {n} (fin n) => [n]GF28 -> GF28
+gf28Add : {n} [n]GF28 -> GF28
 gf28Add ps = sums ! 0
   where sums = [zero] # [  p ^ s | p <- ps | s <- sums ]
 
@@ -29,15 +29,15 @@ gf28Inverse : GF28 -> GF28
 gf28Inverse x = gf28Pow x 254
 
 /** Dot product of two vectors */
-gf28DotProduct : {n} (fin n) => [n]GF28 -> [n]GF28 -> GF28
+gf28DotProduct : {n} [n]GF28 -> [n]GF28 -> GF28
 gf28DotProduct xs ys = gf28Add [ gf28Mult x y | x <- xs | y <- ys ]
 
 /** Multiply a matrix by a vector */
-gf28VectorMult : {n, m} (fin n) => [n]GF28 -> [m][n]GF28 -> [m]GF28
+gf28VectorMult : {n, m} [n]GF28 -> [m][n]GF28 -> [m]GF28
 gf28VectorMult v ms = [ gf28DotProduct v m | m <- ms ]
 
 /** Multiply two matrices */
-gf28MatrixMult : {n, m, k} (fin m) => [n][m]GF28 -> [m][k]GF28 -> [n][k]GF28
+gf28MatrixMult : {n, m, k} [n][m]GF28 -> [m][k]GF28 -> [n][k]GF28
 gf28MatrixMult xss yss = [ gf28VectorMult xs yss' | xs <- xss ]
    where yss' = transpose yss
 

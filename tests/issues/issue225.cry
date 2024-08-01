@@ -2,13 +2,13 @@ module EnigmaBroke where
 
 type Rotor       = [26](Char, Bit)
 
-mkRotor : {a} (fin a) => ([26]Char,[a]) -> Rotor
+mkRotor : {a} ([26]Char,[a]) -> Rotor
 mkRotor (_,_) = zero
 
 scramble : (Bit, Char, Rotor) -> (Bit, Char, Rotor)
 scramble (_,_,_) = zero
 
-joinRotors : {n} (fin n) => ([n]Rotor, Char) -> ([n]Rotor, Char)
+joinRotors : {n} ([n]Rotor, Char) -> ([n]Rotor, Char)
 joinRotors (rotors, inputChar) = (rotors', outputChar)
   where
     initRotor = mkRotor (['A' .. 'Z'], [])

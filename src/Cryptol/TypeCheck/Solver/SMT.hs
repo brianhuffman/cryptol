@@ -244,13 +244,12 @@ tryGetModel sol as ps =
   where
   parseNum a
     | SMT.Other s <- a
-    , SMT.List [con,val,isFin,isErr] <- s
+    , SMT.List [con,val,isErr] <- s
     , SMT.Atom "mk-infnat" <- con
     , SMT.Atom "false"     <- isErr
-    , SMT.Atom fin         <- isFin
     , SMT.Atom v           <- val
     , Just n               <- readMaybe v
-    = Just (if fin == "false" then Inf else Nat n)
+    = Just (Nat n)
 
   parseNum _ = Nothing
 
@@ -261,7 +260,6 @@ shrinkModel sol as ps0 mdl = go [] ps0 mdl
     do k1 <- shrink1 ps x k
        go ((x,Nat k1) : done) ((tNum k1 >== TVar x) : ps) more
 
-  go done ps ((x,i) : more) = go ((x,i) : done) ps more
   go done _ [] = return done
 
   shrink1 ps x k
@@ -347,7 +345,7 @@ flatGoal g = [ g { goal = p } | p <- pSplitAnd (goal g) ]
 
 -- | Assumes no 'And'
 isNumeric :: Prop -> Bool
-isNumeric ty = matchDefault False $ msum [ is (|=|), is (|/=|), is (|>=|), is aFin ]
+isNumeric ty = matchDefault False $ msum [ is (|=|), is (|/=|), is (|>=|) ]
   where
   is f = f ty >> return True
 
@@ -363,10 +361,8 @@ cryInfNat = SMT.const "InfNat"
 toSMT :: TVars -> Type -> SExpr
 toSMT tvs ty = matchDefault (panic "toSMT" [ "Unexpected type", show ty ])
   $ msum $ map (\f -> f tvs ty)
-  [ aInf            ~> "cryInf"
-  , aNat            ~> "cryNat"
+  [ aNat            ~> "cryNat"
 
-  , aFin            ~> "cryFin"
   , (|=|)           ~> "cryEq"
   , (|/=|)          ~> "cryNeq"
   , (|>=|)          ~> "cryGeq"

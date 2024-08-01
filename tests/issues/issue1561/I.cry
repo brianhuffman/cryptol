@@ -2,7 +2,7 @@ interface module I where
 
 type n : #
 type m = 2 * n
-type constraint (fin n, n >= 1)
+type constraint (n >= 1)
 
 x : [n]
 y : [m]

@@ -1,7 +1,5 @@
 pad : {msgLen, padding, contentLen, chunks}
-    ( fin msgLen
-    , fin padding
-    , contentLen == msgLen + 65
+    ( contentLen == msgLen + 65
     , chunks == (contentLen + 511) / 512
     , 64 >= width msgLen
     , padding == (512 - contentLen % 512) % 512

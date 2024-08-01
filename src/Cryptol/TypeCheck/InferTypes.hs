@@ -142,7 +142,7 @@ insertGoal g gls
        -- which could lead to a confusing location for a constraint.
        let jn g1 g2 = g1 { goal = tMax (goal g1) (goal g2) } in
        gls { literalGoals = Map.insertWith jn a newG (literalGoals gls)
-           , saturatedPropSet = Set.insert (pFin (TVar a)) (saturatedPropSet gls)
+           , saturatedPropSet = saturatedPropSet gls
            }
 
   | Just (a,newG) <- goalToLitLessThanGoal g =

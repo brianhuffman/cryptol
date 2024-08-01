@@ -768,7 +768,6 @@ explainUnsolvable names gs =
           PEqual      -> useCtr
           PNeq        -> useCtr
           PGeq        -> useCtr
-          PFin        -> useCtr
           PPrime      -> useCtr
 
           PHas sel ->

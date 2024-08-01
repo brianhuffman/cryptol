@@ -54,8 +54,7 @@ K = [ 0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x
  * Preprocessing (padding and parsing) for SHA256 : Section 5.1.1 and 5.2.1
  */
 preprocess : {msgLen}
-     ( fin msgLen
-     , 64 >= width msgLen                              // message width fits in a word
+     ( 64 >= width msgLen                              // message width fits in a word
      )
      => [msgLen] -> [(msgLen + 65) /^ 512][512]
 preprocess msg = split (msg # [True] # (zero:[(msgLen + 65) %^ 512]) # (`msgLen:[64]))
@@ -99,11 +98,11 @@ SHA256Compress H W = [as!0 + H@0, bs!0 + H@1, cs!0 + H@2, ds!0 + H@3, es!0 + H@4
  * implementation to be verified.
  */
 
-SHA256' : {a} (fin a) => [a][16][32] -> [8][32]
+SHA256' : {a} [a][16][32] -> [8][32]
 SHA256' blocks = hash!0 where
     hash = [H0] # [SHA256Compress h (SHA256MessageSchedule b) | h <- hash | b <- blocks]
 
-SHA256 : {a} (fin a, 64 >= width (8*a)) => [a][8] -> [256]
+SHA256 : {a} (64 >= width (8*a)) => [a][8] -> [256]
 SHA256 msg = join (SHA256' [ split x | x <- preprocess(join msg)])
 
 property katsPass = ~zero == [test == kat | (test,kat) <- kats ]

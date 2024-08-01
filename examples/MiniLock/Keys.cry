@@ -31,8 +31,7 @@ mkFullLengthID : {n} (46 >= n, n>= 1) => [n][8] -> MinilockID
 mkFullLengthID n = drop (['1' | _ <- [0..45] : [_][8]]  # n)
 
 mkID : {passBytes, saltBytes}
-       ( fin passBytes, fin saltBytes
-       , 64 >= width passBytes
+       ( 64 >= width passBytes
        , 32 >= width (4*saltBytes)
        )
     => [passBytes][8] -> [saltBytes][8] -> (MinilockID,Private25519)

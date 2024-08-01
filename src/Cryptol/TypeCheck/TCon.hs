@@ -58,8 +58,7 @@ builtInType nm =
   -- Built-in types from Cryptol.cry
   builtInTypes = Map.fromList
     [ -- Types
-      "inf"               ~> TC TCInf
-    , "Bit"               ~> TC TCBit
+      "Bit"               ~> TC TCBit
     , "Integer"           ~> TC TCInteger
     , "Rational"          ~> TC TCRational
     , "Z"                 ~> TC TCIntMod
@@ -68,7 +67,6 @@ builtInType nm =
     , "=="                ~> PC PEqual
     , "!="                ~> PC PNeq
     , ">="                ~> PC PGeq
-    , "fin"               ~> PC PFin
     , "prime"             ~> PC PPrime
     , "Zero"              ~> PC PZero
     , "Logic"             ~> PC PLogic
@@ -130,7 +128,6 @@ instance HasKind TC where
   kindOf tcon =
     case tcon of
       TCNum _   -> KNum
-      TCInf     -> KNum
       TCBit     -> KType
       TCInteger -> KType
       TCRational -> KType
@@ -147,7 +144,6 @@ instance HasKind PC where
       PEqual     -> KNum :-> KNum :-> KProp
       PNeq       -> KNum :-> KNum :-> KProp
       PGeq       -> KNum :-> KNum :-> KProp
-      PFin       -> KNum :-> KProp
       PPrime     -> KNum :-> KProp
       PHas _     -> KType :-> KType :-> KProp
       PZero      -> KType :-> KProp
@@ -196,7 +192,6 @@ data TCon   = TC TC | PC PC | TF TFun | TError Kind
 data PC     = PEqual        -- ^ @_ == _@
             | PNeq          -- ^ @_ /= _@
             | PGeq          -- ^ @_ >= _@
-            | PFin          -- ^ @fin _@
             | PPrime        -- ^ @prime _@
 
             -- classes
@@ -224,7 +219,6 @@ data PC     = PEqual        -- ^ @_ == _@
 -- | 1-1 constants.
 -- If you add additional user-visible constructors, please update 'primTys'.
 data TC     = TCNum Integer            -- ^ Numbers
-            | TCInf                    -- ^ Inf
             | TCBit                    -- ^ Bit
             | TCInteger                -- ^ Integer
             | TCFloat                  -- ^ Float
@@ -287,7 +281,6 @@ instance PP PC where
       PEqual     -> text "(==)"
       PNeq       -> text "(/=)"
       PGeq       -> text "(>=)"
-      PFin       -> text "fin"
       PPrime     -> text "prime"
       PHas sel   -> parens (ppSelector sel)
       PZero      -> text "Zero"
@@ -310,7 +303,6 @@ instance PP TC where
   ppPrec _ x =
     case x of
       TCNum n   -> integer n
-      TCInf     -> text "inf"
       TCBit     -> text "Bit"
       TCInteger -> text "Integer"
       TCIntMod  -> text "Z"

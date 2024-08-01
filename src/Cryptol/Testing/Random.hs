@@ -161,9 +161,6 @@ randomValue sym ty =
     TVSeq n el ->
          do mk <- randomValue sym el
             return (randomSequence n mk)
-    TVStream el  ->
-         do mk <- randomValue sym el
-            return (randomStream mk)
     TVTuple els ->
          do mks <- mapM (randomValue sym) els
             return (randomTuple mks)
@@ -238,14 +235,6 @@ randomWord :: (Backend sym, RandomGen g) => sym -> Integer -> Gen g sym
 randomWord sym w _sz g =
    let (val, g1) = randomR (0,2^w-1) g
    in (VWord w . wordVal <$> wordLit sym w val, g1)
-
-{-# INLINE randomStream #-}
-
--- | Generate a random infinite stream value.
-randomStream :: (Backend sym, RandomGen g) => Gen g sym -> Gen g sym
-randomStream mkElem sz g =
-  let (g1,g2) = split g
-  in (pure $ VStream $ indexSeqMap $ genericIndex (unfoldr (Just . mkElem sz) g1), g2)
 
 {-# INLINE randomSequence #-}
 
@@ -468,7 +457,6 @@ typeSize ty = case ty of
   TVIntMod n -> Just n
   TVFloat e p -> Just (2 ^ (e+p))
   TVArray{} -> Nothing
-  TVStream{} -> Nothing
   TVSeq n el -> (^ n) <$> typeSize el
   TVTuple els -> product <$> mapM typeSize els
   TVRec fs -> product <$> traverse typeSize fs
@@ -491,7 +479,6 @@ typeValues ty =
     TVIntMod n  -> [ VInteger x | x <- [ 0 .. (n-1) ] ]
     TVFloat e p -> [ VFloat (floatFromBits e p v) | v <- [0 .. 2^(e+p) - 1] ]
     TVArray{}   -> []
-    TVStream{}  -> []
     TVSeq n TVBit ->
       [ VWord n (wordVal (BV n x))
       | x <- [ 0 .. 2^n - 1 ]

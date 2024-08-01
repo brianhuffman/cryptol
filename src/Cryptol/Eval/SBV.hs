@@ -22,15 +22,13 @@ module Cryptol.Eval.SBV
   ( primTable
   ) where
 
-import qualified Control.Exception as X
-import           Control.Monad.IO.Class (MonadIO(..))
 import qualified Data.Map as Map
 import qualified Data.Text as T
 
 import Data.SBV.Dynamic as SBV
 
 import Cryptol.Backend
-import Cryptol.Backend.Monad (Unsupported(..), EvalError(..) )
+import Cryptol.Backend.Monad (EvalError(..) )
 import Cryptol.Backend.SBV
 import Cryptol.Backend.SeqMap
 import Cryptol.Backend.WordValue
@@ -107,7 +105,6 @@ indexFront sym mblen a xs _ix idx
         _ ->
           case mblen of
             Nat n -> foldr f Nothing [0 .. n-1]
-            Inf -> Just (liftIO (X.throw (UnsupportedSymbolicOp "unbounded integer indexing")))
 
 indexFront_segs ::
   SBV ->
@@ -159,7 +156,6 @@ updateFrontSym_word ::
   Either (SInteger SBV) (WordValue SBV) ->
   SEval SBV (GenValue SBV) ->
   SEval SBV (WordValue SBV)
-updateFrontSym_word _ Inf _ _ _ _ = evalPanic "Expected finite sequence" ["updateFrontSym_bits"]
 
 updateFrontSym_word sym (Nat n) _eltTy w (Left idx) val =
   do idx' <- wordFromInt sym n idx
@@ -176,7 +172,6 @@ updateBackSym ::
   Either (SInteger SBV) (WordValue SBV) ->
   SEval SBV (GenValue SBV) ->
   SEval SBV (SeqMap SBV (GenValue SBV))
-updateBackSym _ Inf _ _ _ _ = evalPanic "Expected finite sequence" ["updateBackSym"]
 
 updateBackSym sym (Nat n) _eltTy vs (Left idx) val =
   case SBV.svAsInteger idx of
@@ -201,7 +196,6 @@ updateBackSym_word ::
   Either (SInteger SBV) (WordValue SBV) ->
   SEval SBV (GenValue SBV) ->
   SEval SBV (WordValue SBV)
-updateBackSym_word _ Inf _ _ _ _ = evalPanic "Expected finite sequence" ["updateBackSym_bits"]
 
 updateBackSym_word sym (Nat n) _eltTy w (Left idx) val =
   do idx' <- wordFromInt sym n idx

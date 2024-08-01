@@ -1,2 +1,2 @@
-minMax : {n, a} (fin n, Cmp a) => [n]a -> (a,a)
+minMax : {n, a} (Cmp a) => [n]a -> (a,a)
 minMax [x] = (x,x)

@@ -223,10 +223,10 @@ misty1Decrypt C EK = (P ! 0).0 # (P ! 0).1
 // Helper functions
 //
 
-extend : {total, n} (fin total, fin n, total >= n) => [n] -> [total]
+extend : {total, n} (total >= n) => [n] -> [total]
 extend n = zero # n
 
-isEven : {a} (fin a) => [a] -> Bool
+isEven : {a} [a] -> Bool
 isEven n = ~(n ! 0)
 
 //

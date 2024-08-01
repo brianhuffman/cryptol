@@ -176,7 +176,6 @@ finType ty =
         TVAbstract    -> Nothing
 
     TVArray{}           -> Nothing
-    TVStream{}          -> Nothing
     TVFun{}             -> Nothing
 
 finTypeToType :: FinType -> Type
@@ -192,7 +191,6 @@ finTypeToType fty =
     FTRecord fs       -> tRec (finTypeToType <$> fs)
     FTNominal u ts _  -> tNominal u (map unArg ts)
  where
-  unArg (Left Inf)     = tInf
   unArg (Left (Nat n)) = tNum n
   unArg (Right t)      = tValTy t
 

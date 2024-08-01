@@ -5,7 +5,7 @@ Loading module instance
 zero`{Bit} : Bit
 zero`{Integer} : Integer
 zero`{Rational} : Rational
-zero`{Z _} : {n} (n >= 1, fin n) => Z n
+zero`{Z _} : {n} (n >= 1) => Z n
 zero`{[_]_} : {n, a} (Zero a) => [n]a
 zero`{_ -> _} : {a, b} (Zero b) => a -> b
 zero`{()} : ()
@@ -74,8 +74,8 @@ complement`{{x : _, y : _}} :
       at instance.icry:29:4--29:10
 negate`{Integer} : Integer -> Integer
 negate`{Rational} : Rational -> Rational
-negate`{Z _} : {n} (n >= 1, fin n) => Z n -> Z n
-negate`{[_]} : {n} (fin n) => [n] -> [n]
+negate`{Z _} : {n} (n >= 1) => Z n -> Z n
+negate`{[_]} : {n} [n] -> [n]
 negate`{[_]_} : {n, a} (Ring ([n]a)) => [n]a -> [n]a
 negate`{(_ -> _)} : {a, b} (Ring b) => (a -> b) -> a -> b
 negate`{()} : () -> ()
@@ -322,8 +322,8 @@ floor`{Float _ _} : {n, m} (ValidFloat n m) => Float n m -> Integer
 (==)`{Bit} : Bit -> Bit -> Bit
 (==)`{Integer} : Integer -> Integer -> Bit
 (==)`{Rational} : Rational -> Rational -> Bit
-(==)`{Z _} : {n} (n >= 1, fin n) => Z n -> Z n -> Bit
-(==)`{[_]_} : {n, a} (Eq a, fin n) => [n]a -> [n]a -> Bit
+(==)`{Z _} : {n} (n >= 1) => Z n -> Z n -> Bit
+(==)`{[_]_} : {n, a} (Eq a) => [n]a -> [n]a -> Bit
 
 [error] at instance.icry:87:4--87:8:
   • Type `?a -> ?b` does not support equality.
@@ -358,7 +358,7 @@ floor`{Float _ _} : {n, m} (ValidFloat n m) => Float n m -> Integer
       at instance.icry:98:4--98:7
   where
   ?m is type wildcard (_) at instance.icry:98:11--98:12
-(<)`{[_]_} : {n, a} (Cmp a, fin n) => [n]a -> [n]a -> Bit
+(<)`{[_]_} : {n, a} (Cmp a) => [n]a -> [n]a -> Bit
 
 [error] at instance.icry:100:4--100:7:
   • Type `?a -> ?b` does not support comparisons.
@@ -447,8 +447,8 @@ number`{rep = Bit} : {n} (1 >= n) => Bit
 
 [error] at instance.icry:123:4--123:10:
   Ambiguous numeric type: type argument 'val' of 'number'
-number`{rep = Z _} : {n, m} (m >= 1 + n, m >= 1, fin m, fin n) => Z m
-number`{rep = [_]_} : {n, m} (m >= width n, fin m, fin n) => [m]
+number`{rep = Z _} : {n, m} (m >= 1 + n, m >= 1) => Z m
+number`{rep = [_]_} : {n, m} (m >= width n) => [m]
 
 [error] at instance.icry:126:4--126:10:
   • `?m` is not a valid literal of type `?a -> ?b`
@@ -506,17 +506,17 @@ number`{rep = Float _ _} :
   where
   ?m is type argument 'val' of 'number' at instance.icry:132:4--132:10
   ?a is type wildcard (_) at instance.icry:132:22--132:23
-fromToLessThan`{a = Bit} : {n, m} (2 >= m, m >= n, fin n) => [m - n]
-fromToLessThan`{a = Integer} : {n, m} (m >= n, fin n) => [m - n]Integer
-fromToLessThan`{a = Rational} : {n, m} (m >= n, fin n) => [m - n]Rational
+fromToLessThan`{a = Bit} : {n, m} (2 >= m, m >= n) => [m - n]
+fromToLessThan`{a = Integer} : {n, m} (m >= n) => [m - n]Integer
+fromToLessThan`{a = Rational} : {n, m} (m >= n) => [m - n]Rational
 fromToLessThan`{a = [_]} :
   {n, m, i}
-    (i >= width (max 1 m - 1), m >= n, fin i, fin m, fin n) =>
+    (i >= width (max 1 m - 1), m >= n) =>
     [m - n][i]
 fromToLessThan`{a = Z _} :
-  {n, m, i} (i >= 1, i >= m, m >= n, fin i, fin m, fin n) => [m - n](Z i)
+  {n, m, i} (i >= 1, i >= m, m >= n, fin i) => [m - n](Z i)
 fromToLessThan`{a = [_]_} :
-  {n, m, i, a} (LiteralLessThan m ([i]a), m >= n, fin n) => [m - n][i]a
+  {n, m, i, a} (LiteralLessThan m ([i]a), m >= n) => [m - n][i]a
 
 [error] at instance.icry:140:4--140:18:
   • Type `?a -> ?b` does not contain all literals below `?m`.
@@ -566,7 +566,7 @@ fromToLessThan`{a = [_]_} :
   ?b is type wildcard (_) at instance.icry:144:34--144:35
 fromToLessThan`{a = Float _ _} :
   {n, m, i, j}
-    (ValidFloat i j, LiteralLessThan m (Float i j), m >= n, fin n) =>
+    (ValidFloat i j, LiteralLessThan m (Float i j), m >= n) =>
     [m - n](Float i j)
 
 [error] at instance.icry:146:4--146:18:

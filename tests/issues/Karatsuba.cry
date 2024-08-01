@@ -1,16 +1,16 @@
 module Karatsuba where
 
-kmult : {limb,n} (fin n, fin limb, limb >= 6, n>=1) => [n] -> [n] -> [2*n]
+kmult : {limb,n} (limb >= 6, n>=1) => [n] -> [n] -> [2*n]
 kmult x y =
  if `n <= (`limb : [max (width limb) (width n)]) then
    (zero#x)*(zero#y)
  else
    take (splitmult`{limb} (make_atleast`{limb} x) (make_atleast`{limb} y))
 
-make_atleast : {n, m, a} (fin n, fin m, Zero a) => [m]a -> [max n m]a
+make_atleast : {n, m, a} (Zero a) => [m]a -> [max n m]a
 make_atleast x = zero#x
 
-splitmult : {limb,n} (fin n, fin limb, limb >= 6, n>=6)
+splitmult : {limb,n} (limb >= 6, n>=6)
          => [n] -> [n] -> [2*n]
 
 splitmult x y = (ac # bd) + (zero # ad_bc # (zero:[low]))

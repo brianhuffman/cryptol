@@ -98,14 +98,14 @@ ec_affinify S =
  * Coerce an integer modulo 'p' to a bitvector. This will reduce the value
  * modulo '2^^a' if necessary.
  */
-ZtoBV : {p, a} (fin p, p >= 1, fin a) => Z p -> [a]
+ZtoBV : {p, a} (p >= 1) => Z p -> [a]
 ZtoBV x = fromInteger (fromZ x)
 
 /**
  * Coerce a bitvector value to an integer modulo 'p'.  This will
  * reduce the value modulo 'p' if necessary.
  */
-BVtoZ : {p, a} (fin p, p >= 1, fin a) => [a] -> Z p
+BVtoZ : {p, a} (p >= 1) => [a] -> Z p
 BVtoZ x = fromInteger (toInteger x)
 
 /**

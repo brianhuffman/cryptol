@@ -52,8 +52,6 @@ tCon tc ts =
 tAdd :: Type -> Type -> Type
 tAdd x y
   | Just t <- tOp TCAdd (total (op2 nAdd)) [x,y] = t
-  | tIsInf x            = tInf
-  | tIsInf y            = tInf
   | Just n <- tIsNum x  = addK n y
   | Just n <- tIsNum y  = addK n x
   | Just (n,x1) <- isSumK x = addK n (tAdd x1 y)
@@ -112,7 +110,6 @@ tAdd x y
 tSub :: Type -> Type -> Type
 tSub x y
   | Just t <- tOp TCSub (op2 nSub) [x,y] = t
-  | tIsInf y  = tError (tf2 TCSub x y)
   | Just 0 <- yNum = x
   | Just k <- yNum
   , TCon (TF TCAdd) [a,b] <- tNoUser x
@@ -148,7 +145,6 @@ tMul x y
   mulK 1 t = t
   mulK n t | TCon (TF TCMul) [a,b] <- t'
            , Just a' <- tIsNat' a = case a' of
-                                     Inf   -> t
                                      Nat m -> tf2 TCMul (tNum (n * m)) b
            | TCon (TF TCDiv) [a,b] <- t'
            , Just b' <- tIsNum b
@@ -169,7 +165,6 @@ tMul x y
 tDiv :: Type -> Type -> Type
 tDiv x y
   | Just t <- tOp TCDiv (op2 nDiv) [x,y] = t
-  | tIsInf x = bad
   | Just 0 <- tIsNum y = bad
   | otherwise = tf2 TCDiv x y
     where bad = tError (tf2 TCDiv x y)
@@ -177,7 +172,6 @@ tDiv x y
 tMod :: Type -> Type -> Type
 tMod x y
   | Just t <- tOp TCMod (op2 nMod) [x,y] = t
-  | tIsInf x = bad
   | Just 0 <- tIsNum y = bad
   | otherwise = tf2 TCMod x y
     where bad = tError (tf2 TCMod x y)
@@ -185,7 +179,6 @@ tMod x y
 tCeilDiv :: Type -> Type -> Type
 tCeilDiv x y
   | Just t <- tOp TCCeilDiv (op2 nCeilDiv) [x,y] = t
-  | tIsInf y = bad
   | Just 0 <- tIsNum y = bad
   | otherwise = tf2 TCCeilDiv x y
     where bad = tError (tf2 TCCeilDiv x y)
@@ -193,7 +186,6 @@ tCeilDiv x y
 tCeilMod :: Type -> Type -> Type
 tCeilMod x y
   | Just t <- tOp TCCeilMod (op2 nCeilMod) [x,y] = t
-  | tIsInf y = bad
   | Just 0 <- tIsNum x = bad
   | otherwise = tf2 TCCeilMod x y
     where bad = tError (tf2 TCCeilMod x y)
@@ -244,7 +236,6 @@ tMin x y
                     return b
 
 
-  minK Inf t      = t
   minK (Nat 0) _  = tNum (0 :: Int)
   minK (Nat k) t
     | TCon (TF TCMin) [a,b] <- t'
@@ -261,7 +252,6 @@ tMax x y
   | Just n <- tIsNat' y = maxK n x
   | otherwise           = tf2 TCMax x y
   where
-  maxK Inf _     = tInf
   maxK (Nat 0) t = t
   maxK (Nat k) t
 
@@ -279,7 +269,6 @@ tMax x y
     | TCon (TF TCSub) [a,b] <- t'
     , Just n <- tIsNat' a =
       case n of
-        Inf   -> t
         Nat m -> if k >= m then tNum k else tSub a (tMin (tNum (m - k)) b)
 
     | TCon (TF TCMax) [a,b] <- t'

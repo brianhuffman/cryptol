@@ -8,7 +8,6 @@ Loading module Main
     we need to show that
       for any type n
       assuming
-        • fin n
         • 3 >= width n
       the following constraints hold:
         • 1 != n
@@ -21,7 +20,6 @@ Loading module Main
     we need to show that
       for any type n
       assuming
-        • fin n
         • 3 >= width n
       the following constraints hold:
         • 1 != n

@@ -2,7 +2,7 @@
 ; Basic datatypes
 
 (declare-datatypes ()
-  ( (InfNat (mk-infnat (value Int) (isFin Bool) (isErr Bool)))
+  ( (InfNat (mk-infnat (value Int) (isErr Bool)))
   )
 )
 
@@ -19,16 +19,12 @@
   (mk-mb false true)
 )
 
-(define-fun cryInf () InfNat
-  (mk-infnat 0 false false)
-)
-
 (define-fun cryNat ((x Int)) InfNat
-  (mk-infnat x true false)
+  (mk-infnat x false)
 )
 
 (define-fun cryErr () InfNat
-  (mk-infnat 0 false true)
+  (mk-infnat 0 true)
 )
 
 ; ------------------------------------------------------------------------------
@@ -36,32 +32,21 @@
 
 
 (define-fun cryEq ((x InfNat) (y InfNat)) MaybeBool
-  (ite (or (isErr x) (isErr y)) cryErrProp (cryBool
-  (ite (isFin x)
-     (ite (isFin y) (= (value x) (value y)) false)
-     (not (isFin y))
-  )))
+  (ite (or (isErr x) (isErr y)) cryErrProp
+    (cryBool (= (value x) (value y)))
+  )
 )
 
 (define-fun cryNeq ((x InfNat) (y InfNat)) MaybeBool
-  (ite (or (isErr x) (isErr y)) cryErrProp (cryBool
-  (ite (isFin x)
-     (ite (isFin y) (not (= (value x) (value y))) true)
-     (isFin y)
-  )))
-)
-
-(define-fun cryFin ((x InfNat)) MaybeBool
-  (ite (isErr x) cryErrProp (cryBool
-  (isFin x)))
+  (ite (or (isErr x) (isErr y)) cryErrProp
+    (cryBool (not (= (value x) (value y))))
+  )
 )
 
 (define-fun cryGeq ((x InfNat) (y InfNat)) MaybeBool
-  (ite (or (isErr x) (isErr y)) cryErrProp (cryBool
-  (ite (isFin x)
-    (ite (isFin y) (>= (value x) (value y)) false)
-    true
-  )))
+  (ite (or (isErr x) (isErr y)) cryErrProp
+    (cryBool (>= (value x) (value y)))
+  )
 )
 
 (define-fun cryAnd ((x MaybeBool) (y MaybeBool)) MaybeBool
@@ -101,65 +86,46 @@
 
 (define-fun cryAdd ((x InfNat) (y InfNat)) InfNat
   (ite (or (isErr x) (isErr y)) cryErr
-  (ite (isFin x)
-       (ite (isFin y) (cryNat (+ (value x) (value y))) cryInf)
-       cryInf
-  ))
+    (cryNat (+ (value x) (value y)))
+  )
 )
 
 (define-fun crySub ((x InfNat) (y InfNat)) InfNat
-  (ite (or (isErr x) (isErr y) (not (isFin y))) cryErr
-  (ite (isFin x)
-       (ite (>= (value x) (value y)) (cryNat (- (value x) (value y))) cryErr)
-       cryInf
-  ))
+  (ite (or (isErr x) (isErr y)) cryErr
+    (ite (>= (value x) (value y)) (cryNat (- (value x) (value y))) cryErr)
+  )
 )
 
 (define-fun cryMul ((x InfNat) (y InfNat)) InfNat
   (ite (or (isErr x) (isErr y)) cryErr
-  (ite (isFin x)
-       (ite (isFin y) (cryNat (* (value x) (value y)))
-                      (ite (= (value x) 0) (cryNat 0) cryInf))
-       (ite (and (isFin y) (= (value y) 0)) (cryNat 0) cryInf)
-  ))
+    (cryNat (* (value x) (value y)))
+  )
 )
 
 (define-fun cryDiv ((x InfNat) (y InfNat)) InfNat
-  (ite (or (isErr x) (isErr y) (not (isFin x))) cryErr
-  (ite (isFin y)
-       (ite (= (value y) 0) cryErr (cryNat (div (value x) (value y))))
-       (cryNat 0)
-  ))
+  (ite (or (isErr x) (isErr y)) cryErr
+    (ite (= (value y) 0) cryErr (cryNat (div (value x) (value y))))
+  )
 )
 
 (define-fun cryMod ((x InfNat) (y InfNat)) InfNat
-  (ite (or (isErr x) (isErr y) (not (isFin x))) cryErr
-  (ite (isFin y)
-       (ite (= (value y) 0) cryErr (cryNat (mod (value x) (value y))))
-       x
-  ))
+  (ite (or (isErr x) (isErr y)) cryErr
+    (ite (= (value y) 0) cryErr (cryNat (mod (value x) (value y))))
+  )
 )
 
 
 
 (define-fun cryMin ((x InfNat) (y InfNat)) InfNat
   (ite (or (isErr x) (isErr y)) cryErr
-  (ite (isFin x)
-       (ite (isFin y)
-            (ite (<= (value x) (value y)) x y)
-            x)
-       y
-  ))
+    (ite (<= (value x) (value y)) x y)
+  )
 )
 
 (define-fun cryMax ((x InfNat) (y InfNat)) InfNat
   (ite (or (isErr x) (isErr y)) cryErr
-  (ite (isFin x)
-       (ite (isFin y)
-            (ite (<= (value x) (value y)) y x)
-            y)
-       x
-  ))
+    (ite (<= (value x) (value y)) y x)
+  )
 )
 
 
@@ -262,9 +228,8 @@
 
 (define-fun cryWidth ((x InfNat)) InfNat
   (ite (isErr x) cryErr
-  (ite (isFin x) (cryNat (cryWidthTable (value x)))
-       cryInf
-  ))
+    (cryNat (cryWidthTable (value x)))
+  )
 )
 
 (declare-fun cryExpUnknown (Int Int) Int)
@@ -282,36 +247,28 @@
 
 (define-fun cryExp ((x InfNat) (y InfNat)) InfNat
   (ite (or (isErr x) (isErr y)) cryErr
-    (ite (isFin x)
-         (ite (isFin y)
-              (cryNat (cryExpTable (value x) (value y)))
-              (ite (< (value x) 2) x cryInf))
-         (ite (isFin y)
-              (ite (= (value y) 0) (cryNat 1) cryInf)
-              cryInf)
-  ))
+    (cryNat (cryExpTable (value x) (value y)))
+  )
 )
 
 (define-fun cryCeilDiv ((x InfNat) (y InfNat)) InfNat
-  (ite (or (isErr x) (isErr y) (not (isFin y))) cryErr
+  (ite (or (isErr x) (isErr y)) cryErr
   (ite (= (value y) 0) cryErr
-  (ite (not (isFin x)) cryInf
-    (cryNat (- (div (- (value x)) (value y))))
-  )))
+  (cryNat (- (div (- (value x)) (value y))))
+  ))
 )
 
 (define-fun cryCeilMod ((x InfNat) (y InfNat)) InfNat
-  (ite (or (isErr x) (isErr y) (not (isFin y))) cryErr
+  (ite (or (isErr x) (isErr y)) cryErr
   (ite (= (value y) 0) cryErr
-  (ite (not (isFin x)) (cryNat 0)
-    (cryNat (mod (- (value x)) (value y)))
-  )))
+  (cryNat (mod (- (value x)) (value y)))
+  ))
 )
 
 (define-fun cryLenFromThenTo ((x InfNat) (y InfNat) (z InfNat)) InfNat
-  (ite (or (isErr x) (not (isFin x))
-           (isErr y) (not (isFin y))
-           (isErr z) (not (isFin z))
+  (ite (or (isErr x)
+           (isErr y)
+           (isErr z)
            (= (value x) (value y))) cryErr (cryNat
   (ite (> (value x) (value y))
        (ite (> (value z) (value x)) 0 (+ (div (- (value x) (value z))
@@ -331,7 +288,6 @@
 ; (assert (cryVar L))
 ; (assert (cryVar w))
 ; 
-; (assert (cryAssume (cryFin w)))
 ; (assert (cryAssume (cryGeq w (cryNat 1))))
 ; (assert (cryAssume (cryGeq (cryMul (cryNat 2) w) (cryWidth L))))
 ; 

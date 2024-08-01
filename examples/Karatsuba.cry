@@ -26,7 +26,7 @@ module Karatsuba where
 // is greater than the limb width, then the recursive `splitmult` multiplier
 // is called; otherwise, a standard multiply is used.
 
-kmult : {limb,n} (fin n, fin limb, limb >= 6, n >= 1) => [n] -> [n] -> [2*n]
+kmult : {limb,n} (limb >= 6, n >= 1) => [n] -> [n] -> [2*n]
 
 kmult x y =
  if `n >= (`limb : [max (width limb) (width n)]) then
@@ -39,7 +39,7 @@ kmult x y =
 // should always be a no-op, but teaches the typechecker a necessary inequality
 // to call the `splitmult` operation.
 
-make_atleast : {n, m, a} (fin n, fin m, Zero a) => [m]a -> [max n m]a
+make_atleast : {n, m, a} (Zero a) => [m]a -> [max n m]a
 make_atleast x = zero#x
 
 
@@ -48,7 +48,7 @@ make_atleast x = zero#x
 // input words into high and low bit portions; then perform three
 // recursive multiplies using these intermediate, shorter bitsequences.
 
-splitmult : {limb,n} (fin n, fin limb, limb >= 6, n >= 6)
+splitmult : {limb,n} (limb >= 6, n >= 6)
          => [n] -> [n] -> [2*n]
 
 splitmult x y = (ac # bd) + (zero # ad_bc # (zero:[low]))

@@ -79,7 +79,7 @@ solveZeroInst ty = case tNoUser ty of
   TCon (TC TCInteger) [] -> SolvedIf []
 
   -- Zero (Z n)
-  TCon (TC TCIntMod) [n] -> SolvedIf [ pFin n, n >== tOne ]
+  TCon (TC TCIntMod) [n] -> SolvedIf [ n >== tOne ]
 
   -- Zero Real
 
@@ -169,7 +169,7 @@ solveRingInst ty = case tNoUser ty of
   TCon (TC TCInteger) [] -> SolvedIf []
 
   -- Ring (Z n)
-  TCon (TC TCIntMod) [n] -> SolvedIf [ pFin n, n >== tOne ]
+  TCon (TC TCIntMod) [n] -> SolvedIf [ n >== tOne ]
 
   -- Ring Rational
   TCon (TC TCRational) [] -> SolvedIf []
@@ -192,14 +192,13 @@ solveRingSeq :: Type -> Type -> Solved
 solveRingSeq n ty = case tNoUser ty of
 
   -- fin n => Ring [n]Bit
-  TCon (TC TCBit) [] -> SolvedIf [ pFin n ]
+  TCon (TC TCBit) [] -> SolvedIf []
 
   -- variables are not solvable.
   TVar {} -> case tNoUser n of
                 {- We are sure that the lenght is not `fin`, so the
                 special case for `Bit` does not apply.
                 Arith ty => Arith [n]ty -}
-                TCon (TC TCInf) [] -> SolvedIf [ pRing ty ]
                 _                  -> Unsolved
 
   -- Ring ty => Ring [n]ty
@@ -219,10 +218,10 @@ solveIntegralInst ty = case tNoUser ty of
   -- Integral Integer
   TCon (TC TCInteger) [] -> SolvedIf []
 
-  -- fin n => Integral [n]
-  TCon (TC TCSeq) [n, elTy] ->
+  -- Integral [n]
+  TCon (TC TCSeq) [_n, elTy] ->
     case tNoUser elTy of
-      TCon (TC TCBit) [] -> SolvedIf [ pFin n ]
+      TCon (TC TCBit) [] -> SolvedIf []
       TVar _ -> Unsolved
       _ -> Unsolvable
 
@@ -336,10 +335,10 @@ solveEqInst ty = case tNoUser ty of
   TCon (TC TCFloat) [e,p] -> SolvedIf [ pValidFloat e p ]
 
   -- Eq (Z n)
-  TCon (TC TCIntMod) [n] -> SolvedIf [ pFin n, n >== tOne ]
+  TCon (TC TCIntMod) [n] -> SolvedIf [ n >== tOne ]
 
-  -- (fin n, Eq a) => Eq [n]a
-  TCon (TC TCSeq) [n,a] -> SolvedIf [ pFin n, pEq a ]
+  -- (Eq a) => Eq [n]a
+  TCon (TC TCSeq) [_,a] -> SolvedIf [ pEq a ]
 
   -- (Eq a, Eq b) => Eq (a,b)
   TCon (TC (TCTuple _)) es -> SolvedIf (map pEq es)
@@ -378,8 +377,8 @@ solveCmpInst ty = case tNoUser ty of
   -- ValidFloat e p => Cmp (Float e p)
   TCon (TC TCFloat) [e,p] -> SolvedIf [ pValidFloat e p ]
 
-  -- (fin n, Cmp a) => Cmp [n]a
-  TCon (TC TCSeq) [n,a] -> SolvedIf [ pFin n, pCmp a ]
+  -- (Cmp a) => Cmp [n]a
+  TCon (TC TCSeq) [_,a] -> SolvedIf [ pCmp a ]
 
   -- (Cmp a, Cmp b) => Cmp (a,b)
   TCon (TC (TCTuple _)) es -> SolvedIf (map pCmp es)
@@ -402,13 +401,13 @@ solveSignedCmpSeq :: Type -> Type -> Solved
 solveSignedCmpSeq n ty = case tNoUser ty of
 
   -- (fin n, n >=1 ) => SignedCmp [n]Bit
-  TCon (TC TCBit) [] -> SolvedIf [ pFin n, n >== tNum (1 :: Integer) ]
+  TCon (TC TCBit) [] -> SolvedIf [ n >== tNum (1 :: Integer) ]
 
   -- variables are not solvable.
   TVar {} -> Unsolved
 
   -- (fin n, SignedCmp ty) => SignedCmp [n]ty, when ty != Bit
-  _ -> SolvedIf [ pFin n, pSignedCmp ty ]
+  _ -> SolvedIf [ pSignedCmp ty ]
 
 
 -- | Solve SignedCmp constraints.
@@ -456,7 +455,6 @@ solveFLiteralInst :: Type -> Type -> Type -> Type -> Solved
 solveFLiteralInst numT denT rndT ty
   | TCon (TError {}) _ <- tNoUser numT = Unsolvable
   | TCon (TError {}) _ <- tNoUser denT = Unsolvable
-  | tIsInf numT || tIsInf denT || tIsInf rndT = Unsolvable
   | Just 0 <- tIsNum denT = Unsolvable
 
   | otherwise =
@@ -466,12 +464,12 @@ solveFLiteralInst numT denT rndT ty
       TCon (TError {}) _ -> Unsolvable
 
       TCon (TC TCRational) [] ->
-        SolvedIf [ pFin numT, pFin denT, denT >== tOne ]
+        SolvedIf [ denT >== tOne ]
 
       TCon (TC TCFloat) [e,p]
         | Just 0    <- tIsNum rndT ->
           SolvedIf [ pValidFloat e p
-                   , pFin numT, pFin denT, denT >== tOne ]
+                   , denT >== tOne ]
 
         | Just _    <- tIsNum rndT
         , Just opts <- knownSupportedFloat e p
@@ -500,10 +498,10 @@ solveLiteralInst val ty
       TCon (TC TCBit) [] -> SolvedIf [ tOne >== val ]
 
       -- (fin val) => Literal val Integer
-      TCon (TC TCInteger) [] -> SolvedIf [ pFin val ]
+      TCon (TC TCInteger) [] -> SolvedIf []
 
       -- (fin val) => Literal val Rational
-      TCon (TC TCRational) [] -> SolvedIf [ pFin val ]
+      TCon (TC TCRational) [] -> SolvedIf []
 
       -- ValidFloat e p => Literal val (Float e p)   if `val` is representable
       TCon (TC TCFloat) [e,p]
@@ -519,12 +517,12 @@ solveLiteralInst val ty
 
       -- (fin val, fin m, m >= val + 1) => Literal val (Z m)
       TCon (TC TCIntMod) [modulus] ->
-        SolvedIf [ pFin val, pFin modulus, modulus >== tAdd val tOne ]
+        SolvedIf [ modulus >== tAdd val tOne ]
 
       -- (fin bits, bits >= width n) => Literal n [bits]
       TCon (TC TCSeq) [bits, elTy]
         | TCon (TC TCBit) [] <- ety ->
-            SolvedIf [ pFin val, pFin bits, bits >== tWidth val ]
+            SolvedIf [ bits >== tWidth val ]
         | TVar _ <- ety -> Unsolved
         where ety = tNoUser elTy
 
@@ -567,12 +565,12 @@ solveLiteralLessThanInst val ty
 
       -- (fin val, fin m, m >= val) => LiteralLessThan val (Z m)
       TCon (TC TCIntMod) [modulus] ->
-        SolvedIf [ pFin val, pFin modulus, modulus >== val ]
+        SolvedIf [ modulus >== val ]
 
       -- (fin bits, bits >= lg2 n) => LiteralLessThan n [bits]
       TCon (TC TCSeq) [bits, elTy]
         | TCon (TC TCBit) [] <- ety ->
-            SolvedIf [ pFin val, pFin bits, bits >== tWidth val' ]
+            SolvedIf [ bits >== tWidth val' ]
         | TVar _ <- ety -> Unsolved
         where ety  = tNoUser elTy
               val' = tSub (tMax val tOne) tOne

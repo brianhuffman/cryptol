@@ -52,9 +52,8 @@ f x = ((x <<< 1) && (x <<< 8)) ^ (x <<< 2)
 // encryption / decryption
 ///////////////////////////////////////////////////////////////////////
 
-encrypt : {n, m, T, j}
-    ( fin n, fin m, fin T, fin j
-    , n >= 2, T - 1 >= m, T >= 1
+encrypt : {n, m, T, j : #}
+    ( n >= 2, T - 1 >= m, T >= 1
     ) => [m][n] -> ([n], [n]) -> ([n], [n])
 encrypt k0 p0 = ps ! 0
   where
@@ -62,9 +61,8 @@ encrypt k0 p0 = ps ! 0
     ks = expandKey `{n=n,m=m,T=T,j=j} (reverse k0)
 
 
-decrypt : {n, m, T, j}
-    ( fin n, fin m, fin T, fin j
-    , n >= 2, T - 1 >= m, T >= 1
+decrypt : {n, m, T, j : #}
+    ( n >= 2, T - 1 >= m, T >= 1
     ) => [m][n] -> ([n], [n]) -> ([n], [n])
 decrypt k0 p0 = ps ! 0
   where
@@ -76,9 +74,8 @@ decrypt k0 p0 = ps ! 0
 // key expansion
 ///////////////////////////////////////////////////////////////////////
 
-expandKey : {n, m, T, j}
-    ( fin n, fin m, fin T, fin j
-    , n >= 2, T - 1 >= m, T >= 1
+expandKey : {n, m, T, j : #}
+    ( n >= 2, T - 1 >= m, T >= 1
     ) => [m][n] -> [T][n]
 expandKey k0 = k
   where

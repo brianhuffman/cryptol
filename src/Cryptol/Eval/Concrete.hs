@@ -138,7 +138,6 @@ toExpr prims t0 v0 = findOne (go t0 v0)
         do BV _ v <- lift (asWordVal Concrete wval)
            pure $ ETApp (ETApp (prim "number") (tNum v)) (tWord (tNum n))
 
-      (_,VStream{})  -> mzero
       (_,VFun{})     -> mzero
       (_,VPoly{})    -> mzero
       (_,VNumPoly{}) -> mzero
@@ -522,8 +521,6 @@ updateBack ::
   Either Integer (WordValue Concrete) {- ^ index -} ->
   Eval Value         {- ^ new value at index -} ->
   Eval (SeqMap Concrete (GenValue Concrete))
-updateBack Inf _eltTy _vs _w _val =
-  evalPanic "Unexpected infinite sequence in updateEnd" []
 updateBack (Nat n) _eltTy vs (Left idx) val = do
   return $ updateSeqMap vs (n - idx - 1) val
 updateBack (Nat n) _eltTy vs (Right w) val = do
@@ -537,8 +534,6 @@ updateBack_word ::
   Either Integer (WordValue Concrete) {- ^ index -} ->
   Eval Value         {- ^ new value at index -} ->
   Eval (WordValue Concrete)
-updateBack_word Inf _eltTy _bs _w _val =
-  evalPanic "Unexpected infinite sequence in updateEnd" []
 updateBack_word (Nat n) _eltTy bs (Left idx) val = do
   updateWordValue Concrete bs (n - idx - 1) (fromVBit <$> val)
 updateBack_word (Nat n) _eltTy bs (Right w) val = do

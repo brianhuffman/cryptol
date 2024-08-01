@@ -43,7 +43,6 @@ cryIsEqual ctxt t1 t2 =
     <|> tryEqMins t1 t2
     <|> tryEqMins t2 t1
     <|> tryEqMulConst t1 t2
-    <|> tryEqAddInf ctxt t1 t2
     <|> tryAddConst (=#=) t1 t2
     <|> tryCancelVar ctxt (=#=) t1 t2
     <|> tryLinearSolution t1 t2
@@ -89,8 +88,6 @@ cryIsPrime _varInfo ty =
           else
             Unsolvable
 
-      | TCInf <- tc -> Unsolvable
-
     _ -> Unsolved
 
 
@@ -111,7 +108,6 @@ pBin p t1 t2
 
 -- | Try to solve @K >= t@
 tryGeqKThan :: Ctxt -> Type -> Nat' -> Match Solved
-tryGeqKThan _ _ Inf = return (SolvedIf [])
 tryGeqKThan _ ty (Nat n) =
 
   -- K1 >= K2 * t
@@ -119,13 +115,11 @@ tryGeqKThan _ ty (Nat n) =
      m     <- aNat' a
      return $ SolvedIf
             $ case m of
-                Inf   -> [ b =#= tZero ]
                 Nat 0 -> []
                 Nat k -> [ tNum (div n k) >== b ]
 
 -- | Try to solve @t >= K@
 tryGeqThanK :: Ctxt -> Type -> Nat' -> Match Solved
-tryGeqThanK _ t Inf = return (SolvedIf [ t =#= tInf ])
 tryGeqThanK _ t (Nat k) =
 
   -- K1 + t >= K2
@@ -239,8 +233,9 @@ tryEqMins x y =
   do (a, b) <- aMin y
      let ys = splitMin a ++ splitMin b
      let ys' = filter (not . isGt) ys
-     let y' = if null ys' then tInf else foldr1 Simp.tMin ys'
-     return $ if length ys' < length ys
+     let y' = foldr1 Simp.tMin ys'
+     return $ if null ys' then Unsolved else
+              if length ys' < length ys
               then SolvedIf [x =#= y']
               else Unsolved
   where
@@ -270,7 +265,7 @@ tryEqVar ty x =
   (do (k,tv) <- matches ty (anAdd, aNat, aTVar)
       guard (tv == x && k >= 1)
 
-      return $ SolvedIf [ TVar x =#= tInf ]
+      return $ Unsolvable
   )
   <|>
 
@@ -302,14 +297,6 @@ tryEqVar ty x =
 tryEqK :: Ctxt -> Type -> Nat' -> Match Solved
 tryEqK ctxt ty lk =
 
-  -- (t1 + t2 = inf, fin t1) ~~~> t2 = inf
-  do guard (lk == Inf)
-     (a,b) <- anAdd ty
-     let check x y = do guard (iIsFin (typeInterval (intervals ctxt) x))
-                        return $ SolvedIf [ y =#= tInf ]
-     check a b <|> check b a
-  <|>
-
   -- (K1 + t = K2, K2 >= K1) ~~~> t = (K2 - K1)
   do (rk, b) <- matches ty (anAdd, aNat', __)
      return $
@@ -328,18 +315,6 @@ tryEqK ctxt ty lk =
   do (rk, b) <- matches ty (aMul, aNat', __)
      return $
        case (lk,rk) of
-         -- Inf * t = Inf ~~~>  t >= 1
-         (Inf,Inf)    -> SolvedIf [ b >== tOne ]
-
-         -- K * t = Inf ~~~> t = Inf
-         (Inf,Nat _)  -> SolvedIf [ b =#= tInf ]
-
-         -- Inf * t = 0 ~~~> t = 0
-         (Nat 0, Inf) -> SolvedIf [ b =#= tZero ]
-
-         -- Inf * t = K ~~~> ERR      (K /= 0)
-         (Nat _k, Inf) -> Unsolvable
-
          (Nat lk', Nat rk')
            -- 0 * t = K2 ~~> K2 = 0
            | rk' == 0 -> SolvedIf [ tNat' lk =#= tZero ]
@@ -353,7 +328,6 @@ tryEqK ctxt ty lk =
   -- K1 == K2 ^^ t    ~~> t = logBase K2 K1
   do (rk, b) <- matches ty ((|^|), aNat, __)
      return $ case lk of
-                Inf | rk > 1 -> SolvedIf [ b =#= tInf ]
                 Nat n | Just (a,True) <- genLog n rk -> SolvedIf [ b =#= tNum a]
                 _ -> Unsolvable
 
@@ -375,30 +349,6 @@ tryEqMulConst l r =
   build d k ts   = foldr tAdd (cancel d k) (map (buildS d) ts)
   buildS d (k,t) = tMul (cancel d k) t
   cancel d x     = tNum (div x d)
-
-
--- | @(t1 + t2 = Inf, fin t1)  ~~> t2 = Inf@
-tryEqAddInf :: Ctxt -> Type -> Type -> Match Solved
-tryEqAddInf ctxt l r = check l r <|> check r l
-  where
-
-  -- check for x = a + b /\ x = inf
-  check x y =
-    do (x1,x2) <- anAdd x
-       aInf y
-
-       let x1Fin = iIsFin (typeInterval (intervals ctxt) x1)
-       let x2Fin = iIsFin (typeInterval (intervals ctxt) x2)
-
-       return $!
-         if | x1Fin ->
-              SolvedIf [ x2 =#= y ]
-
-            | x2Fin ->
-              SolvedIf [ x1 =#= y ]
-
-            | otherwise ->
-              Unsolved
 
 
 

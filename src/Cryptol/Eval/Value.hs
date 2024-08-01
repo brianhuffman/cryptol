@@ -125,7 +125,6 @@ data GenValue sym
   | VSeq !Integer !(SeqMap sym (GenValue sym)) -- ^ @ [n]a   @
                                                --   Invariant: VSeq is never a sequence of bits
   | VWord !Integer !(WordValue sym)            -- ^ @ [n]Bit @
-  | VStream !(SeqMap sym (GenValue sym))       -- ^ @ [inf]a @
   | VFun  CallStack (SEval sym (GenValue sym) -> SEval sym (GenValue sym)) -- ^ functions
   | VPoly CallStack (TValue -> SEval sym (GenValue sym))   -- ^ polymorphic values (kind *)
   | VNumPoly CallStack (Nat' -> SEval sym (GenValue sym))  -- ^ polymorphic values (kind #)
@@ -145,7 +144,6 @@ forceValue v = case v of
   VRational q -> seq q (return ())
   VFloat f    -> seq f (return ())
   VWord _ wv  -> forceWordValue wv
-  VStream _   -> return ()
   VFun{}      -> return ()
   VPoly{}     -> return ()
   VNumPoly{}  -> return ()
@@ -164,7 +162,6 @@ instance Show (GenValue sym) where
     VFloat _   -> "float"
     VSeq n _   -> "seq:" ++ show n
     VWord n _  -> "word:"  ++ show n
-    VStream _  -> "stream"
     VFun{}     -> "fun"
     VPoly{}    -> "poly"
     VNumPoly{} -> "numpoly"
@@ -203,8 +200,6 @@ ppValuePrec x opts = loop
     VFloat i           -> ppSFloat x opts i
     VSeq sz vals       -> ppWordSeq sz vals
     VWord _ wv         -> ppWordVal wv
-    VStream vals       -> do vals' <- traverse (>>=loop 0) $ enumerateSeqMap (useInfLength opts) vals
-                             return $ ppList ( vals' ++ [text "..."] )
     VFun{}             -> return $ text "<function>"
     VPoly{}            -> return $ text "<polymorphic value>"
     VNumPoly{}         -> return $ text "<polymorphic value>"
@@ -366,8 +361,7 @@ nlam sym f = VNumPoly <$> sGetCallStack sym <*> pure f
 ilam :: Backend sym => sym -> (Integer -> SEval sym (GenValue sym)) -> SEval sym (GenValue sym)
 ilam sym f =
    nlam sym (\n -> case n of
-                     Nat i -> f i
-                     Inf   -> panic "ilam" [ "Unexpected `inf`" ])
+                     Nat i -> f i)
 
 -- | Construct either a finite sequence, or a stream.  In the finite case,
 -- record whether or not the elements were bits, to aid pretty-printing.
@@ -376,7 +370,6 @@ mkSeq sym len elty vals = case len of
   Nat n
     | isTBit elty -> VWord n <$> bitmapWordVal sym n (fromVBit <$> vals)
     | otherwise   -> pure $ VSeq n vals
-  Inf             -> pure $ VStream vals
 
 
 -- Value Destructors -----------------------------------------------------------
@@ -409,7 +402,6 @@ fromVSeq val = case val of
 fromSeq :: Backend sym => String -> GenValue sym -> SEval sym (SeqMap sym (GenValue sym))
 fromSeq msg val = case val of
   VSeq _ vs   -> return vs
-  VStream vs  -> return vs
   _           -> evalPanic "fromSeq" ["not a sequence", msg, show val]
 
 fromWordVal :: Backend sym => String -> GenValue sym -> WordValue sym
@@ -583,7 +575,6 @@ mergeValue sym c v1 v2 =
     (VFloat f1   , VFloat f2)    -> VFloat <$> iteFloat sym c f1 f2
     (VWord n1 w1 , VWord n2 w2 ) | n1 == n2 -> VWord n1 <$> mergeWord sym c w1 w2
     (VSeq n1 vs1 , VSeq n2 vs2 ) | n1 == n2 -> VSeq n1 <$> memoMap sym (Nat n1) (mergeSeqMapVal sym c vs1 vs2)
-    (VStream vs1 , VStream vs2 ) -> VStream <$> memoMap sym Inf (mergeSeqMapVal sym c vs1 vs2)
     (f1@VFun{}   , f2@VFun{}   ) -> lam sym $ \x -> mergeValue' sym c (fromVFun sym f1 x) (fromVFun sym f2 x)
     (f1@VPoly{}  , f2@VPoly{}  ) -> tlam sym $ \x -> mergeValue' sym c (fromVPoly sym f1 x) (fromVPoly sym f2 x)
     (_           , _           ) -> panic "Cryptol.Eval.Value"

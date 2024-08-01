@@ -7,7 +7,7 @@ module LittleEndian where
 
 // Takes a finite sequence of bytes, and turns them into a word via
 // a little-endian interpretation
-littleendian : {a}(fin a) => [a][8] -> [a*8]
+littleendian : {a} [a][8] -> [a*8]
 littleendian b = join(reverse b)
 
 property littleendian_passes_tests =

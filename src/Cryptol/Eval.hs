@@ -258,7 +258,6 @@ checkProp = \case
       PC PEqual | [n1, n2] <- ns -> n1 == n2
       PC PNeq | [n1, n2] <- ns -> n1 /= n2
       PC PGeq | [n1, n2] <- ns -> n1 >= n2
-      PC PFin | [n] <- ns -> n /= Inf
       -- TODO: instantiate UniqueFactorization for Nat'?
       -- PC PPrime | [n] <- ns -> isJust (isPrime n) 
       PC PTrue -> True
@@ -269,7 +268,6 @@ checkProp = \case
     toNat' :: Type -> Nat'
     toNat' = \case
       TCon (TC (TCNum n)) [] -> Nat n
-      TCon (TC TCInf) [] -> Inf
       prop -> panic "checkProp" ["Expected `" ++ pretty prop ++ "` to be an evaluated numeric type"]
 
 
@@ -593,7 +591,6 @@ evalSel sym val sel = case sel of
   listSel n v =
     case v of
       VSeq _ vs       -> lookupSeqMap vs (toInteger n)
-      VStream vs      -> lookupSeqMap vs (toInteger n)
       VWord _ wv      -> VBit <$> indexWordValue sym wv (toInteger n)
       _               -> do vdoc <- ppValue sym defaultPPOpts val
                             evalPanic "Cryptol.Eval.evalSel"
@@ -642,7 +639,6 @@ evalSetSel sym _tyv e sel v =
   setList n =
     case e of
       VSeq i mp  -> pure $ VSeq i  $ updateSeqMap mp n v
-      VStream mp -> pure $ VStream $ updateSeqMap mp n v
       VWord i m  -> VWord i <$> updateWordValue sym m n asBit
       _ -> bad "Sequence update on a non-sequence."
 
@@ -783,23 +779,8 @@ evalMatch sym (lsz, lenv) m = seq lsz $ case m of
                       lookupSeqMap vss q >>= \case
                         VWord _ w   -> VBit <$> indexWordValue sym w r
                         VSeq _ xs'  -> lookupSeqMap xs' r
-                        VStream xs' -> lookupSeqMap xs' r
                         _           -> evalPanic "evalMatch" ["Not a list value"]
         return (nMul lsz len, bindVarList n vs lenv')
-
-      {- Select from a sequence of infinite length.  Note that only the
-         first generator in a sequence of generators may have infinite length,
-         so we can just evaluate it once an for all (i.e., it does not change
-         on each loop iteration, as it may happen in the finite case). -}
-      Inf -> do
-        let env = EvalEnv (leStatic lenv) (leTypes lenv)
-        xs <- evalExpr sym env expr
-        let vs i = case xs of
-                     VWord _ w   -> VBit <$> indexWordValue sym w i
-                     VSeq _ xs'  -> lookupSeqMap xs' i
-                     VStream xs' -> lookupSeqMap xs' i
-                     _           -> evalPanic "evalMatch" ["Not a list value"]
-        return (Inf, bindVarList n vs lenv)
 
     where
       len  = evalNumType (leTypes lenv) l

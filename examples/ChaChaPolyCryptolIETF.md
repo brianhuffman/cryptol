@@ -461,13 +461,14 @@ The output is an encrypted message of the same length.
 
 ```cryptol
 // TODO: reorder args below, and get rid of this wrapper
-ChaCha20Encrypt : {a} (fin a) => ChaChaKey -> [32] -> [96] -> [a][8] -> [a][8]
+ChaCha20Encrypt : {a} ChaChaKey -> [32] -> [96] -> [a][8] -> [a][8]
 ChaCha20Encrypt k i n msg = ChaCha20EncryptBytes msg k n i
 
+ChaCha20EncryptBytes : {a} [a][8] -> ChaChaKey -> [96] -> [32] -> [a][8]
 ChaCha20EncryptBytes msg k n i= [ m ^ kb | m <- msg | kb <- keystream ] where
-    keystream = groupBy`{8}(join (join (ChaCha20ExpandKey k n i)))
+    keystream = groupBy`{8}(join (join (ChaCha20ExpandKey`{a/^64} k n i)))
 
-ChaCha20ExpandKey : ChaChaKey -> [96] -> [32] -> [inf]ChaChaState
+ChaCha20ExpandKey : {l} ChaChaKey -> [96] -> [32] -> [l]ChaChaState
 ChaCha20ExpandKey k n i = [ ToLittleEndian (ChaCha20Block k n j)
                           | j <- ([i ...]:[_][32])
                           ]
@@ -680,8 +681,7 @@ The inputs to Poly1305 are:
 The output is a 128-bit tag.
 
 ```cryptol
-Poly1305 : {m} (fin m)
-           => [256] -> [m][8] -> [16][8]
+Poly1305 : {m} [256] -> [m][8] -> [16][8]
 ```
 
 Set the constant prime "P" be 2^130-5.
@@ -714,7 +714,7 @@ Next, divide the message into 16-byte blocks. The last block might be shorter:
 ```cryptol
     // pad all the blocks uniformly (we'll handle the final block later)
     paddedBlocks = [ 0x01 # (littleendian block)
-                   | block <- groupBy`{16}(msg # (zero:[inf][8])) ]
+                   | block <- groupBy`{16,m/^16}(msg # (zero:[_][8])) ]
 ```
  * If the block is not 17 bytes long (the last block), then left-pad it with
    zeros.  This is meaningless if you're treating it them as numbers.
@@ -808,7 +808,7 @@ values of the accumulator:
 ```cryptol
 // TODO: refactor the Poly function in terms of this AccumBlocks
 // challenge: doing so while maintaining the clean literate correspondence with the spec
-AccumBlocks : {m, floorBlocks, rem} (fin m, floorBlocks == m/16, rem == m - floorBlocks*16)
+AccumBlocks : {m, floorBlocks, rem} (floorBlocks == m/16, rem == m - floorBlocks*16)
               => [256] -> [m][8] -> ([_][136], [136])
 
 AccumBlocks key msg = (accum, lastAccum) where
@@ -817,12 +817,13 @@ AccumBlocks key msg = (accum, lastAccum) where
     r = littleendian ((Poly1305_clamp (split ru)) # [0x00])
     s = littleendian ((split su) # [0x00])
     // pad all the blocks uniformly (we'll handle the final block later)
+    paddedBlocks : [floorBlocks][136]
     paddedBlocks = [ 0x01 # (littleendian block)
-                   | block <- groupBy`{16}(msg # (zero:[inf][8])) ]
+                   | block <- groupBy`{16}(take`{16*floorBlocks} msg) ]
     lastBlock : [136]
     lastBlock = zero # 0x01 # (littleendian (drop`{16*floorBlocks} msg))
-    accum:[_][136]
-    accum = [zero:[136]] # [ computeElt a b r P | a <- accum | b <- paddedBlocks ]
+    accum:[floorBlocks+1][136]
+    accum = [zero:[136]] # [ computeElt a b r P | a <- take`{back=1} accum | b <- paddedBlocks ]
     //       ^ the accumulator starts at zero
     lastAccum : [136]
     lastAccum = if `rem == 0
@@ -1019,8 +1020,8 @@ data algorithm.  The inputs to AEAD_CHACHA20-POLY1305 are:
 
 ```cryptol
 AEAD_CHACHA20_POLY1305 : {m, n}
-                         (fin m, 64 >= width m
-                         ,fin n, 64 >= width n )
+                         (64 >= width m
+                         ,64 >= width n )
                        => [256] -> [96] -> [m][8] -> [n][8]
                        -> [m+16][8]
 
@@ -1096,8 +1097,7 @@ The output from the AEAD is twofold:
 Decryption is pretty much the same thing.
 
 ```cryptol
-AEAD_CHACHA20_POLY1305_DECRYPT : {m, n} (fin m, fin n
-                                 ,64 >= width m, 64 >= width n)
+AEAD_CHACHA20_POLY1305_DECRYPT : {m, n} (64 >= width m, 64 >= width n)
                                  => [256] -> [96]
                                     -> [m+16][8] -> [n][8]
                                     -> ([m][8], Bit)
@@ -2127,12 +2127,12 @@ ToLittleEndian s = [littleendian (split words) | words <- s]
 
 // Takes a finite sequence of bytes, and turns them into a word via
 // a little-endian interpretation
-littleendian : {a}(fin a) => [a][8] -> [a*8]
+littleendian : {a} [a][8] -> [a*8]
 littleendian b = join(reverse b)
 
 // Converts a bytestring encoded like "fe:ed:fa:ce." into a sequence of bytes
 // Note: the trailing punctuation is needed
-parseHexString : {n} (fin n) => [3*n][8] -> [n][8]
+parseHexString : {n} [3*n][8] -> [n][8]
 parseHexString hexString = [ charsToByte (take`{2} cs) | cs <- groupBy`{3} hexString ] where
     charsToByte : [2][8] -> [8]
     charsToByte [ ub, lb ] = (charToByte ub) << 4 || (charToByte lb)

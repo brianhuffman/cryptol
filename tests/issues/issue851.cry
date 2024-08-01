@@ -3,13 +3,13 @@ type base t = { zero: t }
 B: base Bool
 B = { zero = False }
 
-foo: {t,k} (fin k) => base t -> [k]t
+foo: {t,k} base t -> [k]t
 foo b = repeat b.zero
 
-bar: {t,k} (fin k, k>=1) => [k]t -> [k]t -> [k]t -> [k]t
+bar: {t,k} (k >= 1) => [k]t -> [k]t -> [k]t -> [k]t
 bar p q m = p
 
-baz: {k,t} (fin k, k >= 1) => [k]t -> [k]t -> [k]t
+baz: {k,t} (k >= 1) => [k]t -> [k]t -> [k]t
 baz p q = q
 
 property problem p =

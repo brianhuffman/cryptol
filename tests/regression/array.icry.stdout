@@ -17,10 +17,10 @@ Symbols
   arrayRangeEqual :
     {n, a} Array [n] a -> [n] -> Array [n] a -> [n] -> [n] -> Bool
   arrayRangeLookup :
-    {a, b, n} (Integral a, fin n, LiteralLessThan n a) => Array a b -> a -> [n]b
+    {a, b, n} (Integral a, LiteralLessThan n a) => Array a b -> a -> [n]b
   arrayRangeUpdate :
     {a, b, n}
-      (Integral a, fin n, LiteralLessThan n a) =>
+      (Integral a, LiteralLessThan n a) =>
       Array a b -> a -> [n]b -> Array a b
   arraySet : {n, a} Array [n] a -> [n] -> a -> [n] -> Array [n] a
   arrayUpdate : {a, b} Array a b -> a -> b -> Array a b

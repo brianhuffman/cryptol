@@ -4,7 +4,7 @@ Institute for System Dynamics and Control Theory
 Russian Academy of Sciences
 */
 
-A51_stream : [19] -> [22] -> [23] -> [inf]
+A51_stream : {n} (n >= 1) => [19] -> [22] -> [23] -> [n]
 A51_stream R1 R2 R3 = R1s ^ R2s ^ R3s
   where
     (R1s, R1f) = lfsrki <| x^^19 + x^^18 + x^^17 + x^^14 + 1 |>  R1c R1
@@ -21,18 +21,18 @@ A51(reg1, reg2, reg3) = keystream
   where
     keystream = take`{N} (A51_stream reg1 reg2 reg3)
 
-lfsrki_step : {d} (fin d, d >=1) => [d+1] -> Bit -> [d] -> [d]
+lfsrki_step : {d} (d >= 1) => [d+1] -> Bit -> [d] -> [d]
 lfsrki_step poly cond fill = fill'
  where
    feedback_bit = if(poly@0) then prefix (^) (reverse([False]#fill) && poly)
                              else error "polynomial does not have high-bit set."
-   fill' = if cond then [feedback_bit]#(take fill) else fill
+   fill' = if cond then [feedback_bit]#(take`{d-1} fill) else fill
 
-lfsrki : {d} (fin d, d >=1) => [d+1] -> [inf] -> [d] -> ([inf], [inf][d])
+lfsrki : {d, n} (d >= 1, n >= 1) => [d+1] -> [n] -> [d] -> ([n], [n][d])
 lfsrki poly conds init = (stream, fills)
   where
     lfsrki' = lfsrki_step poly
-    fills = [init] # [ lfsrki' c f | c <- conds | f <- fills]
+    fills = [init] # [ lfsrki' c f | c <- conds | f <- take`{back=1} fills ]
     stream = [ f!0 | f <- fills ]
 
 

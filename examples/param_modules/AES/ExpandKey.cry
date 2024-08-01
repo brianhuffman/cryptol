@@ -23,15 +23,16 @@ expandKey key = ( keys @ 0
           keys = expandKeyForever seed
 
 
-expandKeyForever : [Nk][4][8] -> [inf]RoundKey
+expandKeyForever : {n} [Nk][4][8] -> [n]RoundKey
 expandKeyForever seed = [ transpose g | g <- split (keyWS seed) ]
 
-keyWS : [Nk][4][8] -> [inf][4][8]
-keyWS seed    = xs
-     where xs = seed # [ NextWord i prev old
-                       | i    <- [ `Nk ... ]
-                       | prev <- drop`{Nk-1} xs
-                       | old  <- xs
+keyWS : {n} [Nk][4][8] -> [n][4][8]
+keyWS seed    = take`{n} xs
+     where xs : [Nk+n][4][8]
+           xs = seed # [ NextWord i prev old
+                       | i    <- [ `Nk ... ] : [n]_
+                       | prev <- take`{n} (drop`{Nk-1} xs)
+                       | old  <- take`{n} xs
                        ]
 
 // Key expansion

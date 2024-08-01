@@ -33,7 +33,6 @@ typeInterval varInfo = go
       TUser _ _ t -> go t
       TCon tc ts ->
         case (tc, ts) of
-          (TC TCInf, [])      -> iConst Inf
           (TC (TCNum n), [])  -> iConst (Nat n)
           (TF TCAdd, [x,y])   -> iAdd (go x) (go y)
           (TF TCSub, [x,y])   -> iSub (go x) (go y)
@@ -106,11 +105,7 @@ computePropIntervals ints ps0 = go (3 :: Int) False ints ps0
 -- | What we learn about variables from a single prop.
 propInterval :: Map TVar Interval -> Prop -> [(TVar,Interval)]
 propInterval varInts prop = catMaybes
-  [ do ty <- pIsFin prop
-       x  <- tIsVar ty
-       return (x,iAnyFin)
-
-  , do (l,r) <- pIsEqual prop
+  [ do (l,r) <- pIsEqual prop
        x     <- tIsVar l
        return (x,typeInterval varInts r)
 
@@ -121,7 +116,7 @@ propInterval varInts prop = catMaybes
   , do (l,r) <- pIsGeq prop
        x     <- tIsVar l
        let int = typeInterval varInts r
-       return (x,int { iUpper = Just Inf })
+       return (x,int { iUpper = Nothing })
 
   , do (l,r) <- pIsGeq prop
        x     <- tIsVar r
@@ -142,11 +137,11 @@ propInterval varInts prop = catMaybes
 
     , do (e,_) <- pIsValidFloat prop
          x <- tIsVar e
-         pure (x, iAnyFin)
+         pure (x, iAny)
 
     , do (_,p) <- pIsValidFloat prop
          x <- tIsVar p
-         pure (x, iAnyFin)
+         pure (x, iAny)
 
   ]
 
@@ -180,20 +175,14 @@ ppInterval x = brackets (hsep [ ppr (iLower x)
   where
   ppr a = case a of
            Nat n -> integer n
-           Inf   -> text "inf"
 
 
 iIsExact :: Interval -> Maybe Nat'
 iIsExact i = if iUpper i == Just (iLower i) then Just (iLower i) else Nothing
 
-iIsFin :: Interval -> Bool
-iIsFin i = case iUpper i of
-             Just Inf -> False
-             _        -> True
-
 -- | Finite positive number. @[1 ..  inf)@.
 iIsPosFin :: Interval -> Bool
-iIsPosFin i = iLower i >= Nat 1 && iIsFin i
+iIsPosFin i = iLower i >= Nat 1
 
 
 -- | Returns 'True' when the intervals definitely overlap, and 'False'
@@ -213,9 +202,7 @@ iIntersect :: Interval -> Interval -> Maybe Interval
 iIntersect i j =
   case (lower,upper) of
     (Nat l, Just (Nat u)) | l <= u -> ok
-    (Nat _, Just  Inf)             -> ok
     (Nat _, Nothing)               -> ok
-    (Inf,   Just Inf)              -> ok
     _                              -> Nothing
   where
 
@@ -226,18 +213,14 @@ iIntersect i j =
   upper = case (iUpper i, iUpper j) of
             (Just a, Just b)            -> Just (nMin a b)
             (Nothing,Nothing)           -> Nothing
-            (Just l,Nothing) | l /= Inf -> Just l
-            (Nothing,Just r) | r /= Inf -> Just r
+            (Just l,Nothing)            -> Just l
+            (Nothing,Just r)            -> Just r
             _                           -> Nothing
 
 
 -- | Any value
 iAny :: Interval
-iAny = Interval (Nat 0) (Just Inf)
-
--- | Any finite value
-iAnyFin :: Interval
-iAnyFin = Interval (Nat 0) Nothing
+iAny = Interval (Nat 0) Nothing
 
 -- | Exactly this value
 iConst :: Nat' -> Interval
@@ -251,13 +234,9 @@ iAdd i j = Interval { iLower = nAdd (iLower i) (iLower j)
                     , iUpper = case (iUpper i, iUpper j) of
                                  (Nothing, Nothing) -> Nothing
                                  (Just x, Just y)   -> Just (nAdd x y)
-                                 (Nothing, Just y)  -> upper y
-                                 (Just x, Nothing)  -> upper x
+                                 (Nothing, Just _)  -> Nothing
+                                 (Just _, Nothing)  -> Nothing
                     }
-  where
-  upper x = case x of
-              Inf -> Just Inf
-              _   -> Nothing
 
 iMul :: Interval -> Interval -> Interval
 iMul i j = Interval { iLower = nMul (iLower i) (iLower j)
@@ -269,7 +248,6 @@ iMul i j = Interval { iLower = nMul (iLower i) (iLower j)
                     }
   where
   upper x = case x of
-              Inf   -> Just Inf
               Nat 0 -> Just (Nat 0)
               _     -> Nothing
 
@@ -283,13 +261,11 @@ iExp i j = Interval { iLower = nExp (iLower i) (iLower j)
                     }
   where
   upperL x = case x of
-               Inf   -> Just Inf
                Nat 0 -> Just (Nat 0)
                Nat 1 -> Just (Nat 1)
                _     -> Nothing
 
   upperR x = case x of
-               Inf   -> Just Inf
                Nat 0 -> Just (Nat 1)
                _     -> Nothing
 
@@ -298,9 +274,7 @@ iMin i j = Interval { iLower = nMin (iLower i) (iLower j)
                     , iUpper = case (iUpper i, iUpper j) of
                                  (Nothing, Nothing)   -> Nothing
                                  (Just x, Just y)     -> Just (nMin x y)
-                                 (Nothing, Just Inf)  -> Nothing
                                  (Nothing, Just y)    -> Just y
-                                 (Just Inf, Nothing)  -> Nothing
                                  (Just x, Nothing)    -> Just x
                     }
 
@@ -309,9 +283,7 @@ iMax i j = Interval { iLower = nMax (iLower i) (iLower j)
                     , iUpper = case (iUpper i, iUpper j) of
                                  (Nothing, Nothing)   -> Nothing
                                  (Just x, Just y)     -> Just (nMax x y)
-                                 (Nothing, Just Inf)  -> Just Inf
                                  (Nothing, Just _)    -> Nothing
-                                 (Just Inf, Nothing)  -> Just Inf
                                  (Just _, Nothing)    -> Nothing
                     }
 
@@ -328,7 +300,7 @@ iSub i j = Interval { iLower = lower, iUpper = upper }
   upper = case iUpper i of
             Nothing -> Nothing
             Just x  -> case nSub x (iLower j) of
-                         Nothing -> Just Inf {- malformed subtraction -}
+                         Nothing -> Nothing {- malformed subtraction -}
                          Just y  -> Just y
 
 
@@ -344,7 +316,7 @@ iDiv i j = Interval { iLower = lower, iUpper = upper }
   upper = case iUpper i of
             Nothing -> Nothing
             Just x  -> case nDiv x (nMax (iLower i) (Nat 1)) of
-                         Nothing -> Just Inf
+                         Nothing -> Nothing
                          Just y  -> Just y
 
 
@@ -368,7 +340,7 @@ iCeilDiv i j = Interval { iLower = lower, iUpper = upper }
   upper = case iUpper i of
             Nothing -> Nothing
             Just x  -> case nCeilDiv x (nMax (iLower i) (Nat 1)) of
-                         Nothing -> Just Inf
+                         Nothing -> Nothing
                          Just y  -> Just y
 
 
@@ -386,4 +358,4 @@ iLenFromThenTo :: Interval -> Interval -> Interval -> Interval
 iLenFromThenTo i j k
   | Just x <- iIsExact i, Just y <- iIsExact j, Just z <- iIsExact k
   , Just r <- nLenFromThenTo x y z = iConst r
-  | otherwise = iAnyFin
+  | otherwise = iAny

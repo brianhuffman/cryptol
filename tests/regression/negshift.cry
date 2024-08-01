@@ -1,16 +1,16 @@
-negLeftShift : {n, a} (fin n, Zero a, Cmp a) => [n]a -> Integer -> Bit
+negLeftShift : {n, a} (Zero a, Cmp a) => [n]a -> Integer -> Bit
 negLeftShift xs i = xs << i == xs >> (negate i)
 
-negRightShift : {n, a} (fin n, Zero a, Cmp a) => [n]a -> Integer -> Bit
+negRightShift : {n, a} (Zero a, Cmp a) => [n]a -> Integer -> Bit
 negRightShift xs i = xs >> i == xs << (negate i)
 
-negLeftRotate : {n, a} (fin n, Cmp a) => [n]a -> Integer -> Bit
+negLeftRotate : {n, a} (Cmp a) => [n]a -> Integer -> Bit
 negLeftRotate xs i = xs <<< i == xs >>> (negate i)
 
-negRightRotate : {n, a} (fin n, Cmp a) => [n]a -> Integer -> Bit
+negRightRotate : {n, a} (Cmp a) => [n]a -> Integer -> Bit
 negRightRotate xs i = xs >>> i == xs <<< (negate i)
 
-negSshr : {n} (fin n, n >= 1) => [n] -> Integer -> Bit
+negSshr : {n} (n >= 1) => [n] -> Integer -> Bit
 negSshr xs i = i < 0 ==> xs >>$ i == xs << (negate i)
 
 property nls1 = negLeftShift`{8, Bit}

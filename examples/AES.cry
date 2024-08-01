@@ -34,7 +34,7 @@ type State       = [4][Nb]GF28
 type RoundKey    = State
 type KeySchedule = (RoundKey, [Nr-1]RoundKey, RoundKey)
 // GF28 operations
-gf28Add : {n} (fin n) => [n]GF28 -> GF28
+gf28Add : {n} [n]GF28 -> GF28
 gf28Add ps = sums ! 0
   where sums = [zero] # [  p ^ s | p <- ps | s <- sums ]
 
@@ -55,14 +55,14 @@ gf28Pow (n, k) = pow k
 gf28Inverse : GF28 -> GF28
 gf28Inverse x = gf28Pow (x, 254)
 
-gf28DotProduct : {n} (fin n) => ([n]GF28, [n]GF28) -> GF28
+gf28DotProduct : {n} ([n]GF28, [n]GF28) -> GF28
 gf28DotProduct (xs, ys) = gf28Add [ gf28Mult (x, y) | x <- xs
                                                     | y <- ys ]
 
-gf28VectorMult : {n, m} (fin n) => ([n]GF28, [m][n]GF28) -> [m]GF28
+gf28VectorMult : {n, m} ([n]GF28, [m][n]GF28) -> [m]GF28
 gf28VectorMult (v, ms) = [ gf28DotProduct(v, m) | m <- ms ]
 
-gf28MatrixMult : {n, m, k} (fin m) => ([n][m]GF28, [m][k]GF28) -> [n][k]GF28
+gf28MatrixMult : {n, m, k} ([n][m]GF28, [m][k]GF28) -> [n][k]GF28
 gf28MatrixMult (xss, yss) = [ gf28VectorMult(xs, yss') | xs <- xss ]
    where yss' = transpose yss
 
@@ -138,10 +138,10 @@ NextWord(i, prev, old) = old ^ mask
                      else prev
 
 
-ExpandKeyForever : [Nk][4][8] -> [inf]RoundKey
+ExpandKeyForever : {n} (n >= 1) => [Nk][4][8] -> [n]RoundKey
 ExpandKeyForever seed = [ transpose g | g <- groupBy`{4} (keyWS seed) ]
 
-keyWS : [Nk][4][8] -> [inf][4][8]
+keyWS : {n} (n >= 4) => [Nk][4][8] -> [n][4][8]
 keyWS seed    = xs
      where xs = seed # [ NextWord(i, prev, old)
                        | i    <- [ `Nk ... ]
@@ -153,6 +153,7 @@ ExpandKey : [AESKeySize] -> KeySchedule
 ExpandKey key = (keys @ 0, keys @@ [1 .. (Nr - 1)], keys @ `Nr)
   where   seed : [Nk][4][8]
           seed = split (split key)
+          keys : [Nr+1]RoundKey
           keys = ExpandKeyForever seed
 
 fromKS : KeySchedule -> [Nr+1][4][32]

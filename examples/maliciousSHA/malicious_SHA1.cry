@@ -22,7 +22,7 @@ malicious_sha1 msg k = malicious_sha1' rmsg k
 	where
 		rmsg = pad(join(reverse (groupBy`{8} (join (reverse eve1)))))
 
-malicious_sha1' : {chunks} (fin chunks) => [chunks][512] -> [4][32] -> [160]
+malicious_sha1' : {chunks} [chunks][512] -> [4][32] -> [160]
 malicious_sha1' pmsg k = join (Hs!0)
   where
     Hs = [[0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476, 0xc3d2e1f0]] #
@@ -124,8 +124,7 @@ As a summary, a "1" followed by m "0"s followed by a 64-
 */
 
 pad : {msgLen}
-     ( fin msgLen
-     , 64 >= width msgLen                             // message width fits in a word
+     ( 64 >= width msgLen                             // message width fits in a word
      )
      => [msgLen] -> [(msgLen + 65) /^ 512][512]
 pad msg = split (msg # [True] # (zero:[(msgLen + 65) %^ 512]) # (`msgLen:[64]))

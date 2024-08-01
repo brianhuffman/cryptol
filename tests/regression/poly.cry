@@ -1,19 +1,19 @@
 // n-degree polynomials over a
 newtype Poly n a = { coeffs : [n+1]a }
 
-evalPoly : {n, a} (fin n, Ring a) => Poly n a -> a -> a
+evalPoly : {n, a} (Ring a) => Poly n a -> a -> a
 evalPoly p x = foldl (+) zero terms
   where
     terms = [ c*a | c <- p.coeffs | a <- xs ]
-    xs    = [fromInteger 1]#[ x*a | a <- xs ]
+    xs    = [fromInteger 1]#[ x*a | a <- take`{n} xs ]
 
-polyConst : {n, a} (fin n, Ring a) => a -> Poly n a
+polyConst : {n, a} (Ring a) => a -> Poly n a
 polyConst a = Poly { coeffs = [a]#zero }
 
-polyAdd : {n, a} (fin n, Ring a) => Poly n a -> Poly n a -> Poly n a
+polyAdd : {n, a} (Ring a) => Poly n a -> Poly n a -> Poly n a
 polyAdd p1 p2 = Poly { coeffs = zipWith (+) p1.coeffs p2.coeffs }
 
-polyMul : {n1, n2, a} (fin n1, fin n2, Ring a) =>
+polyMul : {n1, n2, a} (Ring a) =>
   Poly n1 a -> Poly n2 a -> Poly (n1+n2) a
 polyMul p1 p2 = foldl polyAdd (polyConst zero) ps
   where

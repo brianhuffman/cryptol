@@ -10,16 +10,16 @@ module Base58 where
 // produce a length value which we return to the callee.
 
 // Convert an N bit number (33 bytes for minilock) into a big endian base 58 representation (46 byte max for minilock).
-base58enc : {n,m} (fin n, fin m, n >= 6 ) => [n] -> [m][8]
-base58enc ns = [ x.1 | x <- reverse (take `{m} (drop `{1} enc))]
+base58enc : {n,m} (n >= 6) => [n] -> [m][8]
+base58enc ns = [ x.1 | x <- reverse (drop `{1} enc)]
  where
-  enc      = [(ns,zero)] # [ (n/58,charOf (n%58)) | (n,_) <- enc ]
+  enc      = [(ns,zero)] # [ (n/58,charOf (n%58)) | (n,_) <- take`{back=1} enc ]
   charOf x = charMap @ x
 
 charMap : [58][8]
 charMap = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
 
-base58dec : {n,m} (fin n, fin m, n >= 1, n >= width m, n >= 8) => [m][8] -> [n]
+base58dec : {n,m} (n >= 1, n >= width m, n >= 8) => [m][8] -> [n]
 base58dec ms = sum [ (dec m) * 58 ^^ i | m <- reverse ms | i <- [0..m] ]
  where
   dec : [8] -> [n]

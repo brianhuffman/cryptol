@@ -1,6 +1,6 @@
 WStep:
     {n}
-    (fin n, n >= 2) ->
+    (n >= 2) ->
     ([128] -> [128]) -> [n][64] -> [64] -> [n][64]
 WStep CIPHk ([A] # Rs) t = [A'] # Rs'
   where

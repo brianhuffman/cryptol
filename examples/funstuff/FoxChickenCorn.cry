@@ -22,10 +22,10 @@ fox     = 0x8
 // To see this work, try:
 // :sat solutionInNmoves : [6]BankState -> Bit
 
-solutionInNmoves : {n} (fin n) => [n] BankState -> Bit
+solutionInNmoves : {n} [n] BankState -> Bit
 property solutionInNmoves states = validMoveSequence ([startState] # states # [doneState])
 
-validMoveSequence : {n} (fin n, n >= 1) => [n] BankState -> Bit
+validMoveSequence : {n} (n >= 1) => [n] BankState -> Bit
 validMoveSequence states = all [validMove a b
                                | a <- states
                                | b <- drop`{1} states]
@@ -69,11 +69,11 @@ foxWithChicken : OneBank -> Bit
 foxWithChicken b = (b && (fox || chicken)) == (fox || chicken)
 
 // utilities
-all : {n} (fin n) => [n] -> Bit
+all : {n} [n] -> Bit
 all xs = xs == ~zero
 
 // "population count" - how many bits are on
-popCount : {a} (fin a, a >= 1) => [a] -> [width a]
+popCount : {a} (a >= 1) => [a] -> [width a]
 popCount bs = ic ! 0 where
     ic = [0] # [ if elt then prev + 1 else prev | elt <- bs | prev <- ic]
 
@@ -91,7 +91,7 @@ ppArray = [farmerString, chickenString, cornString, foxString]
 ppBits : [4] -> [4]StringRep
 ppBits s =  [ if b then ppArray!i else noString
             | b <- s
-            | i <- [0 ...]:[_][4] ]
+            | i <- [0..3]:[4][4] ]
 
 // takes a sequence of states and derives what moved, and in which direction for each transition
 extractMoves : {a} [a+1]BankState -> [a](DirRep, [4]StringRep)

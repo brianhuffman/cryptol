@@ -122,7 +122,7 @@ Salsa20 xs = join ar
   where
     ar = [ littleendian_inverse words | words <- xw + zs@(`r/2 : [8]) ]
     xw = [ littleendian xi | xi <- split xs ]
-    zs = [xw] # [ doubleround zi | zi <- zs ]
+    zs = [xw] # [ doubleround zi | zi <- take`{back=1} zs ]
 
 property Salsa20_bijective a b = (a == b) || (Salsa20 `{r=20} a != Salsa20 `{r=20} b)
 property Salsa20_passes_tests =
@@ -185,14 +185,14 @@ Salsa20_expansion(k, n) = z
 Salsa20_encrypt : {a, l} (a >= 1, 2 >= a, l <= 2^^70) => ([16*a][8], [8][8], [l][8]) -> [l][8]
 Salsa20_encrypt(k, v, m) = c
   where
-    salsa = take (join [ Salsa20_expansion(k, v#(split i)) | i <- [0, 1 ... ] ])
+    salsa = take`{back=l%^64} (join [ Salsa20_expansion(k, v#(split i)) | i <- [0, 1 ... ] : [l/^64]Counter ])
     c     = m ^ salsa
 
 HSalsa20 : {r} (8 >= width r) => Key -> Nonce -> [8][32]
 HSalsa20 key0 nonce0 = zs @@ ([0,5,10,15,6,7,8,9] : [_][8])
   where
   zs    = infZs @ (`r/2 :[8])
-  infZs = [xs] # [ doubleround x | x <- infZs ]
+  infZs = [xs] # [ doubleround x | x <- take`{back=1} infZs ]
 
   nonce                         = [ littleendian (split n) | n <- split (join nonce0)]
   [x0,x5,x10,x15]               = Salsa20_Constant
@@ -229,13 +229,13 @@ XSalsa20 key0 nonce0 ctr =
   xs'       = [ x'0 ,x'1 ,x'2 ,x'3 ,x'4 ,x'5 ,x'6 ,x'7 ,x'8
               , x'9 ,x'10 ,x'11 ,x'12 ,x'13 ,x'14 ,x'15
               ]
-  infZs'    = [xs'] # [ doubleround x | x <- infZs' ]
+  infZs'    = [xs'] # [ doubleround x | x <- take`{back=1} infZs' ]
   zs'       = infZs' @ (`r/2 : [8])
 
 XSalsa20_expansion : {n,r} (8 >= width r, 64 >= width n) => Key -> Nonce -> [n][8]
 XSalsa20_expansion k n = take (join ks)
    where
-   ks = [XSalsa20 `{r=r} k n i | i <- [0...]]
+   ks = [XSalsa20 `{r=r} k n i | i <- [0..n/^64]]
 
 XSalsa20_encrypt : {n,r} (8 >= width r, 64 >= width n) => Key -> Nonce -> [n][8] -> [n][8]
 XSalsa20_encrypt k n msg = ks ^ msg

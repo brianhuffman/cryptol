@@ -177,7 +177,7 @@ primitive number : {val, rep} Literal val rep => rep
  * An alternative name for 'number', present for backward compatibility.
  */
 demote : {val, rep} Literal val rep => rep
-demote = number`{val}
+demote = number{val}
 
 /**
  * Return the length of a sequence.  Note that the result depends only
@@ -533,13 +533,13 @@ primitive (!=) : {a} (Eq a) => a -> a -> Bit
  * Compare the outputs of two functions for equality.
  */
 (===) : {a, b} (Eq b) => (a -> b) -> (a -> b) -> (a -> Bit)
-f === g = \ x -> f x == g x
+f === g = \ x -> f(x) == g(x)
 
 /**
  * Compare the outputs of two functions for inequality.
  */
 (!==) : {a, b} (Eq b) => (a -> b) -> (a -> b) -> (a -> Bit)
-f !== g = \x -> f x != g x
+f !== g = \x -> f(x) != g(x)
 
 
 // The Cmp class ---------------------------------------------------
@@ -595,7 +595,7 @@ max x y = if x > y then x else y
  * the identity function on [n].
  */
 abs : {a} (Cmp a, Ring a) => a -> a
-abs x = if x < fromInteger 0 then negate x else x
+abs x = if x < fromInteger(0) then negate(x) else x
 
 
 // The SignedCmp class ----------------------------------------------
@@ -752,7 +752,7 @@ primitive (>>$) : {n, ix} (n >= 1, Integral ix) => [n] -> ix -> [n]
 
 /**
  * The ceiling of the base-2 logarithm of an unsigned bitvector.
- * We set 'lg2 0 = 0'.
+ * We set 'lg2(0) = 0'.
  */
 primitive lg2 : {n} [n] -> [n]
 
@@ -794,7 +794,7 @@ primitive (#) : {front, back, a} [front]a -> [back]a -> [front + back] a
  * 'splitAt z = (x, y)' iff 'x # y = z'.
  */
 splitAt : {front, back, a} [front + back]a -> ([front]a, [back]a)
-splitAt xs = (take`{front,back} xs, drop`{front,back} xs)
+splitAt xs = (take{front,back}(xs), drop{front,back}(xs))
 
 /**
  * Concatenates a list of sequences.
@@ -833,7 +833,7 @@ primitive drop : {front, back, a} [front + back]a -> [back]a
  * Drop the first (left-most) element of a sequence.
  */
 tail : {n, a} [1 + n]a -> [n]a
-tail xs = drop`{1} xs
+tail xs = drop{1}(xs)
 
 /**
  * Return the first (left-most) element of a sequence.
@@ -853,7 +853,7 @@ last xs = xs ! 0
  * of 'each' elements.
  */
 groupBy : {each, parts, a} [parts * each]a -> [parts][each]a
-groupBy = split`{parts=parts}
+groupBy = split{parts=parts}
 
 /**
  * Left shift.  The first argument is the sequence to shift, the second is the
@@ -933,9 +933,9 @@ primitive updateEnd : {n, a, ix} (Integral ix) => [n]a -> ix -> a -> [n]a
  * given update pairs.
  */
 updates : {n, k, ix, a} (Integral ix) => [n]a -> [k]ix -> [k]a -> [n]a
-updates xs0 idxs vals = foldl upd xs0 (zip idxs vals)
+updates xs0 idxs vals = foldl(upd, xs0, zip(idxs, vals))
   where
-    upd xs (i,b) = update xs i b
+    upd xs (i,b) = update(xs, i, b)
 
 /**
  * Perform a series of updates to a sequence.  The first argument is
@@ -945,9 +945,9 @@ updates xs0 idxs vals = foldl upd xs0 (zip idxs vals)
  * given update pairs.
  */
 updatesEnd : {n, k, ix, a} (Integral ix) => [n]a -> [k]ix -> [k]a -> [n]a
-updatesEnd xs0 idxs vals = foldl upd xs0 (zip idxs vals)
+updatesEnd xs0 idxs vals = foldl(upd, xs0, zip(idxs, vals))
   where
-    upd xs (i,b) = updateEnd xs i b
+    upd xs (i,b) = updateEnd(xs, i, b)
 
 /**
  * Produce a sequence using a generating function.
@@ -957,14 +957,14 @@ updatesEnd xs0 idxs vals = foldl upd xs0 (zip idxs vals)
  * 'x = generate (\i -> e)'.
  */
 generate : {n, a, ix} (Integral ix, LiteralLessThan n ix) => (ix -> a) -> [n]a
-generate f = [ f i | i <- [0 .. <n] ]
+generate f = [ f(i) | i <- [0 .. <n] ]
 
 
 /**
  * Sort a sequence of elements. Equivalent to 'sortBy (<=)'.
  */
 sort : {a, n} (Cmp a) => [n]a -> [n]a
-sort = sortBy (<=)
+sort = sortBy((<=))
 
 /**
  * Sort a sequence according to the given less-than-or-equal relation.
@@ -974,13 +974,13 @@ sort = sortBy (<=)
 sortBy : {a, n} (a -> a -> Bit) -> [n]a -> [n]a
 sortBy le ((xs : [n/2]a) # (ys : [n/^2]a)) = zs.0
   where
-    xs' = if `(n/2)  == 1 then xs else sortBy le xs
-    ys' = if `(n/^2) == 1 then ys else sortBy le ys
+    xs' = if `(n/2)  == 1 then xs else sortBy(le, xs)
+    ys' = if `(n/^2) == 1 then ys else sortBy(le, ys)
     zs  = [ if i == `(n/2)        then (ys'@j, i  , j+1) else
             if j == `(n/^2)       then (xs'@i, i+1, j  ) else
-            if le (xs'@i) (ys'@j) then (xs'@i, i+1, j  )
+            if le(xs'@i, ys'@j)   then (xs'@i, i+1, j  )
             else                       (ys'@j, i  , j+1)
-          | (_, i, j) <- take`{n} ([ (undefined, 0, 0) ] # zs)
+          | (_, i, j) <- take{n}([ (undefined, 0, 0) ] # zs)
           ]
 
 // GF_2^n polynomial computations -------------------------------------------
@@ -1035,7 +1035,7 @@ primitive deepseq : {a, b} Eq a => a -> b -> b
  * where reduction to normal form makes sense.
  */
 rnf : {a} Eq a => a -> a
-rnf x = deepseq x x
+rnf x = deepseq(x, x)
 
 /**
  * Raise a run-time error with the given message.
@@ -1048,7 +1048,7 @@ primitive error : {a, n} String n -> a
  * This function can be called at any type.
  */
 undefined : {a} a
-undefined = error "undefined"
+undefined = error("undefined")
 
 /**
  * Assert that the given condition holds, and raise an error
@@ -1056,7 +1056,7 @@ undefined = error "undefined"
  * holds, return the third argument unchanged.
  */
 assert : {a, n} Bit -> String n -> a -> a
-assert pred msg x = if pred then x else error msg
+assert pred msg x = if pred then x else error(msg)
 
 /**
  * Generates random values from a seed.  When called with a function, currently
@@ -1089,7 +1089,7 @@ primitive trace : {n, a, b} String n -> a -> b -> b
  * operation may be difficult to predict.
  */
 traceVal : {n, a} String n -> a -> a
-traceVal msg x = trace msg x x
+traceVal msg x = trace(msg, x, x)
 
 
 /* Functions previously in Cryptol::Extras */
@@ -1110,19 +1110,19 @@ or xs = zero != xs
  * Conjunction after applying a predicate to all elements.
  */
 all : {n, a} (a -> Bit) -> [n]a -> Bit
-all f xs = foldl' (/\) True (map f xs)
+all f xs = foldl'((/\), True, map(f, xs))
 
 /**
  * Disjunction after applying a predicate to all elements.
  */
 any : {n, a} (a -> Bit) -> [n]a -> Bit
-any f xs = foldl' (\/) False (map f xs)
+any f xs = foldl'((\/), False, map(f, xs))
 
 /**
  * Map a function over a sequence.
  */
 map : {n, a, b} (a -> b) -> [n]a -> [n]b
-map f xs = [f x | x <- xs]
+map f xs = [f(x) | x <- xs]
 
 /**
  * Functional left fold.
@@ -1146,8 +1146,8 @@ primitive foldl' : {n, a, b} (Eq a) => (a -> b -> a) -> a -> [n]b -> a
  * foldr (-) 0 [1,2,3] = 0 - (1 - (2 - 3))
  */
 foldr : {n, a, b} (a -> b -> b) -> b -> [n]a -> b
-foldr f acc xs = foldl g acc (reverse xs)
-  where g b a = f a b
+foldr f acc xs = foldl(g, acc, reverse(xs))
+  where g b a = f(a, b)
 
 /**
  * Functional right fold, with strict evaluation of the accumulator value.
@@ -1156,20 +1156,20 @@ foldr f acc xs = foldl g acc (reverse xs)
  * foldr' (-) 0 [1,2,3] = 0 - (1 - (2 - 3))
  */
 foldr' : {n, a, b} (Eq b) => (a -> b -> b) -> b -> [n]a -> b
-foldr' f acc xs = foldl' g acc (reverse xs)
-  where g b a = f a b
+foldr' f acc xs = foldl'(g, acc, reverse(xs))
+  where g b a = f(a, b)
 
 /**
  * Compute the sum of the values in the sequence.
  */
 sum : {n, a} (Eq a, Ring a) => [n]a -> a
-sum xs = foldl' (+) (fromInteger 0) xs
+sum xs = foldl'((+), fromInteger(0), xs)
 
 /**
  * Compute the product of the values in the sequence.
  */
 product : {n, a} (Eq a, Ring a) => [n]a -> a
-product xs = foldl' (*) (fromInteger 1) xs
+product xs = foldl'((*), fromInteger(1), xs)
 
 /**
  * Scan left is like a foldl that also emits the intermediate values.
@@ -1180,7 +1180,7 @@ primitive scanl : {n, a, b}  (a -> b -> a) -> a -> [n]b -> [1+n]a
  * Scan right is like a foldr that also emits the intermediate values.
  */
 scanr : {n, a, b} (a -> b -> b) -> b -> [n]a -> [1+n]b
-scanr f acc xs = reverse (scanl (\a b -> f b a) acc (reverse xs))
+scanr f acc xs = reverse (scanl (\a b -> f(b, a), acc, reverse(xs)))
 
 /**
  * Repeat a value.
@@ -1192,7 +1192,7 @@ repeat x = [ x | _ <- zero : [n] ]
  * 'elem x xs' returns true if x is equal to a value in xs.
  */
 elem : {n, a} (Eq a) => a -> [n]a -> Bit
-elem a xs = any (\x -> x == a) xs
+elem a xs = any(\x -> x == a, xs)
 
 /**
  * Create a list of tuples from two lists.
@@ -1204,23 +1204,23 @@ zip xs ys = [(x,y) | x <- xs | y <- ys]
  * Create a list by applying the function to each pair of elements in the input.
  */
 zipWith : {n, a, b, c} (a -> b -> c) -> [n]a -> [n]b -> [n]c
-zipWith f xs ys = [f x y | x <- xs | y <- ys]
+zipWith f xs ys = [f(x, y) | x <- xs | y <- ys]
 
 /**
  * Transform a function into uncurried form.
  */
 uncurry : {a, b, c} (a -> b -> c) -> (a, b) -> c
-uncurry f = \(a, b) -> f a b
+uncurry f = \(a, b) -> f(a, b)
 
 /**
  * Transform a function into curried form.
  */
 curry : {a, b, c} ((a, b) -> c) -> a -> b -> c
-curry f = \a b -> f (a, b)
+curry f = \a b -> f((a, b))
 
 /**
  * Map a function iteratively over a seed value, producing an infinite
  * list of successive function applications.
  */
 iterate : {a, n} (a -> a) -> a -> [1+n]a
-iterate f z = scanl (\x _ -> f x) z (zero:[n]())
+iterate f z = scanl(\x _ -> f(x), z, zero:[n]())

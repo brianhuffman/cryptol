@@ -593,7 +593,7 @@ longRHS                        :: { Expr PName }
 
 -- Prefix application expression, ends with an atom.
 simpleApp                      :: { Expr PName }
-  : aexprs                        {% mkEApp $1 }
+  : funapp                        {% mkEApp $1 }
 
 -- Prefix application expression, may end with a long expression
 longApp                        :: { Expr PName }
@@ -601,10 +601,22 @@ longApp                        :: { Expr PName }
   | longExpr                      { $1 }
   | simpleApp                     { $1 }
 
-aexprs                         :: { NonEmpty (Expr PName) }
+funapp                         :: { NonEmpty (Expr PName) }
   : aexpr                         { $1 :| [] }
-  | aexprs aexpr                  { cons $2 $1 }
+  | aexpr tyargs                  { (ETypeVal $2) :| [$1] }
+  | aexpr funargs                 { foldr cons ($1 :| []) $2 }
+  | aexpr tyargs funargs          { foldr cons (ETypeVal $2 :| [$1]) $3 }
 
+tyargs                         :: { Type PName }
+  : '{' '}'                       { at ($1,$2) (TTyApp [])             }
+  | '{' field_ty_vals '}'         { at ($1,$3) (TTyApp (reverse $2))   }
+  | '{' type '}'                  { anonTyApp (getLoc ($1,$3)) [$2]    }
+  | '{' tuple_types '}'           { anonTyApp (getLoc ($1,$3)) (reverse $2) }
+
+funargs                        :: { [Expr PName] } -- reverse order
+  : '(' ')'                       { []   }
+  | '(' expr ')'                  { [$2] }
+  | '(' tuple_exprs ')'           { $2   }
 
 -- Expression atom (needs no parens)
 aexpr                          :: { Expr PName }

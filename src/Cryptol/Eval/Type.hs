@@ -23,7 +23,6 @@ import Cryptol.TypeCheck.Solver.InfNat
 import Cryptol.Utils.Panic (panic)
 import Cryptol.Utils.Ident (Ident)
 import Cryptol.Utils.RecordMap
-import Cryptol.Utils.Types
 
 import Data.Maybe(fromMaybe)
 import qualified Data.IntMap.Strict as IntMap
@@ -170,10 +169,6 @@ evalType env ty =
   where
     val = evalValType env
     num = evalNumType env
-    inum x = case num x of
-               Nat i -> i
-               Inf   -> evalPanic "evalType"
-                                  ["Expecting a finite size, but got `inf`"]
 
 -- | Evaluate the body of a newtype, given evaluated arguments
 evalNominalTypeBody ::

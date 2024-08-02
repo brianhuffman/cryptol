@@ -14,9 +14,7 @@ module Cryptol.TypeCheck.Solver.Class
   ( solveZeroInst
   , solveLogicInst
   , solveRingInst
-  , solveFieldInst
   , solveIntegralInst
-  , solveRoundInst
   , solveEqInst
   , solveCmpInst
   , solveSignedCmpInst
@@ -43,9 +41,6 @@ solveZeroInst ty = case tNoUser ty of
   TCon (TC TCInteger) [] -> SolvedIf []
 
   -- Zero Real
-
-  -- Zero Rational
-  TCon (TC TCRational) [] -> SolvedIf []
 
   -- Zero a => Zero [n]a
   TCon (TC TCSeq) [_, a] -> SolvedIf [ pZero a ]
@@ -76,9 +71,6 @@ solveLogicInst ty = case tNoUser ty of
 
   -- Logic Integer fails
   TCon (TC TCInteger) [] -> Unsolvable
-
-  -- Logic Rational fails
-  TCon (TC TCRational) [] -> Unsolvable
 
   -- Logic a => Logic [n]a
   TCon (TC TCSeq) [_, a] -> SolvedIf [ pLogic a ]
@@ -119,9 +111,6 @@ solveRingInst ty = case tNoUser ty of
 
   -- Ring Integer
   TCon (TC TCInteger) [] -> SolvedIf []
-
-  -- Ring Rational
-  TCon (TC TCRational) [] -> SolvedIf []
 
   -- (Ring a, Ring b) => Ring { x1 : a, x2 : b }
   TRec fs -> SolvedIf [ pRing ety | ety <- recordElements fs ]
@@ -177,79 +166,6 @@ solveIntegralInst ty = case tNoUser ty of
   _ -> Unsolvable
 
 
--- | Solve a Field constraint by instance, if possible.
-solveFieldInst :: Type -> Solved
-solveFieldInst ty = case tNoUser ty of
-
-  -- Field Error -> fails
-  TCon (TError {}) _ -> Unsolvable
-
-  -- Field Bit fails
-  TCon (TC TCBit) [] -> Unsolvable
-
-  -- Field Integer fails
-  TCon (TC TCInteger) [] -> Unsolvable
-
-  -- Field Rational
-  TCon (TC TCRational) [] -> SolvedIf []
-
-  -- Field Real
-
-  -- Field ([n]a) fails
-  TCon (TC TCSeq) [_, _] -> Unsolvable
-
-  -- Field (a -> b) fails
-  TCon (TC TCFun) [_, _] -> Unsolvable
-
-  -- Field (a, b, ...) fails
-  TCon (TC (TCTuple _)) _ -> Unsolvable
-
-  -- Field {x : a, y : b, ...} fails
-  TRec _ -> Unsolvable
-
-  -- Field <nominal> -> fails
-  TNominal {} -> Unsolvable
-
-  _ -> Unsolved
-
-
--- | Solve a Round constraint by instance, if possible.
-solveRoundInst :: Type -> Solved
-solveRoundInst ty = case tNoUser ty of
-
-  -- Round Error -> fails
-  TCon (TError {}) _ -> Unsolvable
-
-  -- Round Bit fails
-  TCon (TC TCBit) [] -> Unsolvable
-
-  -- Round Integer fails
-  TCon (TC TCInteger) [] -> Unsolvable
-
-  -- Round Rational
-  TCon (TC TCRational) [] -> SolvedIf []
-
-  -- Round Real
-
-  -- Round ([n]a) fails
-  TCon (TC TCSeq) [_, _] -> Unsolvable
-
-  -- Round (a -> b) fails
-  TCon (TC TCFun) [_, _] -> Unsolvable
-
-  -- Round (a, b, ...) fails
-  TCon (TC (TCTuple _)) _ -> Unsolvable
-
-  -- Round {x : a, y : b, ...} fails
-  TRec _ -> Unsolvable
-
-  -- Round <nominal> -> fails
-  TNominal {} -> Unsolvable
-
-  _ -> Unsolved
-
-
-
 -- | Solve Eq constraints.
 solveEqInst :: Type -> Solved
 solveEqInst ty = case tNoUser ty of
@@ -262,9 +178,6 @@ solveEqInst ty = case tNoUser ty of
 
   -- Eq Integer
   TCon (TC TCInteger) [] -> SolvedIf []
-
-  -- Eq Rational
-  TCon (TC TCRational) [] -> SolvedIf []
 
   -- (fin n, Eq a) => Eq [n]a
   TCon (TC TCSeq) [n,a] -> SolvedIf [ pFin n, pEq a ]
@@ -296,9 +209,6 @@ solveCmpInst ty = case tNoUser ty of
 
   -- Cmp Integer
   TCon (TC TCInteger) [] -> SolvedIf []
-
-  -- Cmp Rational
-  TCon (TC TCRational) [] -> SolvedIf []
 
   -- (fin n, Cmp a) => Cmp [n]a
   TCon (TC TCSeq) [n,a] -> SolvedIf [ pFin n, pCmp a ]
@@ -346,9 +256,6 @@ solveSignedCmpInst ty = case tNoUser ty of
   -- SignedCmp Integer fails
   TCon (TC TCInteger) [] -> Unsolvable
 
-  -- SignedCmp Rational fails
-  TCon (TC TCRational) [] -> Unsolvable
-
   -- SignedCmp for sequences
   TCon (TC TCSeq) [n,a] -> solveSignedCmpSeq n a
 
@@ -383,9 +290,6 @@ solveLiteralInst val ty
       -- (fin val) => Literal val Integer
       TCon (TC TCInteger) [] -> SolvedIf [ pFin val ]
 
-      -- (fin val) => Literal val Rational
-      TCon (TC TCRational) [] -> SolvedIf [ pFin val ]
-
       -- (fin bits, bits >= width n) => Literal n [bits]
       TCon (TC TCSeq) [bits, elTy]
         | TCon (TC TCBit) [] <- ety ->
@@ -413,9 +317,6 @@ solveLiteralLessThanInst val ty
 
       -- LiteralLessThan val Integer
       TCon (TC TCInteger) [] -> SolvedIf [ ]
-
-      -- LiteralLessThan val Rational
-      TCon (TC TCRational) [] -> SolvedIf [ ]
 
       -- (fin bits, bits >= lg2 n) => LiteralLessThan n [bits]
       TCon (TC TCSeq) [bits, elTy]

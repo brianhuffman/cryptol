@@ -35,8 +35,6 @@
 > import Cryptol.ModuleSystem.Name (asPrim,nameIdent)
 > import Cryptol.TypeCheck.Solver.InfNat (Nat'(..), nAdd, nMin, nMul)
 > import Cryptol.TypeCheck.AST
-> import Cryptol.Backend.FloatHelpers (BF(..))
-> import qualified Cryptol.Backend.FloatHelpers as FP
 > import Cryptol.Backend.Monad (EvalError(..))
 > import Cryptol.Eval.Type
 >   (TValue(..), TNominalTypeValue(..),
@@ -150,10 +148,6 @@ or fail to terminate.
 >     case m of
 >       Value x -> f x
 >       Err r   -> Err r
->
-> eitherToE :: Either EvalError a -> E a
-> eitherToE (Left e)  = Err e
-> eitherToE (Right x) = pure x
 
 Values
 ------

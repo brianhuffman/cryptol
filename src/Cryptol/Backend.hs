@@ -16,7 +16,6 @@ import qualified Control.Exception as X
 import Control.Monad.IO.Class
 import Data.Kind (Type)
 
-import Cryptol.Backend.FloatHelpers (BF)
 import Cryptol.Backend.Monad
   ( EvalError(..), Unsupported(..), CallStack, pushCallFrame )
 import Cryptol.ModuleSystem.Name(Name)

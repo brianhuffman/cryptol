@@ -34,15 +34,11 @@ import           Data.Traversable
 import           Data.Word
 import           Foreign
 import           Foreign.C.Types
-import           GHC.Float
-import           LibBF                         (bfFromDouble, bfToDouble,
-                                                pattern NearEven)
 import           Numeric.GMP.Raw.Unsafe
 import           Numeric.GMP.Utils
 
 import           Cryptol.Backend
 import           Cryptol.Backend.Concrete
-import           Cryptol.Backend.FloatHelpers
 import           Cryptol.Backend.Monad
 import           Cryptol.Backend.SeqMap
 import           Cryptol.Eval.Env

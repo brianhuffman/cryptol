@@ -24,7 +24,6 @@ import Data.Foldable (foldl')
 import Data.List (find)
 import Data.Word(Word32, Word64)
 import MonadLib( ChoiceT, findOne, lift )
-import qualified LibBF as FP
 import qualified Cryptol.F2 as F2
 
 import qualified Data.Map.Strict as Map
@@ -36,7 +35,6 @@ import Cryptol.TypeCheck.Solver.InfNat (Nat'(..))
 
 import Cryptol.Backend
 import Cryptol.Backend.Concrete
-import Cryptol.Backend.FloatHelpers
 import Cryptol.Backend.Monad
 import Cryptol.Backend.SeqMap
 import Cryptol.Backend.WordValue
@@ -51,7 +49,7 @@ import qualified Cryptol.PrimeEC as PrimeEC
 import Cryptol.ModuleSystem.Name
 import Cryptol.TypeCheck.AST as AST
 import Cryptol.Utils.Panic (panic)
-import Cryptol.Utils.Ident (PrimIdent,prelPrim,floatPrim,suiteBPrim,primeECPrim)
+import Cryptol.Utils.Ident (PrimIdent,prelPrim,suiteBPrim,primeECPrim)
 import Cryptol.Utils.PP
 import Cryptol.Utils.RecordMap
 

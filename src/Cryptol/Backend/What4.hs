@@ -16,7 +16,6 @@
 module Cryptol.Backend.What4 where
 
 
-import qualified Control.Exception as X
 import           Control.Concurrent.MVar
 import           Control.Monad (foldM,ap,liftM)
 import           Control.Monad.IO.Class
@@ -37,7 +36,7 @@ import qualified What4.SWord as SW
 import Cryptol.Backend
 import Cryptol.Backend.Monad
    ( Eval(..), EvalError(..), EvalErrorEx(..)
-   , Unsupported(..), delayFill, blackhole, evalSpark
+   , delayFill, blackhole, evalSpark
    , modifyCallStack, getCallStack, maybeReady
    )
 import Cryptol.Utils.Panic

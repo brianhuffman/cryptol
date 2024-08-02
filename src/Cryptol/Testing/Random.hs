@@ -32,7 +32,6 @@ module Cryptol.Testing.Random
 import qualified Control.Exception as X
 import Control.Monad          (liftM2)
 import Control.Monad.IO.Class (MonadIO(..))
-import Data.Bits
 import Data.List              (unfoldr, genericTake, genericIndex,
                                genericReplicate, mapAccumL)
 import qualified Data.IntMap.Strict as IntMap
@@ -44,7 +43,6 @@ import System.Random.TF.Gen
 import System.Random.TF.Instances
 
 import Cryptol.Backend        (Backend(..))
-import Cryptol.Backend.FloatHelpers (floatFromBits)
 import Cryptol.Backend.Monad  (runEval,Eval,EvalErrorEx(..))
 import Cryptol.Backend.Concrete
 import Cryptol.Backend.SeqMap (indexSeqMap, finiteSeqMap)
@@ -54,7 +52,6 @@ import Cryptol.Eval(evalEnumCon)
 import Cryptol.Eval.Type      ( TValue(..), TNominalTypeValue(..), ConInfo(..)
                               , isNullaryCon )
 import Cryptol.Eval.Value     ( GenValue(..), ppValue, defaultPPOpts, fromVFun)
-import Cryptol.TypeCheck.Solver.InfNat (widthInteger)
 import Cryptol.Utils.Ident    (Ident)
 import Cryptol.Utils.Panic    (panic)
 import Cryptol.Utils.RecordMap

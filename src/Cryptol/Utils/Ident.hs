@@ -70,7 +70,6 @@ module Cryptol.Utils.Ident
     -- * Identifiers for primitives
   , PrimIdent(..)
   , prelPrim
-  , floatPrim
   , arrayPrim
   , suiteBPrim
   , primeECPrim
@@ -394,9 +393,6 @@ data PrimIdent = PrimIdent ModName T.Text
 -- | A shortcut to make (non-infix) primitives in the prelude.
 prelPrim :: T.Text -> PrimIdent
 prelPrim = PrimIdent preludeName
-
-floatPrim :: T.Text -> PrimIdent
-floatPrim = PrimIdent floatName
 
 suiteBPrim :: T.Text -> PrimIdent
 suiteBPrim = PrimIdent suiteBName

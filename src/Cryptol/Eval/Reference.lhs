@@ -1259,31 +1259,30 @@ Shifting
 Shift and rotate operations are strict in all bits of the shift/rotate
 amount, but as lazy as possible in the list values.
 
-> shiftV :: (Nat' -> TValue -> E Value -> Integer -> Value) -> Value
+> shiftV :: (Nat' -> E Value -> Integer -> Value) -> Value
 > shiftV op =
 >   VNumPoly $ \n -> pure $
 >   VPoly $ \ix -> pure $
->   VPoly $ \a -> pure $
 >   VFun $ \v -> pure $
 >   VFun $ \x ->
 >   do i <- cryToInteger ix x
->      pure $ op n a v i
+>      pure $ op n v i
 >
-> shiftLV :: Nat' -> TValue -> E Value -> Integer -> Value
-> shiftLV w a v amt =
+> shiftLV :: Nat' -> E Value -> Integer -> Value
+> shiftLV w v amt =
 >   case w of
 >     Nat n -> generateV (Nat n) $ \i ->
 >                if i + amt < n then
 >                  do vs <- fromVList <$> v
 >                     indexFront (Nat n) vs (i + amt)
 >                else
->                  pure (zero a)
+>                  pure (VBit False)
 >
-> shiftRV :: Nat' -> TValue -> E Value -> Integer -> Value
-> shiftRV w a v amt =
+> shiftRV :: Nat' -> E Value -> Integer -> Value
+> shiftRV w v amt =
 >   generateV w $ \i ->
 >     if i < amt then
->       pure (zero a)
+>       pure (VBit False)
 >     else
 >       do vs <- fromVList <$> v
 >          indexFront w vs (i - amt)
@@ -1292,7 +1291,6 @@ amount, but as lazy as possible in the list values.
 > rotateV op =
 >   vFinPoly $ \n -> pure $
 >   VPoly $ \ix -> pure $
->   VPoly $ \_a -> pure $
 >   VFun $ \v -> pure $
 >   VFun $ \x ->
 >   do i <- cryToInteger ix x

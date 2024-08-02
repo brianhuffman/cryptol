@@ -698,25 +698,25 @@ groupBy = split{parts=parts}
  * Left shift.  The first argument is the sequence to shift, the second is the
  * number of positions to shift by.
  */
-primitive (<<) : {n, ix, a} (Integral ix, Zero a) => [n]a -> ix -> [n]a
+primitive (<<) : {n, ix} (Integral ix) => [n] -> ix -> [n]
 
 /**
  * Right shift.  The first argument is the sequence to shift, the second is the
  * number of positions to shift by.
  */
-primitive (>>) : {n, ix, a} (Integral ix, Zero a) => [n]a -> ix -> [n]a
+primitive (>>) : {n, ix} (Integral ix) => [n] -> ix -> [n]
 
 /**
  * Left rotate.  The first argument is the sequence to rotate, the second is the
  * number of positions to rotate by.
  */
-primitive (<<<) : {n, ix, a} (Integral ix) => [n]a -> ix -> [n]a
+primitive (<<<) : {n, ix} (Integral ix) => [n] -> ix -> [n]
 
 /**
  * Right rotate.  The first argument is the sequence to rotate, the second is
  * the number of positions to rotate by.
  */
-primitive (>>>) : {n, ix, a} (Integral ix) => [n]a -> ix -> [n]a
+primitive (>>>) : {n, ix} (Integral ix) => [n] -> ix -> [n]
 
 /**
  * Index operator.  The first argument is a sequence.  The second argument is

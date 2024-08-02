@@ -58,7 +58,6 @@ import qualified Cryptol.ModuleSystem.Base as M
 import qualified Cryptol.ModuleSystem.Monad as M
 import qualified Cryptol.ModuleSystem.Name as M
 
-import qualified Cryptol.Backend.FloatHelpers as FH
 import           Cryptol.Backend.What4
 
 import qualified Cryptol.Eval as Eval
@@ -78,7 +77,6 @@ import qualified What4.Interface as W4
 import qualified What4.Expr.Builder as W4
 import qualified What4.Expr.GroundEval as W4
 import qualified What4.SatResult as W4
-import qualified What4.SFloat as W4
 import qualified What4.SWord as SW
 import           What4.Solver
 import qualified What4.Solver.Boolector as W4
@@ -296,7 +294,6 @@ what4FreshFns sym =
   { freshBitVar     = W4.freshConstant sym W4.emptySymbol W4.BaseBoolRepr
   , freshWordVar    = SW.freshBV sym W4.emptySymbol
   , freshIntegerVar = W4.freshBoundedInt sym W4.emptySymbol
-  , freshFloatVar   = W4.fpFresh sym
   }
 
 -- | Simulate and manipulate query into a form suitable to be sent
@@ -741,9 +738,6 @@ varShapeToConcrete evalFn v =
     VarWord (SW.DBV x) ->
       let w = W4.intValue (W4.bvWidth x)
        in VarWord . Concrete.mkBv w . BV.asUnsigned <$> W4.groundEval evalFn x
-    VarFloat fv@(W4.SFloat f) ->
-      let (e,p) = W4.fpSize fv
-       in VarFloat . FH.BF e p <$> W4.groundEval evalFn f
     VarFinSeq n vs ->
       VarFinSeq n <$> mapM (varShapeToConcrete evalFn) vs
     VarTuple vs ->

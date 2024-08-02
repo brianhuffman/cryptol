@@ -33,10 +33,8 @@ import qualified GHC.Num.Compat as Integer
 
 import qualified What4.Interface as W4
 import qualified What4.SWord as SW
-import qualified What4.SFloat as FP
 
 import Cryptol.Backend
-import Cryptol.Backend.FloatHelpers
 import Cryptol.Backend.Monad
    ( Eval(..), EvalError(..), EvalErrorEx(..)
    , Unsupported(..), delayFill, blackhole, evalSpark
@@ -207,7 +205,6 @@ instance W4.IsSymExprBuilder sym => Backend (What4 sym) where
   type SBit (What4 sym)     = W4.Pred sym
   type SWord (What4 sym)    = SW.SWord sym
   type SInteger (What4 sym) = W4.SymInteger sym
-  type SFloat (What4 sym)   = FP.SFloat sym
   type SEval (What4 sym)    = W4Eval sym
 
   raiseError _ = evalError
@@ -296,7 +293,6 @@ instance W4.IsSymExprBuilder sym => Backend (What4 sym) where
   iteBit sym c x y = liftIO (W4.itePred (w4 sym) c x y)
   iteWord sym c x y = liftIO (SW.bvIte (w4 sym) c x y)
   iteInteger sym c x y = liftIO (W4.intIte (w4 sym) c x y)
-  iteFloat sym p x y = liftIO (FP.fpIte (w4 sym) p x y)
 
   bitEq  sym x y = liftIO (W4.eqPred (w4 sym) x y)
   bitAnd sym x y = liftIO (W4.andPred (w4 sym) x y)
@@ -437,53 +433,6 @@ instance W4.IsSymExprBuilder sym => Backend (What4 sym) where
   znNegate sym m x   = liftIO $ sModNegate (w4 sym) m x
   znRecip = sModRecip
 
-  --------------------------------------------------------------
-
-  fpLit sym e p r = liftIO $ FP.fpFromRationalLit (w4 sym) e p r
-  fpAsLit _ f = BF e p <$> FP.fpAsLit f
-    where (e,p) = FP.fpSize f
-
-  fpExactLit sym BF{ bfExpWidth = e, bfPrecWidth = p, bfValue = bf } =
-    liftIO (FP.fpFromBinary (w4 sym) e p =<< SW.bvLit (w4 sym) (e+p) (floatToBits e p bf))
-
-  fpNaN sym e p = liftIO (FP.fpNaN (w4 sym) e p)
-  fpPosInf sym e p = liftIO (FP.fpPosInf (w4 sym) e p)
-
-  fpToBits sym f = liftIO (FP.fpToBinary (w4 sym) f)
-  fpFromBits sym e p w = liftIO (FP.fpFromBinary (w4 sym) e p w)
-
-  fpEq          sym x y = liftIO $ FP.fpEqIEEE (w4 sym) x y
-  fpLessThan    sym x y = liftIO $ FP.fpLtIEEE (w4 sym) x y
-  fpGreaterThan sym x y = liftIO $ FP.fpGtIEEE (w4 sym) x y
-  fpLogicalEq   sym x y = liftIO $ FP.fpEq (w4 sym) x y
-
-  fpPlus  = fpBinArith FP.fpAdd
-  fpMinus = fpBinArith FP.fpSub
-  fpMult  = fpBinArith FP.fpMul
-  fpDiv   = fpBinArith FP.fpDiv
-
-  fpNeg sym x = liftIO $ FP.fpNeg (w4 sym) x
-  fpAbs sym x = liftIO $ FP.fpAbs (w4 sym) x
-  fpSqrt sym r x =
-    do rm <- fpRoundingMode sym r
-       liftIO $ FP.fpSqrt (w4 sym) rm x
-
-  fpFMA sym r x y z =
-    do rm <- fpRoundingMode sym r
-       liftIO $ FP.fpFMA (w4 sym) rm x y z
-
-  fpIsZero sym x = liftIO $ FP.fpIsZero (w4 sym) x
-  fpIsNeg sym x = liftIO $ FP.fpIsNeg (w4 sym) x
-  fpIsNaN sym x = liftIO $ FP.fpIsNaN (w4 sym) x
-  fpIsInf sym x = liftIO $ FP.fpIsInf (w4 sym) x
-  fpIsNorm sym x = liftIO $ FP.fpIsNorm (w4 sym) x
-  fpIsSubnorm sym x = liftIO $ FP.fpIsSubnorm (w4 sym) x
-
-  fpFromInteger sym e p r x =
-    do rm <- fpRoundingMode sym r
-       liftIO $ FP.fpFromInteger (w4 sym) e p rm x
-
-  fpToInteger = fpCvtToInteger
 
 sModAdd :: W4.IsSymExprBuilder sym =>
   sym -> Integer -> W4.SymInteger sym -> W4.SymInteger sym -> IO (W4.SymInteger sym)
@@ -580,55 +529,6 @@ w4bvRol sym x y = liftIO $ SW.bvRol sym x y
 
 w4bvRor  :: W4.IsSymExprBuilder sym => sym -> SW.SWord sym -> SW.SWord sym -> W4Eval sym (SW.SWord sym)
 w4bvRor sym x y = liftIO $ SW.bvRor sym x y
-
-
-
-fpRoundingMode ::
-  W4.IsSymExprBuilder sym =>
-  What4 sym -> SWord (What4 sym) -> SEval (What4 sym) W4.RoundingMode
-fpRoundingMode sym v =
-  case wordAsLit sym v of
-    Just (_w,i) ->
-      case i of
-        0 -> pure W4.RNE
-        1 -> pure W4.RNA
-        2 -> pure W4.RTP
-        3 -> pure W4.RTN
-        4 -> pure W4.RTZ
-        x -> raiseError sym (BadRoundingMode x)
-    _ -> liftIO $ X.throwIO $ UnsupportedSymbolicOp "rounding mode"
-
-fpBinArith ::
-  W4.IsSymExprBuilder sym =>
-  FP.SFloatBinArith sym ->
-  What4 sym ->
-  SWord (What4 sym) ->
-  SFloat (What4 sym) ->
-  SFloat (What4 sym) ->
-  SEval (What4 sym) (SFloat (What4 sym))
-fpBinArith fun = \sym r x y ->
-  do m <- fpRoundingMode sym r
-     liftIO (fun (w4 sym) m x y)
-
-
-fpCvtToInteger ::
-  (W4.IsSymExprBuilder sy, sym ~ What4 sy) =>
-  sym -> String -> SWord sym -> SFloat sym -> SEval sym (SInteger sym)
-fpCvtToInteger sym fun r x =
-  do grd <- liftIO
-              do bad1 <- FP.fpIsInf (w4 sym) x
-                 bad2 <- FP.fpIsNaN (w4 sym) x
-                 W4.notPred (w4 sym) =<< W4.orPred (w4 sym) bad1 bad2
-     assertSideCondition sym grd (BadValue fun)
-     rnd  <- fpRoundingMode sym r
-     liftIO
-       do y <- FP.fpToReal (w4 sym) x
-          case rnd of
-            W4.RNE -> W4.realRoundEven (w4 sym) y
-            W4.RNA -> W4.realRound (w4 sym) y
-            W4.RTP -> W4.realCeil (w4 sym) y
-            W4.RTN -> W4.realFloor (w4 sym) y
-            W4.RTZ -> W4.realTrunc (w4 sym) y
 
 
 -- Create a fresh constant and assert that it is the

@@ -570,12 +570,6 @@ tIsInteger ty = case tNoUser ty of
                   TCon (TC TCInteger) [] -> True
                   _                      -> False
 
-tIsFloat :: Type -> Maybe (Type, Type)
-tIsFloat ty =
-  case tNoUser ty of
-    TCon (TC TCFloat) [e, p] -> Just (e, p)
-    _                        -> Nothing
-
 tIsTuple :: Type -> Maybe [Type]
 tIsTuple ty = case tNoUser ty of
                 TCon (TC (TCTuple _)) ts -> Just ts
@@ -706,9 +700,6 @@ tBit      = TCon (TC TCBit) []
 
 tInteger :: Type
 tInteger  = TCon (TC TCInteger) []
-
-tFloat   :: Type -> Type -> Type
-tFloat e p = TCon (TC TCFloat) [ e, p ]
 
 tArray :: Type -> Type -> Type
 tArray a b = TCon (TC TCArray) [a, b]

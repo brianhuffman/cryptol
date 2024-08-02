@@ -6,7 +6,6 @@ module Cryptol.Backend
   , invalidIndex
   , cryUserError
   , cryNoPrimError
-  , FPArith2
   , IndexDirection(..)
 
   , enumerateIntBits
@@ -76,7 +75,6 @@ class MonadIO (SEval sym) => Backend sym where
   type SBit sym :: Type
   type SWord sym :: Type
   type SInteger sym :: Type
-  type SFloat sym :: Type
   type SEval sym :: Type -> Type
 
   -- ==== Evaluation monad operations ====
@@ -151,9 +149,6 @@ class MonadIO (SEval sym) => Backend sym where
   -- | Determine if this symbolic integer is a literal
   integerAsLit :: sym -> SInteger sym -> Maybe Integer
 
-  -- | Determine if this symbolic floating-point value is a literal
-  fpAsLit :: sym -> SFloat sym -> Maybe BF
-
   -- ==== Creating literal values ====
 
   -- | Construct a literal bit value from a boolean.
@@ -172,23 +167,10 @@ class MonadIO (SEval sym) => Backend sym where
     Integer {- ^ Value -} ->
     SEval sym (SInteger sym)
 
-  -- | Construct a floating point value from the given rational.
-  fpLit ::
-    sym ->
-    Integer  {- ^ exponent bits -} ->
-    Integer  {- ^ precision bits -} ->
-    Rational {- ^ The rational -} ->
-    SEval sym (SFloat sym)
-
-  -- | Construct a floating point value from the given bit-precise
-  --   floating-point representation.
-  fpExactLit :: sym -> BF -> SEval sym (SFloat sym)
-
   -- ==== If/then/else operations ====
   iteBit :: sym -> SBit sym -> SBit sym -> SBit sym -> SEval sym (SBit sym)
   iteWord :: sym -> SBit sym -> SWord sym -> SWord sym -> SEval sym (SWord sym)
   iteInteger :: sym -> SBit sym -> SInteger sym -> SInteger sym -> SEval sym (SInteger sym)
-  iteFloat :: sym -> SBit sym -> SFloat sym -> SFloat sym -> SEval sym (SFloat sym)
 
   -- ==== Bit operations ====
   bitEq  :: sym -> SBit sym -> SBit sym -> SEval sym (SBit sym)
@@ -595,51 +577,3 @@ class MonadIO (SEval sym) => Backend sym where
     Integer {- ^ modulus -} ->
     SInteger sym ->
     SEval sym (SInteger sym)
-
-  -- == Float Operations ==
-  fpEq          :: sym -> SFloat sym -> SFloat sym -> SEval sym (SBit sym)
-  fpLessThan    :: sym -> SFloat sym -> SFloat sym -> SEval sym (SBit sym)
-  fpGreaterThan :: sym -> SFloat sym -> SFloat sym -> SEval sym (SBit sym)
-
-  fpLogicalEq   :: sym -> SFloat sym -> SFloat sym -> SEval sym (SBit sym)
-
-  fpNaN    :: sym -> Integer {- ^ exponent bits -} -> Integer {- ^ precision bits -} -> SEval sym (SFloat sym)
-  fpPosInf :: sym -> Integer {- ^ exponent bits -} -> Integer {- ^ precision bits -} -> SEval sym (SFloat sym)
-
-  fpPlus, fpMinus, fpMult, fpDiv :: FPArith2 sym
-  fpNeg, fpAbs :: sym -> SFloat sym -> SEval sym (SFloat sym)
-  fpSqrt :: sym -> SWord sym -> SFloat sym -> SEval sym (SFloat sym)
-
-  fpFMA :: sym -> SWord sym -> SFloat sym -> SFloat sym -> SFloat sym -> SEval sym (SFloat sym)
-
-  fpIsZero, fpIsNeg, fpIsNaN, fpIsInf, fpIsNorm, fpIsSubnorm :: sym -> SFloat sym -> SEval sym (SBit sym)
-
-  fpToBits :: sym -> SFloat sym -> SEval sym (SWord sym)
-  fpFromBits ::
-    sym ->
-    Integer {- ^ exponent bits -} ->
-    Integer {- ^ precision bits -} ->
-    SWord sym ->
-    SEval sym (SFloat sym)
-
-  fpToInteger ::
-    sym ->
-    String {- ^ Name of the function for error reporting -} ->
-    SWord sym {- ^ Rounding mode -} ->
-    SFloat sym ->
-    SEval sym (SInteger sym)
-
-  fpFromInteger ::
-    sym ->
-    Integer         {- ^ exp width -} ->
-    Integer         {- ^ prec width -} ->
-    SWord sym       {- ^ rounding mode -} ->
-    SInteger sym    {- ^ the integer to use -} ->
-    SEval sym (SFloat sym)
-
-type FPArith2 sym =
-  sym ->
-  SWord sym ->
-  SFloat sym ->
-  SFloat sym ->
-  SEval sym (SFloat sym)

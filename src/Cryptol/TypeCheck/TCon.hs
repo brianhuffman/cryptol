@@ -42,17 +42,11 @@ builtInType nm =
   case M.nameInfo nm of
     M.GlobalName _ OrigName { ogModule = m }
       | m == M.TopModule preludeName -> Map.lookup (M.nameIdent nm) builtInTypes
-      | m == M.TopModule floatName   -> Map.lookup (M.nameIdent nm) builtInFloat
       | m == M.TopModule arrayName   -> Map.lookup (M.nameIdent nm) builtInArray
     _ -> Nothing
 
   where
   x ~> y = (packIdent x, y)
-
-  -- Built-in types from Float.cry
-  builtInFloat = Map.fromList
-    [ "Float"             ~> TC TCFloat
-    ]
 
   -- Built-in types from Cryptol.cry
   builtInTypes = Map.fromList
@@ -129,7 +123,6 @@ instance HasKind TC where
       TCBit     -> KType
       TCInteger -> KType
       TCRational -> KType
-      TCFloat   -> KNum :-> KNum :-> KType
       TCArray   -> KType :-> KType :-> KType
       TCSeq     -> KNum :-> KType :-> KType
       TCFun     -> KType :-> KType :-> KType
@@ -210,7 +203,6 @@ data TC     = TCNum Integer            -- ^ Numbers
             | TCInf                    -- ^ Inf
             | TCBit                    -- ^ Bit
             | TCInteger                -- ^ Integer
-            | TCFloat                  -- ^ Float
             | TCRational               -- ^ @Rational@
             | TCArray                  -- ^ @Array _ _@
             | TCSeq                    -- ^ @[_] _@
@@ -293,7 +285,6 @@ instance PP TC where
       TCInteger -> text "Integer"
       TCRational -> text "Rational"
       TCArray   -> text "Array"
-      TCFloat   -> text "Float"
       TCSeq     -> text "[]"
       TCFun     -> text "(->)"
       TCTuple 0 -> text "()"

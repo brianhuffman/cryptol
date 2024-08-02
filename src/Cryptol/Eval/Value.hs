@@ -34,7 +34,6 @@ module Cryptol.Eval.Value
     -- ** Value introduction operations
   , word
   , lam
-  , flam
   , tlam
   , nlam
   , ilam
@@ -42,7 +41,6 @@ module Cryptol.Eval.Value
     -- ** Value eliminators
   , fromVBit
   , fromVInteger
-  , fromVFloat
   , fromVSeq
   , fromSeq
   , fromWordVal
@@ -79,7 +77,6 @@ import Cryptol.Backend.SeqMap
 import qualified Cryptol.Backend.Arch as Arch
 import Cryptol.Backend.Monad
   ( evalPanic, wordTooWide, CallStack, combineCallStacks,EvalError(..))
-import Cryptol.Backend.FloatHelpers (fpPP)
 import Cryptol.Backend.WordValue
 
 import Cryptol.Eval.Type
@@ -118,7 +115,6 @@ data GenValue sym
     -- to represent symbolic values.
   | VBit !(SBit sym)                           -- ^ @ Bit    @
   | VInteger !(SInteger sym)                   -- ^ @ Integer @ or @ Z n @
-  | VFloat !(SFloat sym)
   | VSeq !Integer !(SeqMap sym (GenValue sym)) -- ^ @ [n]a   @
                                                --   Invariant: VSeq is never a sequence of bits
   | VWord !Integer !(WordValue sym)            -- ^ @ [n]Bit @
@@ -139,7 +135,6 @@ forceValue v = case v of
   VSeq n xs   -> mapM_ (forceValue =<<) (enumerateSeqMap n xs)
   VBit b      -> seq b (return ())
   VInteger i  -> seq i (return ())
-  VFloat f    -> seq f (return ())
   VWord _ wv  -> forceWordValue wv
   VStream _   -> return ()
   VFun{}      -> return ()
@@ -156,7 +151,6 @@ instance Show (GenValue sym) where
     VEnum _ _  -> "enum"
     VBit _     -> "bit"
     VInteger _ -> "integer"
-    VFloat _   -> "float"
     VSeq n _   -> "seq:" ++ show n
     VWord n _  -> "word:"  ++ show n
     VStream _  -> "stream"
@@ -194,7 +188,6 @@ ppValuePrec x opts = loop
     VEnum c vs         -> ppEnumVal prec c vs
     VBit b             -> ppSBit x b
     VInteger i         -> ppSInteger x i
-    VFloat i           -> ppSFloat x opts i
     VSeq sz vals       -> ppWordSeq sz vals
     VWord _ wv         -> ppWordVal wv
     VStream vals       -> do vals' <- traverse (>>=loop 0) $ enumerateSeqMap (useInfLength opts) vals
@@ -250,12 +243,6 @@ ppSInteger :: Backend sym => sym -> SInteger sym -> SEval sym Doc
 ppSInteger sym x =
   case integerAsLit sym x of
     Just i  -> pure (integer i)
-    Nothing -> pure (text "[?]")
-
-ppSFloat :: Backend sym => sym -> PPOpts -> SFloat sym -> SEval sym Doc
-ppSFloat sym opts x =
-  case fpAsLit sym x of
-    Just fp -> pure (fpPP opts fp)
     Nothing -> pure (text "[?]")
 
 ppSWord :: Backend sym => sym -> PPOpts -> SWord sym -> SEval sym Doc
@@ -330,11 +317,6 @@ word sym n i
 -- | Construct a function value
 lam :: Backend sym => sym -> (SEval sym (GenValue sym) -> SEval sym (GenValue sym)) -> SEval sym (GenValue sym)
 lam sym f = VFun <$> sGetCallStack sym <*> pure f
-
--- | Functions that assume floating point inputs
-flam :: Backend sym => sym ->
-        (SFloat sym -> SEval sym (GenValue sym)) -> SEval sym (GenValue sym)
-flam sym f = VFun <$> sGetCallStack sym <*> pure (\arg -> arg >>= f . fromVFloat)
 
 -- | A type lambda that expects a 'Type'.
 tlam :: Backend sym => sym -> (TValue -> SEval sym (GenValue sym)) -> SEval sym (GenValue sym)
@@ -459,12 +441,6 @@ fromVEnum val =
     VEnum c xs -> (c,xs)
     _          -> evalPanic "fromVEnum" ["not an enum", show val]
 
-fromVFloat :: GenValue sym -> SFloat sym
-fromVFloat val =
-  case val of
-    VFloat x -> x
-    _        -> evalPanic "fromVFloat" ["not a Float", show val]
-
 -- | Lookup a field in a record.
 lookupRecord :: Ident -> GenValue sym -> SEval sym (GenValue sym)
 lookupRecord f val =
@@ -555,7 +531,6 @@ mergeValue sym c v1 v2 =
                                   pure $ VTuple $ zipWith (mergeValue' sym c) vs1 vs2
     (VBit b1     , VBit b2     ) -> VBit <$> iteBit sym c b1 b2
     (VInteger i1 , VInteger i2 ) -> VInteger <$> iteInteger sym c i1 i2
-    (VFloat f1   , VFloat f2)    -> VFloat <$> iteFloat sym c f1 f2
     (VWord n1 w1 , VWord n2 w2 ) | n1 == n2 -> VWord n1 <$> mergeWord sym c w1 w2
     (VSeq n1 vs1 , VSeq n2 vs2 ) | n1 == n2 -> VSeq n1 <$> memoMap sym (Nat n1) (mergeSeqMapVal sym c vs1 vs2)
     (VStream vs1 , VStream vs2 ) -> VStream <$> memoMap sym Inf (mergeSeqMapVal sym c vs1 vs2)

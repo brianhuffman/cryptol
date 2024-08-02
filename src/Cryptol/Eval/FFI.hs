@@ -365,16 +365,6 @@ getMarshalBasicValArg ::
 getMarshalBasicValArg (FFIWord _ s) f = withWordType s \(_ :: p t) ->
   f @t $ fmap (fromInteger . bvVal) . fromVWord Concrete "getMarshalBasicValArg"
 
-getMarshalBasicValArg (FFIFloat _ _ s) f =
-  case s of
-    -- LibBF can only convert to 'Double' directly, so we do that first then
-    -- convert to 'Float', which should not result in any loss of precision if
-    -- the original data was 32-bit anyways.
-    FFIFloat32 -> f $ pure . CFloat . double2Float . toDouble
-    FFIFloat64 -> f $ pure . CDouble . toDouble
-  where
-  toDouble = fst . bfToDouble NearEven . bfValue . fromVFloat
-
 -- | Given a 'FFIBasicValType', call the callback with an unmarshalling function
 -- from the 'FFIRet' type corresponding to the 'FFIBasicValType' to Cryptol
 -- values. The callback must be able to handle unmarshalling functions from any
@@ -383,11 +373,6 @@ getMarshalBasicValRet :: FFIBasicValType ->
   (forall a. FFIRet a => (a -> Eval (GenValue Concrete)) -> b) -> b
 getMarshalBasicValRet (FFIWord n s) f = withWordType s \(_ :: p t) ->
   f @t $ word Concrete n . toInteger
-getMarshalBasicValRet (FFIFloat e p s) f =
-  case s of
-    FFIFloat32 -> f $ toValue . \case CFloat x -> float2Double x
-    FFIFloat64 -> f $ toValue . \case CDouble x -> x
-  where toValue = pure . VFloat . BF e p . bfFromDouble
 
 -- | Call the callback with the Word type corresponding to the given
 -- 'FFIWordSize'.

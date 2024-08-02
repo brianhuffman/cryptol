@@ -80,9 +80,6 @@ solveLogicInst ty = case tNoUser ty of
   -- Logic Rational fails
   TCon (TC TCRational) [] -> Unsolvable
 
-  -- Logic (Float e p) fails
-  TCon (TC TCFloat) [_, _] -> Unsolvable
-
   -- Logic a => Logic [n]a
   TCon (TC TCSeq) [_, a] -> SolvedIf [ pLogic a ]
 
@@ -351,9 +348,6 @@ solveSignedCmpInst ty = case tNoUser ty of
 
   -- SignedCmp Rational fails
   TCon (TC TCRational) [] -> Unsolvable
-
-  -- SignedCmp (Float e p) fails
-  TCon (TC TCFloat) [_, _] -> Unsolvable
 
   -- SignedCmp for sequences
   TCon (TC TCSeq) [n,a] -> solveSignedCmpSeq n a

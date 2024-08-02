@@ -48,8 +48,6 @@ defaultLiterals as gs = let (binds,warns) = unzip (mapMaybe tryDefVar as)
       Nothing
         | isLiteralGoal a -> do
            defT <- if has pLogic a then mzero
-                   else if has pField a && not (has pIntegral a)
-                          then pure tRational
                    else if not (has pField a) then pure tInteger
                    else mzero
            let d    = tvInfo a
@@ -73,9 +71,7 @@ flitDefaultCandidates gs =
     do (_,_,_,x) <- pIsFLiteral (goal g)
        a         <- tIsVar x
        pure (a, do guard (not (has pLogic a) && not (has pIntegral a))
-                   let defT = tRational
-                   let w    = DefaultingTo (tvInfo a) defT
-                   pure ((a,defT),w))
+                   mzero)
 
 
 --------------------------------------------------------------------------------

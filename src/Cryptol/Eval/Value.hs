@@ -42,7 +42,6 @@ module Cryptol.Eval.Value
     -- ** Value eliminators
   , fromVBit
   , fromVInteger
-  , fromVRational
   , fromVFloat
   , fromVSeq
   , fromSeq
@@ -120,7 +119,6 @@ data GenValue sym
     -- to represent symbolic values.
   | VBit !(SBit sym)                           -- ^ @ Bit    @
   | VInteger !(SInteger sym)                   -- ^ @ Integer @ or @ Z n @
-  | VRational !(SRational sym)                 -- ^ @ Rational @
   | VFloat !(SFloat sym)
   | VSeq !Integer !(SeqMap sym (GenValue sym)) -- ^ @ [n]a   @
                                                --   Invariant: VSeq is never a sequence of bits
@@ -142,7 +140,6 @@ forceValue v = case v of
   VSeq n xs   -> mapM_ (forceValue =<<) (enumerateSeqMap n xs)
   VBit b      -> seq b (return ())
   VInteger i  -> seq i (return ())
-  VRational q -> seq q (return ())
   VFloat f    -> seq f (return ())
   VWord _ wv  -> forceWordValue wv
   VStream _   -> return ()
@@ -160,7 +157,6 @@ instance Show (GenValue sym) where
     VEnum _ _  -> "enum"
     VBit _     -> "bit"
     VInteger _ -> "integer"
-    VRational _ -> "rational"
     VFloat _   -> "float"
     VSeq n _   -> "seq:" ++ show n
     VWord n _  -> "word:"  ++ show n
@@ -199,7 +195,6 @@ ppValuePrec x opts = loop
     VEnum c vs         -> ppEnumVal prec c vs
     VBit b             -> ppSBit x b
     VInteger i         -> ppSInteger x i
-    VRational q        -> ppSRational x q
     VFloat i           -> ppSFloat x opts i
     VSeq sz vals       -> ppWordSeq sz vals
     VWord _ wv         -> ppWordVal wv
@@ -263,18 +258,6 @@ ppSFloat sym opts x =
   case fpAsLit sym x of
     Just fp -> pure (fpPP opts fp)
     Nothing -> pure (text "[?]")
-
-ppSRational :: Backend sym => sym -> SRational sym -> SEval sym Doc
-ppSRational sym (SRational n d)
-  | Just ni <- integerAsLit sym n
-  , Just di <- integerAsLit sym d
-  = let q = ni % di in
-      pure (text "(ratio" <+> integer (numerator q) <+> (integer (denominator q) <> text ")"))
-
-  | otherwise
-  = do n' <- ppSInteger sym n
-       d' <- ppSInteger sym d
-       pure (text "(ratio" <+> n' <+> (d' <> text ")"))
 
 ppSWord :: Backend sym => sym -> PPOpts -> SWord sym -> SEval sym Doc
 ppSWord sym opts bv
@@ -392,12 +375,6 @@ fromVInteger :: GenValue sym -> SInteger sym
 fromVInteger val = case val of
   VInteger i -> i
   _      -> evalPanic "fromVInteger" ["not an Integer", show val]
-
--- | Extract a rational value.
-fromVRational :: GenValue sym -> SRational sym
-fromVRational val = case val of
-  VRational q -> q
-  _      -> evalPanic "fromVRational" ["not a Rational", show val]
 
 -- | Extract a finite sequence value.
 fromVSeq :: GenValue sym -> SeqMap sym (GenValue sym)
@@ -579,7 +556,6 @@ mergeValue sym c v1 v2 =
                                   pure $ VTuple $ zipWith (mergeValue' sym c) vs1 vs2
     (VBit b1     , VBit b2     ) -> VBit <$> iteBit sym c b1 b2
     (VInteger i1 , VInteger i2 ) -> VInteger <$> iteInteger sym c i1 i2
-    (VRational q1, VRational q2) -> VRational <$> iteRational sym c q1 q2
     (VFloat f1   , VFloat f2)    -> VFloat <$> iteFloat sym c f1 f2
     (VWord n1 w1 , VWord n2 w2 ) | n1 == n2 -> VWord n1 <$> mergeWord sym c w1 w2
     (VSeq n1 vs1 , VSeq n2 vs2 ) | n1 == n2 -> VSeq n1 <$> memoMap sym (Nat n1) (mergeSeqMapVal sym c vs1 vs2)

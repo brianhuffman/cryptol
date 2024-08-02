@@ -147,7 +147,6 @@ convertBasicRefType :: FFIBasicRefType -> GenHeaderM C.Type
 convertBasicRefType brt =
   case brt of
     FFIInteger {} -> mpzT
-    FFIRational   -> mpqT
 
 prefixParam :: C.Ident -> C.Param -> C.Param
 prefixParam pre (C.Param u name) = C.Param u (pre ++ name)

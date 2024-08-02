@@ -485,9 +485,6 @@ instance W4.IsSymExprBuilder sym => Backend (What4 sym) where
 
   fpToInteger = fpCvtToInteger
 
-  fpFromRational = fpCvtFromRational
-  fpToRational = fpCvtToRational
-
 sModAdd :: W4.IsSymExprBuilder sym =>
   sym -> Integer -> W4.SymInteger sym -> W4.SymInteger sym -> IO (W4.SymInteger sym)
 sModAdd _sym 0 _ _ = evalPanic "sModAdd" ["0 modulus not allowed"]
@@ -633,27 +630,6 @@ fpCvtToInteger sym fun r x =
             W4.RTN -> W4.realFloor (w4 sym) y
             W4.RTZ -> W4.realTrunc (w4 sym) y
 
-
-fpCvtToRational ::
-  (W4.IsSymExprBuilder sy, sym ~ What4 sy) =>
-  sym -> SFloat sym -> SEval sym (SRational sym)
-fpCvtToRational sym fp =
-  do grd <- liftIO
-            do bad1 <- FP.fpIsInf (w4 sym) fp
-               bad2 <- FP.fpIsNaN (w4 sym) fp
-               W4.notPred (w4 sym) =<< W4.orPred (w4 sym) bad1 bad2
-     assertSideCondition sym grd (BadValue "fpToRational")
-     (rel,x,y) <- liftIO (FP.fpToRational (w4 sym) fp)
-     addDefEqn sym =<< liftIO (W4.impliesPred (w4 sym) grd rel)
-     ratio sym x y
-
-fpCvtFromRational ::
-  (W4.IsSymExprBuilder sy, sym ~ What4 sy) =>
-  sym -> Integer -> Integer -> SWord sym ->
-  SRational sym -> SEval sym (SFloat sym)
-fpCvtFromRational sym e p r rat =
-  do rnd <- fpRoundingMode sym r
-     liftIO (FP.fpFromRational (w4 sym) e p rnd (sNum rat) (sDenom rat))
 
 -- Create a fresh constant and assert that it is the
 -- multiplicitive inverse of x; return the constant.

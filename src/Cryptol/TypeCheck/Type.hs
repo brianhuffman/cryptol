@@ -572,12 +572,6 @@ tIsInteger ty = case tNoUser ty of
                   TCon (TC TCInteger) [] -> True
                   _                      -> False
 
-tIsRational :: Type -> Bool
-tIsRational ty =
-  case tNoUser ty of
-    TCon (TC TCRational) [] -> True
-    _                       -> False
-
 tIsFloat :: Type -> Maybe (Type, Type)
 tIsFloat ty =
   case tNoUser ty of
@@ -734,9 +728,6 @@ tBit      = TCon (TC TCBit) []
 
 tInteger :: Type
 tInteger  = TCon (TC TCInteger) []
-
-tRational :: Type
-tRational  = TCon (TC TCRational) []
 
 tFloat   :: Type -> Type -> Type
 tFloat e p = TCon (TC TCFloat) [ e, p ]
@@ -1162,7 +1153,6 @@ instance PP (WithNames Type) where
           (TCInf,   [])       -> text "inf"
           (TCBit,   [])       -> text "Bit"
           (TCInteger, [])     -> text "Integer"
-          (TCRational, [])    -> text "Rational"
 
           (TCSeq,   [t1,TCon (TC TCBit) []]) -> brackets (go 0 t1)
           (TCSeq,   [t1,t2])  -> optParens (prec > 4)

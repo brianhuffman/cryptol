@@ -37,7 +37,6 @@ module Cryptol.Backend.Concrete
 
 import qualified Control.Exception as X
 import Data.Bits
-import Data.Ratio
 import Numeric (showIntAtBase)
 import qualified LibBF as FP
 import qualified GHC.Num.Compat as Integer
@@ -403,15 +402,6 @@ instance Backend Concrete where
                                  FP.bfRoundInt r' (FP.bfFromInteger x)
                   }
   fpToInteger = fpCvtToInteger
-
-  fpFromRational sym e p r x =
-    do mode <- fpRoundMode sym r
-       pure (FP.floatFromRational e p mode (sNum x % sDenom x))
-
-  fpToRational sym fp =
-      case FP.floatToRational "fpToRational" fp of
-        Left err -> raiseError sym err
-        Right r  -> pure $ SRational { sNum = numerator r, sDenom = denominator r }
 
 {-# INLINE liftBinIntMod #-}
 liftBinIntMod :: Monad m =>

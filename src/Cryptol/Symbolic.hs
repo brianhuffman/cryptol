@@ -146,7 +146,6 @@ predArgTypes qtype schema@(Forall ts ps ty)
 data FinType
     = FTBit
     | FTInteger
-    | FTRational
     | FTFloat Integer Integer
     | FTSeq Integer FinType
     | FTTuple [FinType]
@@ -162,7 +161,6 @@ finType ty =
   case ty of
     TVBit               -> Just FTBit
     TVInteger           -> Just FTInteger
-    TVRational          -> Just FTRational
     TVFloat e p         -> Just (FTFloat e p)
     TVSeq n t           -> FTSeq n <$> finType t
     TVTuple ts          -> FTTuple <$> traverse finType ts
@@ -182,7 +180,6 @@ finTypeToType fty =
   case fty of
     FTBit             -> tBit
     FTInteger         -> tInteger
-    FTRational        -> tRational
     FTFloat e p       -> tFloat (tNum e) (tNum p)
     FTSeq l ety       -> tSeq (tNum l) (finTypeToType ety)
     FTTuple ftys      -> tTuple (finTypeToType <$> ftys)
@@ -198,7 +195,6 @@ unFinType fty =
   case fty of
     FTBit             -> TVBit
     FTInteger         -> TVInteger
-    FTRational        -> TVRational
     FTFloat e p       -> TVFloat e p
     FTSeq n ety       -> TVSeq n (unFinType ety)
     FTTuple ftys      -> TVTuple (unFinType <$> ftys)
@@ -212,7 +208,6 @@ unFinType fty =
 data VarShape sym
   = VarBit (SBit sym)
   | VarInteger (SInteger sym)
-  | VarRational (SInteger sym) (SInteger sym)
   | VarFloat (SFloat sym)
   | VarWord (SWord sym)
   | VarFinSeq Integer [VarShape sym]
@@ -224,7 +219,6 @@ ppVarShape :: Backend sym => sym -> VarShape sym -> Doc
 ppVarShape _sym (VarBit _b) = text "<bit>"
 ppVarShape _sym (VarInteger _i) = text "<integer>"
 ppVarShape _sym (VarFloat _f) = text "<float>"
-ppVarShape _sym (VarRational _n _d) = text "<rational>"
 ppVarShape sym (VarWord w) = text "<word:" <> integer (wordLen sym w) <> text ">"
 ppVarShape sym (VarFinSeq _ xs) =
   ppList (map (ppVarShape sym) xs)
@@ -248,7 +242,6 @@ flattenShape x tl =
   case x of
     VarBit{}       -> x : tl
     VarInteger{}   -> x : tl
-    VarRational{}  -> x : tl
     VarWord{}      -> x : tl
     VarFloat{}     -> x : tl
     VarFinSeq _ vs -> flattenShapes vs tl
@@ -263,7 +256,6 @@ varShapeToValue sym var =
   case var of
     VarBit b     -> VBit b
     VarInteger i -> VInteger i
-    VarRational n d -> VRational (SRational n d)
     VarWord w    -> VWord (wordLen sym w) (wordVal w)
     VarFloat f   -> VFloat f
     VarFinSeq n vs -> VSeq n (finiteSeqMap sym (map (pure . varShapeToValue sym) vs))
@@ -287,9 +279,6 @@ freshVar fns tp =
   case tp of
     FTBit         -> VarBit      <$> freshBitVar fns
     FTInteger     -> VarInteger  <$> freshIntegerVar fns Nothing Nothing
-    FTRational    -> VarRational
-                        <$> freshIntegerVar fns Nothing Nothing
-                        <*> freshIntegerVar fns (Just 1) Nothing
     FTFloat e p   -> VarFloat    <$> freshFloatVar fns e p
     FTSeq n FTBit -> VarWord     <$> freshWordVar fns (toInteger n)
     FTSeq n t     -> VarFinSeq (toInteger n) <$> sequence (genericReplicate n (freshVar fns t))
@@ -343,11 +332,6 @@ varModelPred sym vx =
 
     (VarInteger i, VarInteger ilit) ->
       intEq sym i =<< integerLit sym ilit
-
-    (VarRational n d, VarRational nlit dlit) ->
-      do n' <- integerLit sym nlit
-         d' <- integerLit sym dlit
-         rationalEq sym (SRational n d) (SRational n' d')
 
     (VarWord w, VarWord (Concrete.BV len wlit)) ->
       wordEq sym w =<< wordLit sym len wlit
@@ -425,11 +409,6 @@ varToExpr prims = go
       (FTInteger, VarInteger i) ->
         -- This works uniformly for values of type Integer or Z n
         ETApp (ETApp (prim "number") (tNum i)) (finTypeToType ty)
-
-      (FTRational, VarRational n d) ->
-        let n' = ETApp (ETApp (prim "number") (tNum n)) tInteger
-            d' = ETApp (ETApp (prim "number") (tNum d)) tInteger
-         in EApp (EApp (prim "ratio") n') d'
 
       (FTFloat e p, VarFloat f) ->
         floatToExpr prims e p (bfValue f)

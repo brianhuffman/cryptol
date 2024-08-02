@@ -43,7 +43,7 @@ import qualified Data.Vector as Vector
 import System.Random.TF.Gen
 import System.Random.TF.Instances
 
-import Cryptol.Backend        (Backend(..), SRational(..))
+import Cryptol.Backend        (Backend(..))
 import Cryptol.Backend.FloatHelpers (floatFromBits)
 import Cryptol.Backend.Monad  (runEval,Eval,EvalErrorEx(..))
 import Cryptol.Backend.Concrete
@@ -154,7 +154,6 @@ randomValue sym ty =
   case ty of
     TVBit         -> Just (randomBit sym)
     TVInteger     -> Just (randomInteger sym)
-    TVRational    -> Just (randomRational sym)
     TVFloat e p   -> Just (randomFloat sym e p)
     TVSeq n TVBit -> Just (randomWord sym n)
     TVSeq n el ->
@@ -208,18 +207,6 @@ randomInteger sym w g =
   let (n, g1) = if w < 100 then (fromInteger w, g) else randomSize 8 100 g
       (i, g2) = randomR (- 256^n, 256^n) g1
   in (VInteger <$> integerLit sym i, g2)
-
-{-# INLINE randomRational #-}
-
-randomRational :: (Backend sym, RandomGen g) => sym -> Gen g sym
-randomRational sym w g =
-  let (sz, g1) = if w < 100 then (fromInteger w, g) else randomSize 8 100 g
-      (n, g2) = randomR (- 256^sz, 256^sz) g1
-      (d, g3) = randomR ( 1, 256^sz) g2
-   in (do n' <- integerLit sym n
-          d' <- integerLit sym d
-          pure (VRational (SRational n' d'))
-       , g3)
 
 {-# INLINE randomWord #-}
 
@@ -456,7 +443,6 @@ typeSize :: TValue -> Maybe Integer
 typeSize ty = case ty of
   TVBit -> Just 2
   TVInteger -> Nothing
-  TVRational -> Nothing
   TVFloat e p -> Just (2 ^ (e+p))
   TVArray{} -> Nothing
   TVStream{} -> Nothing
@@ -478,7 +464,6 @@ typeValues ty =
   case ty of
     TVBit       -> [ VBit False, VBit True ]
     TVInteger   -> []
-    TVRational  -> []
     TVFloat e p -> [ VFloat (floatFromBits e p v) | v <- [0 .. 2^(e+p) - 1] ]
     TVArray{}   -> []
     TVStream{}  -> []

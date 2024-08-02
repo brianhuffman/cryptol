@@ -198,7 +198,7 @@ defaultReplExpr sol expr sch =
               , ok t ]
 
     -- REPL defaulting for variables unconstrained by a literal constraint
-    | otherwise = [ (a,t) | t <- [tInteger, tRational, tBit] ]
+    | otherwise = [ (a,t) | t <- [tInteger, tBit] ]
 
   appExpr tys = foldl (\e1 _ -> EProofApp e1)
                       (foldl ETApp expr tys)

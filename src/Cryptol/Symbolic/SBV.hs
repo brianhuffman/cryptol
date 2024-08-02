@@ -517,11 +517,6 @@ parseValue FTInteger cvs =
   case SBV.genParse SBV.KUnbounded cvs of
     Just (x, cvs') -> (VarInteger x, cvs')
     Nothing        -> panic "Cryptol.Symbolic.parseValue" [ "no integer" ]
-parseValue FTRational cvs =
-  fromMaybe (panic "Cryptol.Symbolic.parseValue" ["no rational"]) $
-  do (n,cvs')  <- SBV.genParse SBV.KUnbounded cvs
-     (d,cvs'') <- SBV.genParse SBV.KUnbounded cvs'
-     return (VarRational n d, cvs'')
 parseValue (FTSeq 0 FTBit) cvs = (VarWord (Concrete.mkBv 0 0), cvs)
 parseValue (FTSeq n FTBit) cvs =
   case SBV.genParse (SBV.KBounded False (fromInteger n)) cvs of

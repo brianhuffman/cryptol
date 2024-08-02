@@ -737,7 +737,6 @@ varShapeToConcrete evalFn v =
   case v of
     VarBit b -> VarBit <$> W4.groundEval evalFn b
     VarInteger i -> VarInteger <$> W4.groundEval evalFn i
-    VarRational n d -> VarRational <$> W4.groundEval evalFn n <*> W4.groundEval evalFn d
     VarWord SW.ZBV -> pure (VarWord (Concrete.mkBv 0 0))
     VarWord (SW.DBV x) ->
       let w = W4.intValue (W4.bvWidth x)

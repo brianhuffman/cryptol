@@ -30,7 +30,6 @@ import           Data.Either
 import           Data.Foldable
 import           Data.IORef
 import           Data.Proxy
-import           Data.Ratio
 import           Data.Traversable
 import           Data.Word
 import           Foreign
@@ -334,12 +333,6 @@ foreignPrim name FFIFunType {..} impl tenv = buildFun ffiArgTypes []
           case mbMod of
             Nothing -> pure n
             Just m  -> intToZn Concrete (evalFinType m) n }
-  getBasicRefRet FFIRational f = f BasicRefRet
-    { initBasicRefRet = mpq_init
-    , clearBasicRefRet = mpq_clear
-    , marshalBasicRefRet = \mpq -> do
-        r <- io $ peekRational' mpq
-        pure $ VRational $ SRational (numerator r) (denominator r) }
 
   -- Evaluate a finite numeric type expression.
   evalFinType :: Type -> Integer
@@ -416,9 +409,6 @@ getMarshalBasicRefArg :: FFIBasicRefType ->
   result
 getMarshalBasicRefArg (FFIInteger _) f = f \val g ->
   withInInteger' (fromVInteger val) g
-getMarshalBasicRefArg FFIRational f = f \val g -> do
-  let SRational {..} = fromVRational val
-  withInRational' (sNum % sDenom) g
 
 #else
 

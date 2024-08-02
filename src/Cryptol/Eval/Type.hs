@@ -36,7 +36,6 @@ data TValue
   = TVBit                     -- ^ @ Bit @  
   | TVInteger                 -- ^ @ Integer @
   | TVFloat Integer Integer   -- ^ @ Float e p @
-  | TVRational                -- ^ @Rational@
   | TVArray TValue TValue     -- ^ @ Array a b @
   | TVSeq Integer TValue      -- ^ @ [n]a @
   | TVStream TValue           -- ^ @ [inf]t @
@@ -79,7 +78,6 @@ tValTy tv =
     TVBit       -> tBit
     TVInteger   -> tInteger
     TVFloat e p -> tFloat (tNum e) (tNum p)
-    TVRational  -> tRational
     TVArray a b -> tArray (tValTy a) (tValTy b)
     TVSeq n t   -> tSeq (tNum n) (tValTy t)
     TVStream t  -> tSeq tInf (tValTy t)
@@ -164,7 +162,6 @@ evalType env ty =
       case (c, ts) of
         (TCBit, [])     -> Right $ TVBit
         (TCInteger, []) -> Right $ TVInteger
-        (TCRational, []) -> Right $ TVRational
         (TCFloat, [e,p])-> Right $ TVFloat (inum e) (inum p)
         (TCArray, [a, b]) -> Right $ TVArray (val a) (val b)
         (TCSeq, [n, t]) -> Right $ tvSeq (num n) (val t)

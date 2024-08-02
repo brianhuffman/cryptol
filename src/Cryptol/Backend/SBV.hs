@@ -361,8 +361,6 @@ instance Backend SBV where
   fpIsSubnorm _ _           = unsupported "fpIsSubnorm"
   fpToBits _ _              = unsupported "fpToBits"
   fpFromBits _ _ _ _        = unsupported "fpFromBits"
-  fpToRational _ _          = unsupported "fpToRational"
-  fpFromRational _ _ _ _ _  = unsupported "fpFromRational"
 
 
 unsupported :: String -> SEval SBV a

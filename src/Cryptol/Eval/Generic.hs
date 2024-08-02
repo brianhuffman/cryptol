@@ -66,7 +66,6 @@ mkLit sym ty i =
     TVInteger                    -> VInteger <$> integerLit sym i
     TVFloat e p                  -> VFloat <$> fpLit sym e p (fromInteger i)
     TVSeq w TVBit                -> word sym w i
-    TVRational                   -> VRational <$> (intToRational sym =<< integerLit sym i)
     _                            -> evalPanic "Cryptol.Eval.Prim.evalConst"
                                     [ "Invalid type for number" ]
 
@@ -95,18 +94,7 @@ intV sym i =
   ringNullary sym
     (\w -> wordFromInt sym w i)
     (pure i)
-    (intToRational sym i)
     (\e p -> fpRndMode sym >>= \r -> fpFromInteger sym e p r i)
-
-{-# SPECIALIZE ratioV :: Concrete -> Prim Concrete #-}
-ratioV :: Backend sym => sym -> Prim sym
-ratioV sym =
-  PFun   \x ->
-  PFun   \y ->
-  PPrim
-    do x' <- fromVInteger <$> x
-       y' <- fromVInteger <$> y
-       VRational <$> ratio sym x' y'
 
 {-# SPECIALIZE ecFractionV :: Concrete -> Prim Concrete
   #-}
@@ -119,11 +107,6 @@ ecFractionV sym =
   PPrim
     case ty of
       TVFloat e p -> VFloat <$> fpLit sym e p (n % d)
-      TVRational ->
-        do x <- integerLit sym n
-           y <- integerLit sym d
-           VRational <$> ratio sym x y
-
       _ -> evalPanic "ecFractionV"
             [ "Unexpected `FLiteral` type: " ++ show ty ]
 
@@ -166,7 +149,6 @@ type BinWord sym = Integer -> SWord sym -> SWord sym -> SEval sym (SWord sym)
 
 {-# SPECIALIZE ringBinary :: Concrete -> BinWord Concrete ->
       (SInteger Concrete -> SInteger Concrete -> SEval Concrete (SInteger Concrete)) ->
-      (SRational Concrete -> SRational Concrete -> SEval Concrete (SRational Concrete)) ->
       (SFloat Concrete -> SFloat Concrete -> SEval Concrete (SFloat Concrete)) ->
       Binary Concrete
   #-}
@@ -176,10 +158,9 @@ ringBinary :: forall sym.
   sym ->
   BinWord sym ->
   (SInteger sym -> SInteger sym -> SEval sym (SInteger sym)) ->
-  (SRational sym -> SRational sym -> SEval sym (SRational sym)) ->
   (SFloat sym -> SFloat sym -> SEval sym (SFloat sym)) ->
   Binary sym
-ringBinary sym opw opi opq opfp = loop
+ringBinary sym opw opi opfp = loop
   where
   loop' :: TValue
         -> SEval sym (GenValue sym)
@@ -200,9 +181,6 @@ ringBinary sym opw opi opq opfp = loop
 
     TVFloat {} ->
       VFloat <$> opfp (fromVFloat l) (fromVFloat r)
-
-    TVRational ->
-      VRational <$> opq (fromVRational l) (fromVRational r)
 
     TVArray{} ->
       evalPanic "arithBinary" ["Array not in class Ring"]
@@ -251,7 +229,6 @@ type UnaryWord sym = Integer -> SWord sym -> SEval sym (SWord sym)
   Concrete ->
   UnaryWord Concrete ->
   (SInteger Concrete -> SEval Concrete (SInteger Concrete)) ->
-  (SRational Concrete -> SEval Concrete (SRational Concrete)) ->
   (SFloat Concrete -> SEval Concrete (SFloat Concrete)) ->
   Unary Concrete
   #-}
@@ -260,10 +237,9 @@ ringUnary :: forall sym.
   sym ->
   UnaryWord sym ->
   (SInteger sym -> SEval sym (SInteger sym)) ->
-  (SRational sym -> SEval sym (SRational sym)) ->
   (SFloat sym -> SEval sym (SFloat sym)) ->
   Unary sym
-ringUnary sym opw opi opq opfp = loop
+ringUnary sym opw opi opfp = loop
   where
   loop' :: TValue -> SEval sym (GenValue sym) -> SEval sym (GenValue sym)
   loop' ty v = loop ty =<< v
@@ -279,9 +255,6 @@ ringUnary sym opw opi opq opfp = loop
 
     TVFloat {} ->
       VFloat <$> opfp (fromVFloat v)
-
-    TVRational ->
-      VRational <$> opq (fromVRational v)
 
     TVArray{} ->
       evalPanic "arithUnary" ["Array not in class Ring"]
@@ -320,7 +293,6 @@ ringUnary sym opw opi opq opfp = loop
   Concrete ->
   (Integer -> SEval Concrete (SWord Concrete)) ->
   SEval Concrete (SInteger Concrete) ->
-  SEval Concrete (SRational Concrete) ->
   (Integer -> Integer -> SEval Concrete (SFloat Concrete)) ->
   TValue ->
   SEval Concrete (GenValue Concrete)
@@ -331,11 +303,10 @@ ringNullary :: forall sym.
   sym ->
   (Integer -> SEval sym (SWord sym)) ->
   SEval sym (SInteger sym) ->
-  SEval sym (SRational sym) ->
   (Integer -> Integer -> SEval sym (SFloat sym)) ->
   TValue ->
   SEval sym (GenValue sym)
-ringNullary sym opw opi opq opfp = loop
+ringNullary sym opw opi opfp = loop
   where
     loop :: TValue -> SEval sym (GenValue sym)
     loop ty =
@@ -345,8 +316,6 @@ ringNullary sym opw opi opq opfp = loop
         TVInteger -> VInteger <$> opi
 
         TVFloat e p -> VFloat <$> opfp e p
-
-        TVRational -> VRational <$> opq
 
         TVArray{} -> evalPanic "arithNullary" ["Array not in class Ring"]
 
@@ -420,38 +389,34 @@ fromIntegerV sym =
 
 {-# INLINE addV #-}
 addV :: Backend sym => sym -> Binary sym
-addV sym = ringBinary sym opw opi opq opfp
+addV sym = ringBinary sym opw opi opfp
   where
     opw _w x y = wordPlus sym x y
     opi x y = intPlus sym x y
-    opq x y = rationalAdd sym x y
     opfp x y = fpRndMode sym >>= \r -> fpPlus sym r x y
 
 {-# INLINE subV #-}
 subV :: Backend sym => sym -> Binary sym
-subV sym = ringBinary sym opw opi opq opfp
+subV sym = ringBinary sym opw opi opfp
   where
     opw _w x y = wordMinus sym x y
     opi x y = intMinus sym x y
-    opq x y = rationalSub sym x y
     opfp x y = fpRndMode sym >>= \r -> fpMinus sym r x y
 
 {-# INLINE negateV #-}
 negateV :: Backend sym => sym -> Unary sym
-negateV sym = ringUnary sym opw opi opq opfp
+negateV sym = ringUnary sym opw opi opfp
   where
     opw _w x = wordNegate sym x
     opi x = intNegate sym x
-    opq x = rationalNegate sym x
     opfp x = fpNeg sym x
 
 {-# INLINE mulV #-}
 mulV :: Backend sym => sym -> Binary sym
-mulV sym = ringBinary sym opw opi opq opfp
+mulV sym = ringBinary sym opw opi opfp
   where
     opw _w x y = wordMult sym x y
     opi x y = intMult sym x y
-    opq x y = rationalMul sym x y
     opfp x y = fpRndMode sym >>= \r -> fpMult sym r x y
 
 --------------------------------------------------
@@ -552,7 +517,6 @@ recipV sym =
   PFun    \x ->
   PPrim
     case a of
-      TVRational -> VRational <$> (rationalRecip sym . fromVRational =<< x)
       TVFloat e p ->
         do one <- fpLit sym e p 1
            r   <- fpRndMode sym
@@ -568,10 +532,6 @@ fieldDivideV sym =
   PFun    \y ->
   PPrim
     case a of
-      TVRational ->
-        do x' <- fromVRational <$> x
-           y' <- fromVRational <$> y
-           VRational <$> rationalDivide sym x' y'
       TVFloat _e _p ->
         do xv <- fromVFloat <$> x
            yv <- fromVFloat <$> y
@@ -586,7 +546,6 @@ fieldDivideV sym =
 {-# SPECIALIZE roundOp ::
   Concrete ->
   String ->
-  (SRational Concrete -> SEval Concrete (SInteger Concrete)) ->
   (SFloat Concrete -> SEval Concrete (SInteger Concrete)) ->
   Unary Concrete #-}
 
@@ -594,48 +553,41 @@ roundOp ::
   Backend sym =>
   sym ->
   String ->
-  (SRational sym -> SEval sym (SInteger sym)) ->
   (SFloat sym -> SEval sym (SInteger sym)) ->
   Unary sym
-roundOp _sym nm qop opfp ty v =
+roundOp _sym nm opfp ty v =
   case ty of
-    TVRational  -> VInteger <$> (qop (fromVRational v))
     TVFloat _ _ -> VInteger <$> opfp (fromVFloat v)
     _ -> evalPanic nm [show ty ++ " is not a Field"]
 
 {-# INLINE floorV #-}
 floorV :: Backend sym => sym -> Unary sym
-floorV sym = roundOp sym "floor" opq opfp
+floorV sym = roundOp sym "floor" opfp
   where
-  opq = rationalFloor sym
   opfp = \x -> fpRndRTN sym >>= \r -> fpToInteger sym "floor" r x
 
 {-# INLINE ceilingV #-}
 ceilingV :: Backend sym => sym -> Unary sym
-ceilingV sym = roundOp sym "ceiling" opq opfp
+ceilingV sym = roundOp sym "ceiling" opfp
   where
-  opq = rationalCeiling sym
   opfp = \x -> fpRndRTP sym >>= \r -> fpToInteger sym "ceiling" r x
 
 {-# INLINE truncV #-}
 truncV :: Backend sym => sym -> Unary sym
-truncV sym = roundOp sym "trunc" opq opfp
+truncV sym = roundOp sym "trunc" opfp
   where
-  opq = rationalTrunc sym
   opfp = \x -> fpRndRTZ sym >>= \r -> fpToInteger sym "trunc" r x
 
 {-# INLINE roundAwayV #-}
 roundAwayV :: Backend sym => sym -> Unary sym
-roundAwayV sym = roundOp sym "roundAway" opq opfp
+roundAwayV sym = roundOp sym "roundAway" opfp
   where
-  opq = rationalRoundAway sym
   opfp = \x -> fpRndRNA sym >>= \r -> fpToInteger sym "roundAway" r x
 
 {-# INLINE roundToEvenV #-}
 roundToEvenV :: Backend sym => sym -> Unary sym
-roundToEvenV sym = roundOp sym "roundToEven" opq opfp
+roundToEvenV sym = roundOp sym "roundToEven" opfp
   where
-  opq = rationalRoundToEven sym
   opfp = \x -> fpRndRNE sym >>= \r -> fpToInteger sym "roundToEven" r x
 
 --------------------------------------------------------------
@@ -696,7 +648,6 @@ toSignedIntegerV sym =
   (SBit Concrete -> SBit Concrete -> SEval Concrete a -> SEval Concrete a) ->
   (SWord Concrete -> SWord Concrete -> SEval Concrete a -> SEval Concrete a) ->
   (SInteger Concrete -> SInteger Concrete -> SEval Concrete a -> SEval Concrete a) ->
-  (SRational Concrete -> SRational Concrete -> SEval Concrete a -> SEval Concrete a) ->
   (SFloat Concrete -> SFloat Concrete -> SEval Concrete a -> SEval Concrete a) ->
   (TValue -> GenValue Concrete -> GenValue Concrete -> SEval Concrete a -> SEval Concrete a)
   #-}
@@ -707,17 +658,15 @@ cmpValue ::
   (SBit sym -> SBit sym -> SEval sym a -> SEval sym a) ->
   (SWord sym -> SWord sym -> SEval sym a -> SEval sym a) ->
   (SInteger sym -> SInteger sym -> SEval sym a -> SEval sym a) ->
-  (SRational sym -> SRational sym -> SEval sym a -> SEval sym a) ->
   (SFloat sym -> SFloat sym -> SEval sym a -> SEval sym a) ->
   (TValue -> GenValue sym -> GenValue sym -> SEval sym a -> SEval sym a)
-cmpValue sym fb fw fi fq ff = cmp
+cmpValue sym fb fw fi ff = cmp
   where
     cmp ty v1 v2 k =
       case ty of
         TVBit         -> fb (fromVBit v1) (fromVBit v2) k
         TVInteger     -> fi (fromVInteger v1) (fromVInteger v2) k
         TVFloat _ _   -> ff (fromVFloat v1) (fromVFloat v2) k
-        TVRational    -> fq (fromVRational v1) (fromVRational v2) k
         TVArray{}     -> panic "Cryptol.Prims.Value.cmpValue"
                                [ "Arrays are not comparable" ]
         TVSeq n t
@@ -761,34 +710,31 @@ bitGreaterThan sym x y = bitLessThan sym y x
 
 {-# INLINE valEq #-}
 valEq :: Backend sym => sym -> TValue -> GenValue sym -> GenValue sym -> SEval sym (SBit sym)
-valEq sym ty v1 v2 = cmpValue sym fb fw fi fq ff ty v1 v2 (pure $ bitLit sym True)
+valEq sym ty v1 v2 = cmpValue sym fb fw fi ff ty v1 v2 (pure $ bitLit sym True)
   where
   fb x y k   = eqCombine sym (bitEq  sym x y) k
   fw x y k   = eqCombine sym (wordEq sym x y) k
   fi x y k   = eqCombine sym (intEq  sym x y) k
-  fq x y k   = eqCombine sym (rationalEq sym x y) k
   ff x y k   = eqCombine sym (fpEq sym x y) k
 
 {-# INLINE valLt #-}
 valLt :: Backend sym =>
   sym -> TValue -> GenValue sym -> GenValue sym -> SBit sym -> SEval sym (SBit sym)
-valLt sym ty v1 v2 final = cmpValue sym fb fw fi fq ff ty v1 v2 (pure final)
+valLt sym ty v1 v2 final = cmpValue sym fb fw fi ff ty v1 v2 (pure final)
   where
   fb x y k   = lexCombine sym (bitLessThan  sym x y) (bitEq  sym x y) k
   fw x y k   = lexCombine sym (wordLessThan sym x y) (wordEq sym x y) k
   fi x y k   = lexCombine sym (intLessThan  sym x y) (intEq  sym x y) k
-  fq x y k   = lexCombine sym (rationalLessThan sym x y) (rationalEq sym x y) k
   ff x y k   = lexCombine sym (fpLessThan   sym x y) (fpEq   sym x y) k
 
 {-# INLINE valGt #-}
 valGt :: Backend sym =>
   sym -> TValue -> GenValue sym -> GenValue sym -> SBit sym -> SEval sym (SBit sym)
-valGt sym ty v1 v2 final = cmpValue sym fb fw fi fq ff ty v1 v2 (pure final)
+valGt sym ty v1 v2 final = cmpValue sym fb fw fi ff ty v1 v2 (pure final)
   where
   fb x y k   = lexCombine sym (bitGreaterThan  sym x y) (bitEq  sym x y) k
   fw x y k   = lexCombine sym (wordGreaterThan sym x y) (wordEq sym x y) k
   fi x y k   = lexCombine sym (intGreaterThan  sym x y) (intEq  sym x y) k
-  fq x y k   = lexCombine sym (rationalGreaterThan sym x y) (rationalEq sym x y) k
   ff x y k   = lexCombine sym (fpGreaterThan   sym x y) (fpEq   sym x y) k
 
 {-# INLINE eqCombine #-}
@@ -837,12 +783,11 @@ greaterThanEqV sym ty v1 v2 = VBit <$> valGt sym ty v1 v2 (bitLit sym True)
 
 {-# INLINE signedLessThanV #-}
 signedLessThanV :: Backend sym => sym -> Binary sym
-signedLessThanV sym ty v1 v2 = VBit <$> cmpValue sym fb fw fi fq ff ty v1 v2 (pure $ bitLit sym False)
+signedLessThanV sym ty v1 v2 = VBit <$> cmpValue sym fb fw fi ff ty v1 v2 (pure $ bitLit sym False)
   where
   fb _ _ _   = panic "signedLessThan" ["Attempted to perform signed comparison on bit type"]
   fw x y k   = lexCombine sym (wordSignedLessThan sym x y) (wordEq sym x y) k
   fi _ _ _   = panic "signedLessThan" ["Attempted to perform signed comparison on Integer type"]
-  fq _ _ _   = panic "signedLessThan" ["Attempted to perform signed comparison on Rational type"]
   ff _ _ _   = panic "signedLessThan" ["Attempted to perform signed comparison on Float"]
 
 
@@ -866,9 +811,6 @@ zeroV sym ty = case ty of
   -- integers
   TVInteger ->
     VInteger <$> integerLit sym 0
-
-  TVRational ->
-    VRational <$> (intToRational sym =<< integerLit sym 0)
 
   TVArray{} -> evalPanic "zeroV" ["Array not in class Zero"]
 
@@ -1203,7 +1145,6 @@ logicBinary sym opb opw = loop
   loop ty l r = case ty of
     TVBit -> VBit <$> (opb (fromVBit l) (fromVBit r))
     TVInteger -> evalPanic "logicBinary" ["Integer not in class Logic"]
-    TVRational -> evalPanic "logicBinary" ["Rational not in class Logic"]
     TVArray{} -> evalPanic "logicBinary" ["Array not in class Logic"]
 
     TVFloat {}  -> evalPanic "logicBinary" ["Float not in class Logic"]
@@ -1267,7 +1208,6 @@ logicUnary sym opb opw = loop
 
     TVInteger -> evalPanic "logicUnary" ["Integer not in class Logic"]
     TVFloat {} -> evalPanic "logicUnary" ["Float not in class Logic"]
-    TVRational -> evalPanic "logicBinary" ["Rational not in class Logic"]
     TVArray{} -> evalPanic "logicUnary" ["Array not in class Logic"]
 
     TVSeq w ety
@@ -1931,16 +1871,6 @@ genericFloatTable sym =
                        PWordFun \r -> PFloatFun \x ->
                        PPrim (VFloat <$> fpSqrt sym r x)
 
-    , "fpToRational" ~>
-       PFinPoly \_e -> PFinPoly \_p -> PFloatFun \x ->
-       PPrim (VRational <$> fpToRational sym x)
-
-    , "fpFromRational" ~>
-       PFinPoly \e -> PFinPoly \p -> PWordFun \r -> PFun \x ->
-       PPrim
-         do rat <- fromVRational <$> x
-            VFloat <$> fpFromRational sym e p r rat
-
     ]
 
 
@@ -1955,8 +1885,6 @@ genericPrimTable sym getEOpts =
   , ("False"      , PVal $ VBit (bitLit sym False))
   , ("number"     , {-# SCC "Prelude::number" #-}
                     ecNumberV sym)
-  , ("ratio"      , {-# SCC "Prelude::ratio" #-}
-                    ratioV sym)
   , ("fraction"   , ecFractionV sym)
 
     -- Zero

@@ -29,17 +29,6 @@ primitive type Bit : *
 /** The type of unbounded integers. */
 primitive type Integer : *
 
-/**
- * 'Rational' is the type of rational numbers.
- * Rational numbers form a Field (and thus a Ring).
- *
- * The 'ratio' operation may be used to directly create
- * rational values from as a ratio of integers, or
- * the 'fromInteger' method and the field operations
- * can be used.
- */
-primitive type Rational : *
-
 type Bool = Bit
 type Word n = [n]
 type Char = [8]
@@ -744,17 +733,6 @@ primitive lg2 : {n} (fin n) => [n] -> [n]
  * Convert a signed 2's complement bitvector to an integer.
  */
 primitive toSignedInteger : {n} (fin n, n >= 1) => [n] -> Integer
-
-
-// Rational specific operations ----------------------------------------------
-
-/**
- * Compute the ratio of two integers as a rational.
- * Ratio is undefined if the denominator is 0.
- *
- * 'ratio x y = (fromInteger x /. fromInteger y) : Rational'
- */
-primitive ratio : Integer -> Integer -> Rational
 
 
 // Sequence operations -------------------------------------------------------

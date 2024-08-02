@@ -122,11 +122,6 @@ toExpr prims t0 v0 = findOne (go t0 v0)
       (TVInteger, VInteger i) ->
         pure $ ETApp (ETApp (prim "number") (tNum i)) tInteger
 
-      (TVRational, VRational (SRational n d)) ->
-        do let n' = ETApp (ETApp (prim "number") (tNum n)) tInteger
-           let d' = ETApp (ETApp (prim "number") (tNum d)) tInteger
-           pure $ EApp (EApp (prim "ratio") n') d'
-
       (TVFloat e p, VFloat i) ->
            pure (floatToExpr prims (tNum e) (tNum p) (bfValue i))
       (TVSeq _ b, VSeq n svs) ->

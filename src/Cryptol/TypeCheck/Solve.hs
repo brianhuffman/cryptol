@@ -43,7 +43,7 @@ import qualified Data.Map as Map
 import           Data.Set ( Set )
 import qualified Data.Set as Set
 import           Data.List(partition)
-import           Data.Maybe(listToMaybe,fromMaybe)
+import           Data.Maybe(listToMaybe)
 
 
 
@@ -82,7 +82,7 @@ quickSolver ctxt gs0 = go emptySubst [] gs0
   go su [] [] = Right (su,[])
 
   go su unsolved [] =
-    case matchMaybe (findImprovement noIncompatible unsolved) of
+    case matchMaybe (findImprovement unsolved) of
       Nothing -> Right (su,unsolved)
       Just imp ->
         case imp of
@@ -102,48 +102,13 @@ quickSolver ctxt gs0 = go emptySubst [] gs0
         in go su unsolved (map cvt subs ++ gs)
 
   -- Probably better to find more than one.
-  findImprovement inc [] =
-    do let bad = Map.intersectionWith (,) (integralTVars inc) (fracTVars inc)
-       case Map.minView bad of
-         Just ((g1,g2),_) -> pure $ Left $ UnsolvableGoals [g1,g2]
-         Nothing -> mzero
+  findImprovement [] = mzero
 
-  findImprovement inc (g : gs) =
+  findImprovement (g : gs) =
     do (su,ps) <- improveProp False ctxt (goal g)
        return (Right (su, [ g { goal = p } | p <- ps ]))
     <|>
-    findImprovement (addIncompatible g inc) gs
-
-
---------------------------------------------------------------------------------
--- Look for type variable with incompatible constraints
-
-data Incompatible = Incompatible
-  { integralTVars :: Map TVar Goal    -- ^ Integral a
-  , fracTVars     :: Map TVar Goal    -- ^ Field a or FLiteral 
-  }
-
-noIncompatible :: Incompatible
-noIncompatible = Incompatible
-  { integralTVars = Map.empty
-  , fracTVars     = Map.empty
-  }
-
-addIncompatible :: Goal -> Incompatible -> Incompatible
-addIncompatible g i =
-  fromMaybe i $
-  do tv <- tIsVar =<< pIsIntegral (goal g)
-     pure i { integralTVars = Map.insert tv g (integralTVars i) }
-  <|>
-  do tv <- tIsVar =<< pIsField (goal g)
-     pure i { fracTVars = Map.insert tv g (fracTVars i) }
-  <|>
-  do (_,_,_,t) <- pIsFLiteral (goal g)
-     tv        <- tIsVar t
-     pure i { fracTVars = Map.insert tv g (fracTVars i) }
-
-
-
+    findImprovement gs
 
 
 --------------------------------------------------------------------------------
@@ -181,16 +146,8 @@ defaultReplExpr sol expr sch =
                   , goalRange = emptyRange
                   , goalSource = CtDefaulting } | p <- otherPs ]
 
-  fLitGoals = flitDefaultCandidates gSet
-
   tryDefVar :: TParam -> [(TParam, Type)]
   tryDefVar a
-    -- REPL defaulting for floating-point literals
-    | Just m <- Map.lookup (TVBound a) fLitGoals
-    = case m of
-        Just ((_,t),_) -> [(a,t)]
-        Nothing        -> []
-
     -- REPL defaulting for integer literals
     | Just gt <- Map.lookup (TVBound a) (literalGoals gSet)
     = let ok p = not (Set.member (TVBound a) (fvs p)) in
@@ -198,7 +155,7 @@ defaultReplExpr sol expr sch =
               , ok t ]
 
     -- REPL defaulting for variables unconstrained by a literal constraint
-    | otherwise = [ (a,t) | t <- [tInteger, tRational, tBit] ]
+    | otherwise = [ (a,t) | t <- [tInteger, tBit] ]
 
   appExpr tys = foldl (\e1 _ -> EProofApp e1)
                       (foldl ETApp expr tys)

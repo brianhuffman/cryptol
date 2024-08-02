@@ -6,37 +6,15 @@ module Cryptol.Backend
   , invalidIndex
   , cryUserError
   , cryNoPrimError
-  , FPArith2
   , IndexDirection(..)
 
   , enumerateIntBits
   , enumerateIntBits'
-
-    -- * Rationals
-  , SRational(..)
-  , intToRational
-  , ratio
-  , rationalAdd
-  , rationalSub
-  , rationalNegate
-  , rationalMul
-  , rationalRecip
-  , rationalDivide
-  , rationalFloor
-  , rationalCeiling
-  , rationalTrunc
-  , rationalRoundAway
-  , rationalRoundToEven
-  , rationalEq
-  , rationalLessThan
-  , rationalGreaterThan
-  , iteRational
   ) where
 
 import Control.Monad.IO.Class
 import Data.Kind (Type)
 
-import Cryptol.Backend.FloatHelpers (BF)
 import Cryptol.Backend.Monad
   ( EvalError(..), Unsupported(..), CallStack, pushCallFrame )
 import Cryptol.ModuleSystem.Name(Name)
@@ -62,143 +40,6 @@ cryNoPrimError sym nm = raiseError sym (NoPrim nm)
 --   error if the resulting thunk is forced during its own evaluation.
 sDelay :: Backend sym => sym -> SEval sym a -> SEval sym (SEval sym a)
 sDelay sym m = sDelayFill sym m Nothing ""
-
--- | Representation of rational numbers.
---     Invariant: denominator is not 0
-data SRational sym =
-  SRational
-  { sNum :: SInteger sym
-  , sDenom :: SInteger sym
-  }
-
-intToRational :: Backend sym => sym -> SInteger sym -> SEval sym (SRational sym)
-intToRational sym x = SRational x <$> (integerLit sym 1)
-
-ratio :: Backend sym => sym -> SInteger sym -> SInteger sym -> SEval sym (SRational sym)
-ratio sym n d =
-  do pz  <- bitComplement sym =<< intEq sym d =<< integerLit sym 0
-     assertSideCondition sym pz DivideByZero
-     pure (SRational n d)
-
-rationalRecip :: Backend sym => sym -> SRational sym -> SEval sym (SRational sym)
-rationalRecip sym (SRational a b) = ratio sym b a
-
-rationalDivide :: Backend sym => sym -> SRational sym -> SRational sym -> SEval sym (SRational sym)
-rationalDivide sym x y = rationalMul sym x =<< rationalRecip sym y
-
-rationalFloor :: Backend sym => sym -> SRational sym -> SEval sym (SInteger sym)
- -- NB, relies on integer division being round-to-negative-inf division
-rationalFloor sym (SRational n d) = intDiv sym n d
-
-rationalCeiling :: Backend sym => sym -> SRational sym -> SEval sym (SInteger sym)
-rationalCeiling sym r = intNegate sym =<< rationalFloor sym =<< rationalNegate sym r
-
-rationalTrunc :: Backend sym => sym -> SRational sym -> SEval sym (SInteger sym)
-rationalTrunc sym r =
-  do p <- rationalLessThan sym r =<< intToRational sym =<< integerLit sym 0
-     cr <- rationalCeiling sym r
-     fr <- rationalFloor sym r
-     iteInteger sym p cr fr
-
-rationalRoundAway :: Backend sym => sym -> SRational sym -> SEval sym (SInteger sym)
-rationalRoundAway sym r =
-  do p <- rationalLessThan sym r =<< intToRational sym =<< integerLit sym 0
-     half <- SRational <$> integerLit sym 1 <*> integerLit sym 2
-     cr <- rationalCeiling sym =<< rationalSub sym r half
-     fr <- rationalFloor sym =<< rationalAdd sym r half
-     iteInteger sym p cr fr
-
-rationalRoundToEven :: Backend sym => sym -> SRational sym -> SEval sym (SInteger sym)
-rationalRoundToEven sym r =
-  do lo <- rationalFloor sym r
-     hi <- intPlus sym lo =<< integerLit sym 1
-     -- NB: `diff` will be nonnegative because `lo <= r`
-     diff <- rationalSub sym r =<< intToRational sym lo
-     half <- SRational <$> integerLit sym 1 <*> integerLit sym 2
-
-     ite (rationalLessThan sym diff half) (pure lo) $
-       ite (rationalGreaterThan sym diff half) (pure hi) $
-         ite (isEven lo) (pure lo) (pure hi)
-
- where
- isEven x =
-   do parity <- intMod sym x =<< integerLit sym 2
-      intEq sym parity =<< integerLit sym 0
-
- ite x t e =
-   do x' <- x
-      case bitAsLit sym x' of
-        Just True -> t
-        Just False -> e
-        Nothing ->
-          do t' <- t
-             e' <- e
-             iteInteger sym x' t' e'
-
-
-rationalAdd :: Backend sym => sym -> SRational sym -> SRational sym -> SEval sym (SRational sym)
-rationalAdd sym (SRational a b) (SRational c d) =
-  do ad <- intMult sym a d
-     bc <- intMult sym b c
-     bd <- intMult sym b d
-     ad_bc <- intPlus sym ad bc
-     pure (SRational ad_bc bd)
-
-rationalSub :: Backend sym => sym -> SRational sym -> SRational sym -> SEval sym (SRational sym)
-rationalSub sym (SRational a b) (SRational c d) =
-  do ad <- intMult sym a d
-     bc <- intMult sym b c
-     bd <- intMult sym b d
-     ad_bc <- intMinus sym ad bc
-     pure (SRational ad_bc bd)
-
-rationalNegate :: Backend sym => sym -> SRational sym -> SEval sym (SRational sym)
-rationalNegate sym (SRational a b) =
-  do aneg <- intNegate sym a
-     pure (SRational aneg b)
-
-rationalMul :: Backend sym => sym -> SRational sym -> SRational sym -> SEval sym (SRational sym)
-rationalMul sym (SRational a b) (SRational c d) =
-  do ac <- intMult sym a c
-     bd <- intMult sym b d
-     pure (SRational ac bd)
-
-rationalEq :: Backend sym => sym -> SRational sym -> SRational sym -> SEval sym (SBit sym)
-rationalEq sym (SRational a b) (SRational c d) =
-  do ad <- intMult sym a d
-     bc <- intMult sym b c
-     intEq sym ad bc
-
-normalizeSign :: Backend sym => sym -> SRational sym -> SEval sym (SRational sym)
-normalizeSign sym (SRational a b) =
-  do p <- intLessThan sym b =<< integerLit sym 0
-     case bitAsLit sym p of
-       Just False -> pure (SRational a b)
-       Just True  ->
-         do aneg <- intNegate sym a
-            bneg <- intNegate sym b
-            pure (SRational aneg bneg)
-       Nothing ->
-         do aneg <- intNegate sym a
-            bneg <- intNegate sym b
-            a' <- iteInteger sym p aneg a
-            b' <- iteInteger sym p bneg b
-            pure (SRational a' b')
-
-rationalLessThan:: Backend sym => sym -> SRational sym -> SRational sym -> SEval sym (SBit sym)
-rationalLessThan sym x y =
-  do SRational a b <- normalizeSign sym x
-     SRational c d <- normalizeSign sym y
-     ad <- intMult sym a d
-     bc <- intMult sym b c
-     intLessThan sym ad bc
-
-rationalGreaterThan:: Backend sym => sym -> SRational sym -> SRational sym -> SEval sym (SBit sym)
-rationalGreaterThan sym = flip (rationalLessThan sym)
-
-iteRational :: Backend sym => sym -> SBit sym -> SRational sym -> SRational sym -> SEval sym (SRational sym)
-iteRational sym p (SRational a b) (SRational c d) =
-  SRational <$> iteInteger sym p a c <*> iteInteger sym p b d
 
 -- | Compute the list of bits in an integer in big-endian order.
 --   The integer argument is a concrete upper bound for
@@ -231,7 +72,6 @@ class MonadIO (SEval sym) => Backend sym where
   type SBit sym :: Type
   type SWord sym :: Type
   type SInteger sym :: Type
-  type SFloat sym :: Type
   type SEval sym :: Type -> Type
 
   -- ==== Evaluation monad operations ====
@@ -306,9 +146,6 @@ class MonadIO (SEval sym) => Backend sym where
   -- | Determine if this symbolic integer is a literal
   integerAsLit :: sym -> SInteger sym -> Maybe Integer
 
-  -- | Determine if this symbolic floating-point value is a literal
-  fpAsLit :: sym -> SFloat sym -> Maybe BF
-
   -- ==== Creating literal values ====
 
   -- | Construct a literal bit value from a boolean.
@@ -327,23 +164,10 @@ class MonadIO (SEval sym) => Backend sym where
     Integer {- ^ Value -} ->
     SEval sym (SInteger sym)
 
-  -- | Construct a floating point value from the given rational.
-  fpLit ::
-    sym ->
-    Integer  {- ^ exponent bits -} ->
-    Integer  {- ^ precision bits -} ->
-    Rational {- ^ The rational -} ->
-    SEval sym (SFloat sym)
-
-  -- | Construct a floating point value from the given bit-precise
-  --   floating-point representation.
-  fpExactLit :: sym -> BF -> SEval sym (SFloat sym)
-
   -- ==== If/then/else operations ====
   iteBit :: sym -> SBit sym -> SBit sym -> SBit sym -> SEval sym (SBit sym)
   iteWord :: sym -> SBit sym -> SWord sym -> SWord sym -> SEval sym (SWord sym)
   iteInteger :: sym -> SBit sym -> SInteger sym -> SInteger sym -> SEval sym (SInteger sym)
-  iteFloat :: sym -> SBit sym -> SFloat sym -> SFloat sym -> SEval sym (SFloat sym)
 
   -- ==== Bit operations ====
   bitEq  :: sym -> SBit sym -> SBit sym -> SEval sym (SBit sym)
@@ -750,64 +574,3 @@ class MonadIO (SEval sym) => Backend sym where
     Integer {- ^ modulus -} ->
     SInteger sym ->
     SEval sym (SInteger sym)
-
-  -- == Float Operations ==
-  fpEq          :: sym -> SFloat sym -> SFloat sym -> SEval sym (SBit sym)
-  fpLessThan    :: sym -> SFloat sym -> SFloat sym -> SEval sym (SBit sym)
-  fpGreaterThan :: sym -> SFloat sym -> SFloat sym -> SEval sym (SBit sym)
-
-  fpLogicalEq   :: sym -> SFloat sym -> SFloat sym -> SEval sym (SBit sym)
-
-  fpNaN    :: sym -> Integer {- ^ exponent bits -} -> Integer {- ^ precision bits -} -> SEval sym (SFloat sym)
-  fpPosInf :: sym -> Integer {- ^ exponent bits -} -> Integer {- ^ precision bits -} -> SEval sym (SFloat sym)
-
-  fpPlus, fpMinus, fpMult, fpDiv :: FPArith2 sym
-  fpNeg, fpAbs :: sym -> SFloat sym -> SEval sym (SFloat sym)
-  fpSqrt :: sym -> SWord sym -> SFloat sym -> SEval sym (SFloat sym)
-
-  fpFMA :: sym -> SWord sym -> SFloat sym -> SFloat sym -> SFloat sym -> SEval sym (SFloat sym)
-
-  fpIsZero, fpIsNeg, fpIsNaN, fpIsInf, fpIsNorm, fpIsSubnorm :: sym -> SFloat sym -> SEval sym (SBit sym)
-
-  fpToBits :: sym -> SFloat sym -> SEval sym (SWord sym)
-  fpFromBits ::
-    sym ->
-    Integer {- ^ exponent bits -} ->
-    Integer {- ^ precision bits -} ->
-    SWord sym ->
-    SEval sym (SFloat sym)
-
-  fpToInteger ::
-    sym ->
-    String {- ^ Name of the function for error reporting -} ->
-    SWord sym {- ^ Rounding mode -} ->
-    SFloat sym ->
-    SEval sym (SInteger sym)
-
-  fpFromInteger ::
-    sym ->
-    Integer         {- ^ exp width -} ->
-    Integer         {- ^ prec width -} ->
-    SWord sym       {- ^ rounding mode -} ->
-    SInteger sym    {- ^ the integer to use -} ->
-    SEval sym (SFloat sym)
-
-  fpToRational ::
-    sym ->
-    SFloat sym ->
-    SEval sym (SRational sym)
-
-  fpFromRational ::
-    sym ->
-    Integer         {- ^ exp width -} ->
-    Integer         {- ^ prec width -} ->
-    SWord sym       {- ^ rounding mode -} ->
-    SRational sym ->
-    SEval sym (SFloat sym)
-
-type FPArith2 sym =
-  sym ->
-  SWord sym ->
-  SFloat sym ->
-  SFloat sym ->
-  SEval sym (SFloat sym)

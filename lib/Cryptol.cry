@@ -29,38 +29,6 @@ primitive type Bit : *
 /** The type of unbounded integers. */
 primitive type Integer : *
 
-/**
- * 'Z n' is the type of integers, modulo 'n'.
- *
- * The values of 'Z n' may be thought of as equivalence
- * classes of integers according to the equivalence
- * 'x ~ y' iff 'n' divides 'x - y'.  'Z n' naturally
- * forms a ring, but does not support integral division
- * or indexing.
- *
- * However, you may use the 'fromZ' operation
- * to project values in 'Z n' into the integers if such operations
- * are required.  This will compute the reduced representative
- * of the equivalence class. In other words, 'fromZ' computes
- * the (unique) integer value 'i'  where '0 <= i < n' and
- * 'i' is in the given equivalence class.
- *
- * If the modulus 'n' is prime, 'Z n' also
- * supports computing inverses and forms a field.
- */
-primitive type {n : #} (n >= 1) => Z n : *
-
-/**
- * 'Rational' is the type of rational numbers.
- * Rational numbers form a Field (and thus a Ring).
- *
- * The 'ratio' operation may be used to directly create
- * rational values from as a ratio of integers, or
- * the 'fromInteger' method and the field operations
- * can be used.
- */
-primitive type Rational : *
-
 type Bool = Bit
 type Word n = [n]
 type Char = [8]
@@ -265,23 +233,6 @@ primitive fromThenTo : {first, next, last, a, len}
                        , first != next
                        , lengthFromThenTo first next last == len) => [len]a
 
-// Fractional Literals ---------------------
-
-/** 'FLiteral m n r a' asserts that the type 'a' contains the
-fraction 'm/n'.  The flag 'r' indicates if we should round ('r >= 1')
-or report an error if the number can't be represented exactly. */
-primitive type FLiteral : # -> # -> # -> * -> Prop
-
-/** A fractional literal corresponding to 'm/n' */
-primitive
-  fraction : { m, n, r, a } FLiteral m n r a => a
-
-
-
-
-
-
-
 // The Zero class -------------------------------------------------------
 
 /** Value types that have a notion of 'zero'. */
@@ -325,9 +276,6 @@ primitive complement : {a} (Logic a) => a -> a
 
 /**
  * Value types that support ring addition and multiplication.
- *
- * Floating-point values are only approximately a ring, but
- * nonetheless inhabit this class.
  */
 primitive type Ring : * -> Prop
 
@@ -335,10 +283,6 @@ primitive type Ring : * -> Prop
  * Converts an unbounded integer to a value in a Ring using the following rules:
  *   * to bitvector type [n]:
  *     the value is reduced modulo 2^^n,
- *   * to Z n:
- *     the value is reduced modulo n,
- *   * floating point types:
- *     the value is rounded to the nearest representable value,
  *   * sequences other than bitvectors:
  *     elements are computed by using `fromInteger` pointwise
  *     Example: (fromInteger 2 : [3][8]) === [ 0x02, 0x02, 0x02 ]
@@ -434,84 +378,6 @@ primitive infFrom : {a, n} (Integral a) => a -> [n]a
  * '[x,y...]' is syntactic sugar for 'infFromThen x y'.
  */
 primitive infFromThen : {a, n} (Integral a) => a -> a -> [n]a
-
-
-// The Field class -------------------------------------------------
-
-/**
- * Value types that correspond to a field; that is,
- * a ring also possessing multiplicative inverses for
- * non-zero elements.
- *
- * Floating-point values are only approximately a field,
- * but nonetheless inhabit this class.
- */
-primitive type Field : * -> Prop
-
-/**
- * Reciprocal
- *
- * Compute the multiplicative inverse of an element of a field.
- * The reciprocal of 0 is undefined.
- */
-primitive recip : {a} (Field a) => a -> a
-
-/**
- * Field division
- *
- * The division operation in a field.
- * Satisfies 'x /. y == x * (recip y)'
- *
- * Field division by 0 is undefined.
- */
-primitive (/.) : {a} (Field a) => a -> a -> a
-
-
-// The Round class -------------------------------------------------
-
-/** Value types that can be rounded to integer values. */
-primitive type Round : * -> Prop
-
-/**
- * Ceiling function.
- *
- * Given 'x', compute the smallest integer 'i'
- * such that 'x <= i'.
- */
-primitive ceiling : {a} (Round a) => a -> Integer
-
-/**
- * Floor function.
- *
- * Given 'x', compute the largest integer 'i'
- * such that 'i <= x'.
- */
-primitive floor : {a} (Round a) => a -> Integer
-
-/**
- * Truncate the value toward 0.
- *
- * Given 'x' compute the nearest integer between
- * 'x' and 0.  For nonnegative 'x', this is floor,
- * and for negative 'x' this is ceiling.
- */
-primitive trunc : {a} (Round a) => a -> Integer
-
-/**
- * Round to the nearest integer, ties away from 0.
- *
- * Ties are broken away from 0.  For nonnegative 'x'
- * this is 'floor (x + 0.5)'.  For negative 'x' this
- * is 'ceiling (x - 0.5)'.
- */
-primitive roundAway : {a} (Round a) => a -> Integer
-
-/**
- * Round to the nearest integer, ties to even.
- *
- * Ties are broken to the nearest even integer.
- */
-primitive roundToEven : {a} (Round a) => a -> Integer
 
 
 // The Eq class ----------------------------------------------------
@@ -760,25 +626,6 @@ primitive lg2 : {n} [n] -> [n]
  * Convert a signed 2's complement bitvector to an integer.
  */
 primitive toSignedInteger : {n} (n >= 1) => [n] -> Integer
-
-
-// Rational specific operations ----------------------------------------------
-
-/**
- * Compute the ratio of two integers as a rational.
- * Ratio is undefined if the denominator is 0.
- *
- * 'ratio x y = (fromInteger x /. fromInteger y) : Rational'
- */
-primitive ratio : Integer -> Integer -> Rational
-
-
-// Zn specific operations ----------------------------------------------------
-
-/**
- * Converts an integer modulo n to an unbounded integer in the range 0 to n-1.
- */
-primitive fromZ : {n} (n >= 1) => Z n -> Integer
 
 
 // Sequence operations -------------------------------------------------------

@@ -66,7 +66,6 @@ primTable :: W4.IsSymExprBuilder sym => What4 sym -> IO EvalOpts -> Map.Map Prim
 primTable sym getEOpts =
   Map.union (suiteBPrims sym) $
   Map.union (primeECPrims sym) $
-  Map.union (genericFloatTable sym) $
   Map.union (genericPrimTable sym getEOpts) $
 
   Map.fromList $ map (\(n, v) -> (prelPrim n, v))

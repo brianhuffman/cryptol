@@ -66,5 +66,4 @@ data FFIFloatSize
 data FFIBasicRefType
   = FFIInteger
       (Maybe Type) -- ^ Modulus (Just for Z, Nothing for Integer)
-  | FFIRational
   deriving (Show, Generic, NFData)

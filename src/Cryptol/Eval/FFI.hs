@@ -30,20 +30,15 @@ import           Data.Either
 import           Data.Foldable
 import           Data.IORef
 import           Data.Proxy
-import           Data.Ratio
 import           Data.Traversable
 import           Data.Word
 import           Foreign
 import           Foreign.C.Types
-import           GHC.Float
-import           LibBF                         (bfFromDouble, bfToDouble,
-                                                pattern NearEven)
 import           Numeric.GMP.Raw.Unsafe
 import           Numeric.GMP.Utils
 
 import           Cryptol.Backend
 import           Cryptol.Backend.Concrete
-import           Cryptol.Backend.FloatHelpers
 import           Cryptol.Backend.Monad
 import           Cryptol.Backend.SeqMap
 import           Cryptol.Eval.Env
@@ -334,12 +329,6 @@ foreignPrim name FFIFunType {..} impl tenv = buildFun ffiArgTypes []
           case mbMod of
             Nothing -> pure n
             Just m  -> intToZn Concrete (evalFinType m) n }
-  getBasicRefRet FFIRational f = f BasicRefRet
-    { initBasicRefRet = mpq_init
-    , clearBasicRefRet = mpq_clear
-    , marshalBasicRefRet = \mpq -> do
-        r <- io $ peekRational' mpq
-        pure $ VRational $ SRational (numerator r) (denominator r) }
 
   -- Evaluate a finite numeric type expression.
   evalFinType :: Type -> Integer
@@ -372,16 +361,6 @@ getMarshalBasicValArg ::
 getMarshalBasicValArg (FFIWord _ s) f = withWordType s \(_ :: p t) ->
   f @t $ fmap (fromInteger . bvVal) . fromVWord Concrete "getMarshalBasicValArg"
 
-getMarshalBasicValArg (FFIFloat _ _ s) f =
-  case s of
-    -- LibBF can only convert to 'Double' directly, so we do that first then
-    -- convert to 'Float', which should not result in any loss of precision if
-    -- the original data was 32-bit anyways.
-    FFIFloat32 -> f $ pure . CFloat . double2Float . toDouble
-    FFIFloat64 -> f $ pure . CDouble . toDouble
-  where
-  toDouble = fst . bfToDouble NearEven . bfValue . fromVFloat
-
 -- | Given a 'FFIBasicValType', call the callback with an unmarshalling function
 -- from the 'FFIRet' type corresponding to the 'FFIBasicValType' to Cryptol
 -- values. The callback must be able to handle unmarshalling functions from any
@@ -390,11 +369,6 @@ getMarshalBasicValRet :: FFIBasicValType ->
   (forall a. FFIRet a => (a -> Eval (GenValue Concrete)) -> b) -> b
 getMarshalBasicValRet (FFIWord n s) f = withWordType s \(_ :: p t) ->
   f @t $ word Concrete n . toInteger
-getMarshalBasicValRet (FFIFloat e p s) f =
-  case s of
-    FFIFloat32 -> f $ toValue . \case CFloat x -> float2Double x
-    FFIFloat64 -> f $ toValue . \case CDouble x -> x
-  where toValue = pure . VFloat . BF e p . bfFromDouble
 
 -- | Call the callback with the Word type corresponding to the given
 -- 'FFIWordSize'.
@@ -416,9 +390,6 @@ getMarshalBasicRefArg :: FFIBasicRefType ->
   result
 getMarshalBasicRefArg (FFIInteger _) f = f \val g ->
   withInInteger' (fromVInteger val) g
-getMarshalBasicRefArg FFIRational f = f \val g -> do
-  let SRational {..} = fromVRational val
-  withInRational' (sNum % sDenom) g
 
 #else
 

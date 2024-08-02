@@ -22,10 +22,8 @@ module Cryptol.Eval.Concrete
 import Control.Monad (guard, zipWithM, foldM, mzero)
 import Data.Foldable (foldl')
 import Data.List (find)
-import Data.Ratio(numerator,denominator)
 import Data.Word(Word32, Word64)
 import MonadLib( ChoiceT, findOne, lift )
-import qualified LibBF as FP
 import qualified Cryptol.F2 as F2
 
 import qualified Data.Map.Strict as Map
@@ -37,7 +35,6 @@ import Cryptol.TypeCheck.Solver.InfNat (Nat'(..))
 
 import Cryptol.Backend
 import Cryptol.Backend.Concrete
-import Cryptol.Backend.FloatHelpers
 import Cryptol.Backend.Monad
 import Cryptol.Backend.SeqMap
 import Cryptol.Backend.WordValue
@@ -52,7 +49,7 @@ import qualified Cryptol.PrimeEC as PrimeEC
 import Cryptol.ModuleSystem.Name
 import Cryptol.TypeCheck.AST as AST
 import Cryptol.Utils.Panic (panic)
-import Cryptol.Utils.Ident (PrimIdent,prelPrim,floatPrim,suiteBPrim,primeECPrim)
+import Cryptol.Utils.Ident (PrimIdent,prelPrim,suiteBPrim,primeECPrim)
 import Cryptol.Utils.PP
 import Cryptol.Utils.RecordMap
 
@@ -121,16 +118,7 @@ toExpr prims t0 v0 = findOne (go t0 v0)
         pure (prim (if b then "True" else "False"))
       (TVInteger, VInteger i) ->
         pure $ ETApp (ETApp (prim "number") (tNum i)) tInteger
-      (TVIntMod n, VInteger i) ->
-        pure $ ETApp (ETApp (prim "number") (tNum i)) (tIntMod (tNum n))
 
-      (TVRational, VRational (SRational n d)) ->
-        do let n' = ETApp (ETApp (prim "number") (tNum n)) tInteger
-           let d' = ETApp (ETApp (prim "number") (tNum d)) tInteger
-           pure $ EApp (EApp (prim "ratio") n') d'
-
-      (TVFloat e p, VFloat i) ->
-           pure (floatToExpr prims (tNum e) (tNum p) (bfValue i))
       (TVSeq _ b, VSeq n svs) ->
         do ses <- traverse (go b) =<< lift (sequence (enumerateSeqMap n svs))
            pure $ EList ses (tValTy b)
@@ -152,32 +140,11 @@ toExpr prims t0 v0 = findOne (go t0 v0)
              , show doc
              ]
 
-floatToExpr :: PrimMap -> AST.Type -> AST.Type -> FP.BigFloat -> AST.Expr
-floatToExpr prims eT pT f =
-  case FP.bfToRep f of
-    FP.BFNaN -> mkP "fpNaN"
-    FP.BFRep sign num ->
-      case (sign,num) of
-        (FP.Pos, FP.Zero)   -> mkP "fpPosZero"
-        (FP.Neg, FP.Zero)   -> mkP "fpNegZero"
-        (FP.Pos, FP.Inf)    -> mkP "fpPosInf"
-        (FP.Neg, FP.Inf)    -> mkP "fpNegInf"
-        (_, FP.Num m e) ->
-            let r = toRational m * (2 ^^ e)
-            in EProofApp $ ePrim prims (prelPrim "fraction")
-                          `ETApp` tNum (numerator r)
-                          `ETApp` tNum (denominator r)
-                          `ETApp` tNum (0 :: Int)
-                          `ETApp` tFloat eT pT
-  where
-  mkP n = EProofApp $ ePrim prims (floatPrim n) `ETApp` eT `ETApp` pT
-
 -- Primitives ------------------------------------------------------------------
 
 primTable :: IO EvalOpts -> Map PrimIdent (Prim Concrete)
 primTable getEOpts = let sym = Concrete in
   Map.union (genericPrimTable sym getEOpts) $
-  Map.union (genericFloatTable sym) $
   Map.union suiteBPrims $
   Map.union primeECPrims $
 

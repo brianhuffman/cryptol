@@ -14,56 +14,18 @@ module Cryptol.TypeCheck.Solver.Class
   ( solveZeroInst
   , solveLogicInst
   , solveRingInst
-  , solveFieldInst
   , solveIntegralInst
-  , solveRoundInst
   , solveEqInst
   , solveCmpInst
   , solveSignedCmpInst
   , solveLiteralInst
   , solveLiteralLessThanInst
-  , solveFLiteralInst
-  , solveValidFloat
   ) where
 
-import qualified LibBF as FP
-
 import Cryptol.TypeCheck.Type hiding (tSub)
-import Cryptol.TypeCheck.SimpType (tAdd,tSub,tWidth,tMax)
+import Cryptol.TypeCheck.SimpType (tSub,tWidth,tMax)
 import Cryptol.TypeCheck.Solver.Types
 import Cryptol.Utils.RecordMap
-
-{- | This places constraints on the floating point numbers that
-we can work with.  This is a bit of an odd check, as it is really
-a limitiation of the backend, and not the language itself.
-
-On the other hand, it helps us give sane results if one accidentally
-types a polymorphic float at the REPL.  Hopefully, most users will
-stick to particular FP sizes, so this should be quite transparent.
--}
-solveValidFloat :: Type -> Type -> Solved
-solveValidFloat e p
-  | Just _ <- knownSupportedFloat e p = SolvedIf []
-  | otherwise = Unsolved
-
--- | Check that the type parameters correspond to a float that
--- we support, and if so make the precision settings for the BigFloat library.
-knownSupportedFloat :: Type -> Type -> Maybe FP.BFOpts
-knownSupportedFloat et pt
-  | Just e <- tIsNum et, Just p <- tIsNum pt
-  , minExp <= e && e <= maxExp && minPrec <= p && p <= maxPrec =
-    Just (FP.expBits (fromInteger e) <> FP.precBits (fromInteger p)
-                                     <> FP.allowSubnormal)
-  | otherwise = Nothing
-  where
-  minExp  = max 2 (toInteger FP.expBitsMin)
-  maxExp  = toInteger FP.expBitsMax
-
-  minPrec = max 2 (toInteger FP.precBitsMin)
-  maxPrec = toInteger FP.precBitsMax
-
-
-
 
 -- | Solve a Zero constraint by instance, if possible.
 solveZeroInst :: Type -> Solved
@@ -78,16 +40,7 @@ solveZeroInst ty = case tNoUser ty of
   -- Zero Integer
   TCon (TC TCInteger) [] -> SolvedIf []
 
-  -- Zero (Z n)
-  TCon (TC TCIntMod) [n] -> SolvedIf [ n >== tOne ]
-
   -- Zero Real
-
-  -- Zero Rational
-  TCon (TC TCRational) [] -> SolvedIf []
-
-  -- ValidVloat e p => Zero (Float e p)
-  TCon (TC TCFloat) [e,p] -> SolvedIf [ pValidFloat e p ]
 
   -- Zero a => Zero [n]a
   TCon (TC TCSeq) [_, a] -> SolvedIf [ pZero a ]
@@ -118,15 +71,6 @@ solveLogicInst ty = case tNoUser ty of
 
   -- Logic Integer fails
   TCon (TC TCInteger) [] -> Unsolvable
-
-  -- Logic (Z n) fails
-  TCon (TC TCIntMod) [_] -> Unsolvable
-
-  -- Logic Rational fails
-  TCon (TC TCRational) [] -> Unsolvable
-
-  -- Logic (Float e p) fails
-  TCon (TC TCFloat) [_, _] -> Unsolvable
 
   -- Logic a => Logic [n]a
   TCon (TC TCSeq) [_, a] -> SolvedIf [ pLogic a ]
@@ -167,15 +111,6 @@ solveRingInst ty = case tNoUser ty of
 
   -- Ring Integer
   TCon (TC TCInteger) [] -> SolvedIf []
-
-  -- Ring (Z n)
-  TCon (TC TCIntMod) [n] -> SolvedIf [ n >== tOne ]
-
-  -- Ring Rational
-  TCon (TC TCRational) [] -> SolvedIf []
-
-  -- ValidFloat e p => Ring (Float e p)
-  TCon (TC TCFloat) [e,p] -> SolvedIf [ pValidFloat e p ]
 
   -- (Ring a, Ring b) => Ring { x1 : a, x2 : b }
   TRec fs -> SolvedIf [ pRing ety | ety <- recordElements fs ]
@@ -230,91 +165,6 @@ solveIntegralInst ty = case tNoUser ty of
   _ -> Unsolvable
 
 
--- | Solve a Field constraint by instance, if possible.
-solveFieldInst :: Type -> Solved
-solveFieldInst ty = case tNoUser ty of
-
-  -- Field Error -> fails
-  TCon (TError {}) _ -> Unsolvable
-
-  -- Field Bit fails
-  TCon (TC TCBit) [] -> Unsolvable
-
-  -- Field Integer fails
-  TCon (TC TCInteger) [] -> Unsolvable
-
-  -- Field Rational
-  TCon (TC TCRational) [] -> SolvedIf []
-
-  -- ValidFloat e p => Field (Float e p)
-  TCon (TC TCFloat) [e,p] -> SolvedIf [ pValidFloat e p ]
-
-  -- Field Real
-
-  -- Field (Z n)
-  TCon (TC TCIntMod) [n] -> SolvedIf [ pPrime n ]
-
-  -- Field ([n]a) fails
-  TCon (TC TCSeq) [_, _] -> Unsolvable
-
-  -- Field (a -> b) fails
-  TCon (TC TCFun) [_, _] -> Unsolvable
-
-  -- Field (a, b, ...) fails
-  TCon (TC (TCTuple _)) _ -> Unsolvable
-
-  -- Field {x : a, y : b, ...} fails
-  TRec _ -> Unsolvable
-
-  -- Field <nominal> -> fails
-  TNominal {} -> Unsolvable
-
-  _ -> Unsolved
-
-
--- | Solve a Round constraint by instance, if possible.
-solveRoundInst :: Type -> Solved
-solveRoundInst ty = case tNoUser ty of
-
-  -- Round Error -> fails
-  TCon (TError {}) _ -> Unsolvable
-
-  -- Round Bit fails
-  TCon (TC TCBit) [] -> Unsolvable
-
-  -- Round Integer fails
-  TCon (TC TCInteger) [] -> Unsolvable
-
-  -- Round (Z n) fails
-  TCon (TC TCIntMod) [_] -> Unsolvable
-
-  -- Round Rational
-  TCon (TC TCRational) [] -> SolvedIf []
-
-  -- ValidFloat e p => Round (Float e p)
-  TCon (TC TCFloat) [e,p] -> SolvedIf [ pValidFloat e p ]
-
-  -- Round Real
-
-  -- Round ([n]a) fails
-  TCon (TC TCSeq) [_, _] -> Unsolvable
-
-  -- Round (a -> b) fails
-  TCon (TC TCFun) [_, _] -> Unsolvable
-
-  -- Round (a, b, ...) fails
-  TCon (TC (TCTuple _)) _ -> Unsolvable
-
-  -- Round {x : a, y : b, ...} fails
-  TRec _ -> Unsolvable
-
-  -- Round <nominal> -> fails
-  TNominal {} -> Unsolvable
-
-  _ -> Unsolved
-
-
-
 -- | Solve Eq constraints.
 solveEqInst :: Type -> Solved
 solveEqInst ty = case tNoUser ty of
@@ -327,15 +177,6 @@ solveEqInst ty = case tNoUser ty of
 
   -- Eq Integer
   TCon (TC TCInteger) [] -> SolvedIf []
-
-  -- Eq Rational
-  TCon (TC TCRational) [] -> SolvedIf []
-
-  -- ValidFloat e p => Eq (Float e p)
-  TCon (TC TCFloat) [e,p] -> SolvedIf [ pValidFloat e p ]
-
-  -- Eq (Z n)
-  TCon (TC TCIntMod) [n] -> SolvedIf [ n >== tOne ]
 
   -- (Eq a) => Eq [n]a
   TCon (TC TCSeq) [_,a] -> SolvedIf [ pEq a ]
@@ -367,15 +208,6 @@ solveCmpInst ty = case tNoUser ty of
 
   -- Cmp Integer
   TCon (TC TCInteger) [] -> SolvedIf []
-
-  -- Cmp Rational
-  TCon (TC TCRational) [] -> SolvedIf []
-
-  -- Cmp (Z n) fails
-  TCon (TC TCIntMod) [_] -> Unsolvable
-
-  -- ValidFloat e p => Cmp (Float e p)
-  TCon (TC TCFloat) [e,p] -> SolvedIf [ pValidFloat e p ]
 
   -- (Cmp a) => Cmp [n]a
   TCon (TC TCSeq) [_,a] -> SolvedIf [ pCmp a ]
@@ -423,15 +255,6 @@ solveSignedCmpInst ty = case tNoUser ty of
   -- SignedCmp Integer fails
   TCon (TC TCInteger) [] -> Unsolvable
 
-  -- SignedCmp (Z n) fails
-  TCon (TC TCIntMod) [_] -> Unsolvable
-
-  -- SignedCmp Rational fails
-  TCon (TC TCRational) [] -> Unsolvable
-
-  -- SignedCmp (Float e p) fails
-  TCon (TC TCFloat) [_, _] -> Unsolvable
-
   -- SignedCmp for sequences
   TCon (TC TCSeq) [n,a] -> solveSignedCmpSeq n a
 
@@ -450,40 +273,6 @@ solveSignedCmpInst ty = case tNoUser ty of
   _ -> Unsolved
 
 
--- | Solving fractional literal constraints.
-solveFLiteralInst :: Type -> Type -> Type -> Type -> Solved
-solveFLiteralInst numT denT rndT ty
-  | TCon (TError {}) _ <- tNoUser numT = Unsolvable
-  | TCon (TError {}) _ <- tNoUser denT = Unsolvable
-  | Just 0 <- tIsNum denT = Unsolvable
-
-  | otherwise =
-    case tNoUser ty of
-      TVar {} -> Unsolved
-
-      TCon (TError {}) _ -> Unsolvable
-
-      TCon (TC TCRational) [] ->
-        SolvedIf [ denT >== tOne ]
-
-      TCon (TC TCFloat) [e,p]
-        | Just 0    <- tIsNum rndT ->
-          SolvedIf [ pValidFloat e p
-                   , denT >== tOne ]
-
-        | Just _    <- tIsNum rndT
-        , Just opts <- knownSupportedFloat e p
-        , Just n    <- tIsNum numT
-        , Just d    <- tIsNum denT
-         -> case FP.bfDiv opts (FP.bfFromInteger n) (FP.bfFromInteger d) of
-              (_, FP.Ok) -> SolvedIf []
-              _ -> Unsolvable
-
-        | otherwise -> Unsolved
-
-      _ -> Unsolvable
-
-
 -- | Solve Literal constraints.
 solveLiteralInst :: Type -> Type -> Solved
 solveLiteralInst val ty
@@ -499,25 +288,6 @@ solveLiteralInst val ty
 
       -- (fin val) => Literal val Integer
       TCon (TC TCInteger) [] -> SolvedIf []
-
-      -- (fin val) => Literal val Rational
-      TCon (TC TCRational) [] -> SolvedIf []
-
-      -- ValidFloat e p => Literal val (Float e p)   if `val` is representable
-      TCon (TC TCFloat) [e,p]
-        | Just n    <- tIsNum val
-        , Just opts <- knownSupportedFloat e p ->
-          let bf = FP.bfFromInteger n
-          in case FP.bfRoundFloat opts bf of
-               (bf1,FP.Ok) | bf == bf1 -> SolvedIf []
-               _ -> Unsolvable
-
-        | otherwise -> Unsolved
-
-
-      -- (fin val, fin m, m >= val + 1) => Literal val (Z m)
-      TCon (TC TCIntMod) [modulus] ->
-        SolvedIf [ modulus >== tAdd val tOne ]
 
       -- (fin bits, bits >= width n) => Literal n [bits]
       TCon (TC TCSeq) [bits, elTy]
@@ -546,26 +316,6 @@ solveLiteralLessThanInst val ty
 
       -- LiteralLessThan val Integer
       TCon (TC TCInteger) [] -> SolvedIf [ ]
-
-      -- LiteralLessThan val Rational
-      TCon (TC TCRational) [] -> SolvedIf [ ]
-
-      -- ValidFloat e p => LiteralLessThan val (Float e p)   if `val-1` is representable
-      -- RWD Should we remove this instance for floats?
-      TCon (TC TCFloat) [e, p]
-        | Just n <- tIsNum val
-        , n > 0
-        , Just opts  <- knownSupportedFloat e p ->
-          let bf = FP.bfFromInteger (n-1)
-          in case FP.bfRoundFloat opts bf of
-               (bf1,FP.Ok) | bf == bf1 -> SolvedIf []
-               _ -> Unsolvable
-
-        | otherwise -> Unsolved
-
-      -- (fin val, fin m, m >= val) => LiteralLessThan val (Z m)
-      TCon (TC TCIntMod) [modulus] ->
-        SolvedIf [ modulus >== val ]
 
       -- (fin bits, bits >= lg2 n) => LiteralLessThan n [bits]
       TCon (TC TCSeq) [bits, elTy]

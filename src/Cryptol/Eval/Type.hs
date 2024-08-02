@@ -23,7 +23,6 @@ import Cryptol.TypeCheck.Solver.InfNat
 import Cryptol.Utils.Panic (panic)
 import Cryptol.Utils.Ident (Ident)
 import Cryptol.Utils.RecordMap
-import Cryptol.Utils.Types
 
 import Data.Maybe(fromMaybe)
 import qualified Data.IntMap.Strict as IntMap
@@ -35,10 +34,6 @@ import Control.DeepSeq
 data TValue
   = TVBit                     -- ^ @ Bit @  
   | TVInteger                 -- ^ @ Integer @
-  | TVFloat Integer Integer   -- ^ @ Float e p @
-  | TVIntMod Integer          -- ^ @ Z n @
-  | TVRational                -- ^ @Rational@
-  | TVArray TValue TValue     -- ^ @ Array a b @
   | TVSeq Integer TValue      -- ^ @ [n]a @
   | TVTuple [TValue]          -- ^ @ (a, b, c )@
   | TVRec (RecordMap Ident TValue) -- ^ @ { x : a, y : b, z : c } @
@@ -78,10 +73,6 @@ tValTy tv =
   case tv of
     TVBit       -> tBit
     TVInteger   -> tInteger
-    TVFloat e p -> tFloat (tNum e) (tNum p)
-    TVIntMod n  -> tIntMod (tNum n)
-    TVRational  -> tRational
-    TVArray a b -> tArray (tValTy a) (tValTy b)
     TVSeq n t   -> tSeq (tNum n) (tValTy t)
     TVTuple ts  -> tTuple (map tValTy ts)
     TVRec fs    -> tRec (fmap tValTy fs)
@@ -109,10 +100,6 @@ isTBit _ = False
 -- | Produce a sequence type value
 tvSeq :: Nat' -> TValue -> TValue
 tvSeq (Nat n) t = TVSeq n t
-
--- | The Cryptol @Float64@ type.
-tvFloat64 :: TValue
-tvFloat64 = uncurry TVFloat float64ExpPrec
 
 -- | Coerce an extended natural into an integer,
 --   for values known to be finite
@@ -161,11 +148,6 @@ evalType env ty =
       case (c, ts) of
         (TCBit, [])     -> Right $ TVBit
         (TCInteger, []) -> Right $ TVInteger
-        (TCRational, []) -> Right $ TVRational
-        (TCFloat, [e,p])-> Right $ TVFloat (inum e) (inum p)
-        (TCIntMod, [n]) -> case num n of
-                             Nat m -> Right $ TVIntMod m
-        (TCArray, [a, b]) -> Right $ TVArray (val a) (val b)
         (TCSeq, [n, t]) -> Right $ tvSeq (num n) (val t)
         (TCFun, [a, b]) -> Right $ TVFun (val a) (val b)
         (TCTuple _, _)  -> Right $ TVTuple (map val ts)
@@ -178,8 +160,6 @@ evalType env ty =
   where
     val = evalValType env
     num = evalNumType env
-    inum x = case num x of
-               Nat i -> i
 
 -- | Evaluate the body of a newtype, given evaluated arguments
 evalNominalTypeBody ::

@@ -32,7 +32,6 @@ module Cryptol.Testing.Random
 import qualified Control.Exception as X
 import Control.Monad          (liftM2)
 import Control.Monad.IO.Class (MonadIO(..))
-import Data.Bits
 import Data.List              (unfoldr, genericTake, genericIndex,
                                genericReplicate, mapAccumL)
 import qualified Data.IntMap.Strict as IntMap
@@ -43,8 +42,7 @@ import qualified Data.Vector as Vector
 import System.Random.TF.Gen
 import System.Random.TF.Instances
 
-import Cryptol.Backend        (Backend(..), SRational(..))
-import Cryptol.Backend.FloatHelpers (floatFromBits)
+import Cryptol.Backend        (Backend(..))
 import Cryptol.Backend.Monad  (runEval,Eval,EvalErrorEx(..))
 import Cryptol.Backend.Concrete
 import Cryptol.Backend.SeqMap (indexSeqMap, finiteSeqMap)
@@ -54,7 +52,6 @@ import Cryptol.Eval(evalEnumCon)
 import Cryptol.Eval.Type      ( TValue(..), TNominalTypeValue(..), ConInfo(..)
                               , isNullaryCon )
 import Cryptol.Eval.Value     ( GenValue(..), ppValue, defaultPPOpts, fromVFun)
-import Cryptol.TypeCheck.Solver.InfNat (widthInteger)
 import Cryptol.Utils.Ident    (Ident)
 import Cryptol.Utils.Panic    (panic)
 import Cryptol.Utils.RecordMap
@@ -154,9 +151,6 @@ randomValue sym ty =
   case ty of
     TVBit         -> Just (randomBit sym)
     TVInteger     -> Just (randomInteger sym)
-    TVRational    -> Just (randomRational sym)
-    TVIntMod m    -> Just (randomIntMod sym m)
-    TVFloat e p   -> Just (randomFloat sym e p)
     TVSeq n TVBit -> Just (randomWord sym n)
     TVSeq n el ->
          do mk <- randomValue sym el
@@ -177,7 +171,6 @@ randomValue sym ty =
                           traverse (traverse (randomValue sym)) cons
         TVAbstract -> Nothing
 
-    TVArray{} -> Nothing
     TVFun{} -> Nothing
 
 {-# INLINE randomBit #-}
@@ -206,25 +199,6 @@ randomInteger sym w g =
   let (n, g1) = if w < 100 then (fromInteger w, g) else randomSize 8 100 g
       (i, g2) = randomR (- 256^n, 256^n) g1
   in (VInteger <$> integerLit sym i, g2)
-
-{-# INLINE randomIntMod #-}
-
-randomIntMod :: (Backend sym, RandomGen g) => sym -> Integer -> Gen g sym
-randomIntMod sym modulus _ g =
-  let (i, g') = randomR (0, modulus-1) g
-  in (VInteger <$> integerLit sym i, g')
-
-{-# INLINE randomRational #-}
-
-randomRational :: (Backend sym, RandomGen g) => sym -> Gen g sym
-randomRational sym w g =
-  let (sz, g1) = if w < 100 then (fromInteger w, g) else randomSize 8 100 g
-      (n, g2) = randomR (- 256^sz, 256^sz) g1
-      (d, g3) = randomR ( 1, 256^sz) g2
-   in (do n' <- integerLit sym n
-          d' <- integerLit sym d
-          pure (VRational (SRational n' d'))
-       , g3)
 
 {-# INLINE randomWord #-}
 
@@ -334,50 +308,6 @@ randomCon sym cons
               g1 (conFields con) in
       (($ flds') <$> evalEnumCon sym (conIdent con) num, g2)
 
-randomFloat ::
-  (Backend sym, RandomGen g) =>
-  sym ->
-  Integer {- ^ Exponent width -} ->
-  Integer {- ^ Precision width -} ->
-  Gen g sym
-randomFloat sym e p w g0 =
-    let sz = max 0 (min 100 w)
-        ( x, g') = randomR (0, 10*(sz+1)) g0
-     in if | x < 2    -> (VFloat <$> fpNaN sym e p, g')
-           | x < 4    -> (VFloat <$> fpPosInf sym e p, g')
-           | x < 6    -> (VFloat <$> (fpNeg sym =<< fpPosInf sym e p), g')
-           | x < 8    -> (VFloat <$> fpLit sym e p 0, g')
-           | x < 10   -> (VFloat <$> (fpNeg sym =<< fpLit sym e p 0), g')
-           | x <= sz       -> genSubnormal g'  -- about 10% of the time
-           | x <= 4*(sz+1) -> genBinary g'     -- about 40%
-           | otherwise     -> genNormal (toInteger sz) g'  -- remaining ~50%
-
-  where
-    emax = bit (fromInteger e) - 1
-    smax = bit (fromInteger p) - 1
-
-    -- generates floats uniformly chosen from among all bitpatterns
-    genBinary g =
-      let (v, g1) = randomR (0, bit (fromInteger (e+p)) - 1) g
-       in (VFloat <$> (fpFromBits sym e p =<< wordLit sym (e+p) v), g1)
-
-    -- generates floats corresponding to subnormal values.  These are
-    -- values with 0 biased exponent and nonzero mantissa.
-    genSubnormal g =
-      let (sgn, g1) = random g
-          (v, g2)   = randomR (1, bit (fromInteger p) - 1) g1
-       in (VFloat <$> ((if sgn then fpNeg sym else pure) =<< fpFromBits sym e p =<< wordLit sym (e+p) v), g2)
-
-    -- generates floats where the exponent and mantissa are scaled by the size
-    genNormal sz g =
-      let (sgn, g1) = random g
-          (ex,  g2) = randomR ((1-emax)*sz `div` 100, (sz*emax) `div` 100) g1
-          (mag, g3) = randomR (1, max 1 ((sz*smax) `div` 100)) g2
-          r  = fromInteger mag ^^ (ex - widthInteger mag)
-          r' = if sgn then negate r else r
-       in (VFloat <$> fpLit sym e p r', g3)
-
-
 -- | A test result is either a pass, a failure due to evaluating to
 -- @False@, or a failure due to an exception raised during evaluation
 data TestResult
@@ -453,10 +383,6 @@ typeSize :: TValue -> Maybe Integer
 typeSize ty = case ty of
   TVBit -> Just 2
   TVInteger -> Nothing
-  TVRational -> Nothing
-  TVIntMod n -> Just n
-  TVFloat e p -> Just (2 ^ (e+p))
-  TVArray{} -> Nothing
   TVSeq n el -> (^ n) <$> typeSize el
   TVTuple els -> product <$> mapM typeSize els
   TVRec fs -> product <$> traverse typeSize fs
@@ -475,10 +401,6 @@ typeValues ty =
   case ty of
     TVBit       -> [ VBit False, VBit True ]
     TVInteger   -> []
-    TVRational  -> []
-    TVIntMod n  -> [ VInteger x | x <- [ 0 .. (n-1) ] ]
-    TVFloat e p -> [ VFloat (floatFromBits e p v) | v <- [0 .. 2^(e+p) - 1] ]
-    TVArray{}   -> []
     TVSeq n TVBit ->
       [ VWord n (wordVal (BV n x))
       | x <- [ 0 .. 2^n - 1 ]

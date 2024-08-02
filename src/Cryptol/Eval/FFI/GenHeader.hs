@@ -147,7 +147,6 @@ convertBasicRefType :: FFIBasicRefType -> GenHeaderM C.Type
 convertBasicRefType brt =
   case brt of
     FFIInteger {} -> mpzT
-    FFIRational   -> mpqT
 
 prefixParam :: C.Ident -> C.Param -> C.Param
 prefixParam pre (C.Param u name) = C.Param u (pre ++ name)
@@ -156,14 +155,13 @@ prefixParam pre (C.Param u name) = C.Param u (pre ++ name)
 componentSuffix :: String -> C.Ident
 componentSuffix = ('_' :)
 
-sizeT, uint8T, uint16T, uint32T, uint64T, mpzT, mpqT :: GenHeaderM C.Type
+sizeT, uint8T, uint16T, uint32T, uint64T, mpzT :: GenHeaderM C.Type
 sizeT = typedefFromInclude stddefH "size_t"
 uint8T = typedefFromInclude stdintH "uint8_t"
 uint16T = typedefFromInclude stdintH "uint16_t"
 uint32T = typedefFromInclude stdintH "uint32_t"
 uint64T = typedefFromInclude stdintH "uint64_t"
 mpzT = typedefFromInclude gmpH "mpz_t"
-mpqT = typedefFromInclude gmpH "mpq_t"
 
 stddefH, stdintH, gmpH :: Include
 stddefH = Include "stddef.h"

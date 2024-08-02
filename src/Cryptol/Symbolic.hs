@@ -48,14 +48,11 @@ import Control.Monad (foldM)
 import qualified Data.IntMap.Strict as IntMap
 import Data.IORef(IORef)
 import Data.List (genericReplicate)
-import Data.Ratio
 import Data.Vector(Vector)
 import qualified Data.Vector as Vector
-import qualified LibBF as FP
 
 
 import           Cryptol.Backend
-import           Cryptol.Backend.FloatHelpers(bfValue)
 import           Cryptol.Backend.SeqMap (finiteSeqMap)
 import           Cryptol.Backend.WordValue (wordVal)
 
@@ -65,7 +62,7 @@ import           Cryptol.TypeCheck.AST
 import           Cryptol.TypeCheck.Solver.InfNat
 import           Cryptol.Eval.Type
   (TValue(..), TNominalTypeValue(..), evalType,tValTy,tNumValTy,ConInfo(..))
-import           Cryptol.Utils.Ident (Ident,prelPrim,floatPrim)
+import           Cryptol.Utils.Ident (Ident,prelPrim)
 import           Cryptol.Utils.RecordMap
 import           Cryptol.Utils.Panic
 import           Cryptol.Utils.PP
@@ -146,9 +143,6 @@ predArgTypes qtype schema@(Forall ts ps ty)
 data FinType
     = FTBit
     | FTInteger
-    | FTIntMod Integer
-    | FTRational
-    | FTFloat Integer Integer
     | FTSeq Integer FinType
     | FTTuple [FinType]
     | FTRecord (RecordMap Ident FinType)
@@ -163,9 +157,6 @@ finType ty =
   case ty of
     TVBit               -> Just FTBit
     TVInteger           -> Just FTInteger
-    TVIntMod n          -> Just (FTIntMod n)
-    TVRational          -> Just FTRational
-    TVFloat e p         -> Just (FTFloat e p)
     TVSeq n t           -> FTSeq n <$> finType t
     TVTuple ts          -> FTTuple <$> traverse finType ts
     TVRec fields        -> FTRecord <$> traverse finType fields
@@ -175,7 +166,6 @@ finType ty =
         TVEnum cs     -> FEnum   <$> traverse (traverse finType) cs
         TVAbstract    -> Nothing
 
-    TVArray{}           -> Nothing
     TVFun{}             -> Nothing
 
 finTypeToType :: FinType -> Type
@@ -183,9 +173,6 @@ finTypeToType fty =
   case fty of
     FTBit             -> tBit
     FTInteger         -> tInteger
-    FTIntMod n        -> tIntMod (tNum n)
-    FTRational        -> tRational
-    FTFloat e p       -> tFloat (tNum e) (tNum p)
     FTSeq l ety       -> tSeq (tNum l) (finTypeToType ety)
     FTTuple ftys      -> tTuple (finTypeToType <$> ftys)
     FTRecord fs       -> tRec (finTypeToType <$> fs)
@@ -199,9 +186,6 @@ unFinType fty =
   case fty of
     FTBit             -> TVBit
     FTInteger         -> TVInteger
-    FTIntMod n        -> TVIntMod n
-    FTRational        -> TVRational
-    FTFloat e p       -> TVFloat e p
     FTSeq n ety       -> TVSeq n (unFinType ety)
     FTTuple ftys      -> TVTuple (unFinType <$> ftys)
     FTRecord fs       -> TVRec   (unFinType <$> fs)
@@ -214,8 +198,6 @@ unFinType fty =
 data VarShape sym
   = VarBit (SBit sym)
   | VarInteger (SInteger sym)
-  | VarRational (SInteger sym) (SInteger sym)
-  | VarFloat (SFloat sym)
   | VarWord (SWord sym)
   | VarFinSeq Integer [VarShape sym]
   | VarTuple [VarShape sym]
@@ -225,8 +207,6 @@ data VarShape sym
 ppVarShape :: Backend sym => sym -> VarShape sym -> Doc
 ppVarShape _sym (VarBit _b) = text "<bit>"
 ppVarShape _sym (VarInteger _i) = text "<integer>"
-ppVarShape _sym (VarFloat _f) = text "<float>"
-ppVarShape _sym (VarRational _n _d) = text "<rational>"
 ppVarShape sym (VarWord w) = text "<word:" <> integer (wordLen sym w) <> text ">"
 ppVarShape sym (VarFinSeq _ xs) =
   ppList (map (ppVarShape sym) xs)
@@ -250,9 +230,7 @@ flattenShape x tl =
   case x of
     VarBit{}       -> x : tl
     VarInteger{}   -> x : tl
-    VarRational{}  -> x : tl
     VarWord{}      -> x : tl
-    VarFloat{}     -> x : tl
     VarFinSeq _ vs -> flattenShapes vs tl
     VarTuple vs    -> flattenShapes vs tl
     VarRecord fs   -> flattenShapes (recordElements fs) tl
@@ -265,9 +243,7 @@ varShapeToValue sym var =
   case var of
     VarBit b     -> VBit b
     VarInteger i -> VInteger i
-    VarRational n d -> VRational (SRational n d)
     VarWord w    -> VWord (wordLen sym w) (wordVal w)
-    VarFloat f   -> VFloat f
     VarFinSeq n vs -> VSeq n (finiteSeqMap sym (map (pure . varShapeToValue sym) vs))
     VarTuple vs  -> VTuple (map (pure . varShapeToValue sym) vs)
     VarRecord fs -> VRecord (fmap (pure . varShapeToValue sym) fs)
@@ -281,7 +257,6 @@ data FreshVarFns sym =
   { freshBitVar     :: IO (SBit sym)
   , freshWordVar    :: Integer -> IO (SWord sym)
   , freshIntegerVar :: Maybe Integer -> Maybe Integer -> IO (SInteger sym)
-  , freshFloatVar   :: Integer -> Integer -> IO (SFloat sym)
   }
 
 freshVar :: Backend sym => FreshVarFns sym -> FinType -> IO (VarShape sym)
@@ -289,12 +264,6 @@ freshVar fns tp =
   case tp of
     FTBit         -> VarBit      <$> freshBitVar fns
     FTInteger     -> VarInteger  <$> freshIntegerVar fns Nothing Nothing
-    FTRational    -> VarRational
-                        <$> freshIntegerVar fns Nothing Nothing
-                        <*> freshIntegerVar fns (Just 1) Nothing
-    FTIntMod 0    -> panic "freshVariable" ["0 modulus not allowed"]
-    FTIntMod m    -> VarInteger  <$> freshIntegerVar fns (Just 0) (Just (m-1))
-    FTFloat e p   -> VarFloat    <$> freshFloatVar fns e p
     FTSeq n FTBit -> VarWord     <$> freshWordVar fns (toInteger n)
     FTSeq n t     -> VarFinSeq (toInteger n) <$> sequence (genericReplicate n (freshVar fns t))
     FTTuple ts    -> VarTuple    <$> mapM (freshVar fns) ts
@@ -348,16 +317,8 @@ varModelPred sym vx =
     (VarInteger i, VarInteger ilit) ->
       intEq sym i =<< integerLit sym ilit
 
-    (VarRational n d, VarRational nlit dlit) ->
-      do n' <- integerLit sym nlit
-         d' <- integerLit sym dlit
-         rationalEq sym (SRational n d) (SRational n' d')
-
     (VarWord w, VarWord (Concrete.BV len wlit)) ->
       wordEq sym w =<< wordLit sym len wlit
-
-    (VarFloat f, VarFloat flit) ->
-      fpLogicalEq sym f =<< fpExactLit sym flit
 
     (VarFinSeq _n vs, VarFinSeq _ xs) -> modelPred sym vs xs
     (VarTuple vs, VarTuple xs) -> modelPred sym vs xs
@@ -430,18 +391,6 @@ varToExpr prims = go
         -- This works uniformly for values of type Integer or Z n
         ETApp (ETApp (prim "number") (tNum i)) (finTypeToType ty)
 
-      (FTIntMod _, VarInteger i) ->
-        -- This works uniformly for values of type Integer or Z n
-        ETApp (ETApp (prim "number") (tNum i)) (finTypeToType ty)
-
-      (FTRational, VarRational n d) ->
-        let n' = ETApp (ETApp (prim "number") (tNum n)) tInteger
-            d' = ETApp (ETApp (prim "number") (tNum d)) tInteger
-         in EApp (EApp (prim "ratio") n') d'
-
-      (FTFloat e p, VarFloat f) ->
-        floatToExpr prims e p (bfValue f)
-
       (FTSeq _ FTBit, VarWord (Concrete.BV _ v)) ->
         ETApp (ETApp (prim "number") (tNum v)) (finTypeToType ty)
 
@@ -456,23 +405,3 @@ varToExpr prims = go
              , show (pp (finTypeToType ty))
              , show (ppVarShape Concrete.Concrete val)
              ]
-
-floatToExpr :: PrimMap -> Integer -> Integer -> FP.BigFloat -> Expr
-floatToExpr prims e p f =
-  case FP.bfToRep f of
-    FP.BFNaN -> mkP "fpNaN"
-    FP.BFRep sign num ->
-      case (sign,num) of
-        (FP.Pos, FP.Zero)   -> mkP "fpPosZero"
-        (FP.Neg, FP.Zero)   -> mkP "fpNegZero"
-        (FP.Pos, FP.Inf)    -> mkP "fpPosInf"
-        (FP.Neg, FP.Inf)    -> mkP "fpNegInf"
-        (_, FP.Num m ex) ->
-            let r = toRational m * (2 ^^ ex)
-            in EProofApp $ ePrim prims (prelPrim "fraction")
-                          `ETApp` tNum (numerator r)
-                          `ETApp` tNum (denominator r)
-                          `ETApp` tNum (0 :: Int)
-                          `ETApp` tFloat (tNum e) (tNum p)
-  where
-  mkP n = EProofApp $ ePrim prims (floatPrim n) `ETApp` (tNum e) `ETApp` (tNum p)

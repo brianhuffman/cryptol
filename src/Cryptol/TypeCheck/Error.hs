@@ -790,12 +790,6 @@ explainUnsolvable names gs =
           PIntegral ->
             custom (doc1 </> "is not an integral type.")
 
-          PField ->
-            custom ("Type" <+> doc1 </> "does not support field operations.")
-
-          PRound ->
-            custom ("Type" <+> doc1 </> "does not support rounding operations.")
-
           PEq ->
             custom ("Type" <+> doc1 </> "does not support equality.")
 
@@ -812,22 +806,6 @@ explainUnsolvable names gs =
           PLiteralLessThan ->
             let doc2 = tys !! 1
             in custom ("Type" <+> doc2 </> "does not contain all literals below" <+> (doc1 <> "."))
-
-          PFLiteral ->
-            case ts of
-              ~[m,n,_r,_a] ->
-                 let frac = backticks (ppWithNamesPrec names 4 m <> "/" <>
-                                       ppWithNamesPrec names 4 n)
-                     ty   = tys !! 3
-                 in custom (frac </> "is not a valid literal of type" </> ty)
-
-          PValidFloat ->
-            case ts of
-              ~[e,p] ->
-                custom (hang "Unsupported floating point parameters:"
-                           2 ("exponent =" <+> ppWithNames names e $$
-                              "precision =" <+> ppWithNames names p))
-
 
           PAnd        -> useCtr
           PTrue       -> useCtr

@@ -70,7 +70,6 @@ import qualified Cryptol.Utils.Ident as M
 import qualified Cryptol.ModuleSystem.Env as M
 import Cryptol.ModuleSystem.Fingerprint(fingerprintHexString)
 
-import           Cryptol.Backend.FloatHelpers as FP
 import qualified Cryptol.Backend.Monad as E
 import qualified Cryptol.Backend.SeqMap as E
 import           Cryptol.Eval.Concrete( Concrete(..) )
@@ -1073,12 +1072,10 @@ timeCmd str pos fnm = do
         rPutStrLn $ "Avg time: " ++ Bench.secs benchAvgTime
              ++ "    Avg CPU time: " ++ Bench.secs benchAvgCpuTime
              ++ "    Avg cycles: " ++ show benchAvgCycles
-      let mkStatsRec time cpuTime cycles = recordFromFields
-            [("avgTime", time), ("avgCpuTime", cpuTime), ("avgCycles", cycles)]
-          itType = E.TVRec $ mkStatsRec E.tvFloat64 E.tvFloat64 E.TVInteger
+      let mkStatsRec cycles = recordFromFields
+            [("avgCycles", cycles)]
+          itType = E.TVRec $ mkStatsRec E.TVInteger
           itVal = E.VRecord $ mkStatsRec
-            (pure $ E.VFloat $ FP.floatFromDouble benchAvgTime)
-            (pure $ E.VFloat $ FP.floatFromDouble benchAvgCpuTime)
             (pure $ E.VInteger $ toInteger benchAvgCycles)
       bindItVariableVal itType itVal
 

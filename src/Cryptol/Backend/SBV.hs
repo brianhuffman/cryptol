@@ -32,7 +32,6 @@ module Cryptol.Backend.SBV
   , svToInteger
   ) where
 
-import qualified Control.Exception as X
 import           Control.Concurrent.MVar
 import           Control.Monad.IO.Class (MonadIO(..))
 import           Data.Bits (bit, complement)
@@ -47,7 +46,7 @@ import Cryptol.Backend
 import Cryptol.Backend.Concrete ( integerToChar )
 import Cryptol.Backend.Monad
   ( Eval(..), blackhole, delayFill, evalSpark
-  , EvalError(..), EvalErrorEx(..), Unsupported(..)
+  , EvalError(..), EvalErrorEx(..)
   , modifyCallStack, getCallStack, maybeReady
   )
 
@@ -151,7 +150,6 @@ instance Backend SBV where
   type SBit SBV = SVal
   type SWord SBV = SVal
   type SInteger SBV = SVal
-  type SFloat SBV = ()        -- XXX: not implemented
   type SEval SBV = SBVEval
 
   raiseError _ err = SBVEval $
@@ -332,41 +330,6 @@ instance Backend SBV where
   znMult  sym m a b = sModMult sym m a b
   znNegate sym m a  = sModNegate sym m a
   znRecip = sModRecip
-
-  fpAsLit _ _               = Nothing
-  iteFloat _ _ _ _          = unsupported "iteFloat"
-  fpNaN _ _ _               = unsupported "fpNaN"
-  fpPosInf _ _ _            = unsupported "fpPosInf"
-  fpExactLit _ _            = unsupported "fpExactLit"
-  fpLit _ _ _ _             = unsupported "fpLit"
-  fpLogicalEq _ _ _         = unsupported "fpLogicalEq"
-  fpEq _ _ _                = unsupported "fpEq"
-  fpLessThan _ _ _          = unsupported "fpLessThan"
-  fpGreaterThan _ _ _       = unsupported "fpGreaterThan"
-  fpPlus _ _ _ _            = unsupported "fpPlus"
-  fpMinus _ _ _ _           = unsupported "fpMinus"
-  fpMult _ _ _ _            = unsupported "fpMult"
-  fpDiv _ _ _ _             = unsupported "fpDiv"
-  fpAbs _ _                 = unsupported "fpAbs"
-  fpSqrt _ _ _              = unsupported "fpSqrt"
-  fpFMA _ _ _ _ _           = unsupported "fpFMA"
-  fpNeg _ _                 = unsupported "fpNeg"
-  fpFromInteger _ _ _ _ _   = unsupported "fpFromInteger"
-  fpToInteger _ _ _ _       = unsupported "fpToInteger"
-  fpIsZero _ _              = unsupported "fpIsZero"
-  fpIsInf _ _               = unsupported "fpIsInf"
-  fpIsNeg _ _               = unsupported "fpIsNeg"
-  fpIsNaN _ _               = unsupported "fpIsNaN"
-  fpIsNorm _ _              = unsupported "fpIsNorm"
-  fpIsSubnorm _ _           = unsupported "fpIsSubnorm"
-  fpToBits _ _              = unsupported "fpToBits"
-  fpFromBits _ _ _ _        = unsupported "fpFromBits"
-  fpToRational _ _          = unsupported "fpToRational"
-  fpFromRational _ _ _ _ _  = unsupported "fpFromRational"
-
-
-unsupported :: String -> SEval SBV a
-unsupported x = liftIO (X.throw (UnsupportedSymbolicOp x))
 
 
 svToInteger :: SWord SBV -> SInteger SBV

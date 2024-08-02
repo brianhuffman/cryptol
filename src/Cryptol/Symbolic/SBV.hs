@@ -40,8 +40,6 @@ import qualified Control.Exception as X
 import System.Exit (ExitCode(ExitSuccess))
 import qualified Data.Vector as Vector
 
-import LibBF(bfNaN)
-
 import qualified Data.SBV as SBV (sObserve, symbolicEnv)
 import qualified Data.SBV.Internals as SBV (SBV(..))
 import qualified Data.SBV.Dynamic as SBV
@@ -54,7 +52,6 @@ import qualified Cryptol.ModuleSystem.Monad as M
 import qualified Cryptol.ModuleSystem.Name as M
 
 import           Cryptol.Backend.SBV
-import qualified Cryptol.Backend.FloatHelpers as FH
 
 import qualified Cryptol.Eval as Eval
 import qualified Cryptol.Eval.Concrete as Concrete
@@ -517,12 +514,6 @@ parseValue FTInteger cvs =
   case SBV.genParse SBV.KUnbounded cvs of
     Just (x, cvs') -> (VarInteger x, cvs')
     Nothing        -> panic "Cryptol.Symbolic.parseValue" [ "no integer" ]
-parseValue (FTIntMod _) cvs = parseValue FTInteger cvs
-parseValue FTRational cvs =
-  fromMaybe (panic "Cryptol.Symbolic.parseValue" ["no rational"]) $
-  do (n,cvs')  <- SBV.genParse SBV.KUnbounded cvs
-     (d,cvs'') <- SBV.genParse SBV.KUnbounded cvs'
-     return (VarRational n d, cvs'')
 parseValue (FTSeq 0 FTBit) cvs = (VarWord (Concrete.mkBv 0 0), cvs)
 parseValue (FTSeq n FTBit) cvs =
   case SBV.genParse (SBV.KBounded False (fromInteger n)) cvs of
@@ -550,15 +541,6 @@ parseValue (FTNominal _ _ nv) cvs =
              (input3, conVs) = mapAccumL doCon cvs' cons
          pure (VarEnum tag conVs, input3)
 
-parseValue (FTFloat e p) cvs =
-   (VarFloat FH.BF { FH.bfValue = bfNaN
-                   , FH.bfExpWidth = e
-                   , FH.bfPrecWidth = p
-                   }
-   , cvs
-   )
-   -- XXX: NOT IMPLEMENTED
-
 
 freshBoundedInt :: SBV -> Maybe Integer -> Maybe Integer -> IO SBV.SVal
 freshBoundedInt sym lo hi =
@@ -582,5 +564,4 @@ sbvFreshFns sym =
   { freshBitVar     = freshSBool_ sym
   , freshWordVar    = freshBitvector sym
   , freshIntegerVar = freshBoundedInt sym
-  , freshFloatVar   = \_ _ -> return () -- TODO
   }

@@ -42,26 +42,16 @@ builtInType nm =
   case M.nameInfo nm of
     M.GlobalName _ OrigName { ogModule = m }
       | m == M.TopModule preludeName -> Map.lookup (M.nameIdent nm) builtInTypes
-      | m == M.TopModule floatName   -> Map.lookup (M.nameIdent nm) builtInFloat
-      | m == M.TopModule arrayName   -> Map.lookup (M.nameIdent nm) builtInArray
     _ -> Nothing
 
   where
   x ~> y = (packIdent x, y)
-
-  -- Built-in types from Float.cry
-  builtInFloat = Map.fromList
-    [ "Float"             ~> TC TCFloat
-    , "ValidFloat"        ~> PC PValidFloat
-    ]
 
   -- Built-in types from Cryptol.cry
   builtInTypes = Map.fromList
     [ -- Types
       "Bit"               ~> TC TCBit
     , "Integer"           ~> TC TCInteger
-    , "Rational"          ~> TC TCRational
-    , "Z"                 ~> TC TCIntMod
 
       -- Predicate contstructors
     , "=="                ~> PC PEqual
@@ -72,14 +62,11 @@ builtInType nm =
     , "Logic"             ~> PC PLogic
     , "Ring"              ~> PC PRing
     , "Integral"          ~> PC PIntegral
-    , "Field"             ~> PC PField
-    , "Round"             ~> PC PRound
     , "Eq"                ~> PC PEq
     , "Cmp"               ~> PC PCmp
     , "SignedCmp"         ~> PC PSignedCmp
     , "Literal"           ~> PC PLiteral
     , "LiteralLessThan"   ~> PC PLiteralLessThan
-    , "FLiteral"          ~> PC PFLiteral
 
     -- Type functions
     , "+"                ~> TF TCAdd
@@ -94,11 +81,6 @@ builtInType nm =
     , "/^"               ~> TF TCCeilDiv
     , "%^"               ~> TF TCCeilMod
     , "lengthFromThenTo" ~> TF TCLenFromThenTo
-    ]
-
-  -- Built-in types from Array.cry
-  builtInArray = Map.fromList
-    [ "Array" ~> TC TCArray
     ]
 
 
@@ -130,10 +112,6 @@ instance HasKind TC where
       TCNum _   -> KNum
       TCBit     -> KType
       TCInteger -> KType
-      TCRational -> KType
-      TCFloat   -> KNum :-> KNum :-> KType
-      TCIntMod  -> KNum :-> KType
-      TCArray   -> KType :-> KType :-> KType
       TCSeq     -> KNum :-> KType :-> KType
       TCFun     -> KType :-> KType :-> KType
       TCTuple n -> foldr (:->) KType (replicate n KType)
@@ -150,15 +128,11 @@ instance HasKind PC where
       PLogic     -> KType :-> KProp
       PRing      -> KType :-> KProp
       PIntegral  -> KType :-> KProp
-      PField     -> KType :-> KProp
-      PRound     -> KType :-> KProp
       PEq        -> KType :-> KProp
       PCmp       -> KType :-> KProp
       PSignedCmp -> KType :-> KProp
       PLiteral   -> KNum :-> KType :-> KProp
       PLiteralLessThan -> KNum :-> KType :-> KProp
-      PFLiteral  -> KNum :-> KNum :-> KNum :-> KType :-> KProp
-      PValidFloat -> KNum :-> KNum :-> KProp
       PAnd       -> KProp :-> KProp :-> KProp
       PTrue      -> KProp
 
@@ -200,18 +174,11 @@ data PC     = PEqual        -- ^ @_ == _@
             | PLogic        -- ^ @Logic _@
             | PRing         -- ^ @Ring _@
             | PIntegral     -- ^ @Integral _@
-            | PField        -- ^ @Field _@
-            | PRound        -- ^ @Round _@
             | PEq           -- ^ @Eq _@
             | PCmp          -- ^ @Cmp _@
             | PSignedCmp    -- ^ @SignedCmp _@
             | PLiteral      -- ^ @Literal _ _@
             | PLiteralLessThan -- ^ @LiteralLessThan _ _@
-            | PFLiteral     -- ^ @FLiteral _ _ _@
-
-            | PValidFloat   -- ^ @ValidFloat _ _@ constraints on supported
-                            -- floating point representaitons
-
             | PAnd          -- ^ This is useful when simplifying things in place
             | PTrue         -- ^ Ditto
               deriving (Show, Eq, Ord, Generic, NFData)
@@ -221,10 +188,6 @@ data PC     = PEqual        -- ^ @_ == _@
 data TC     = TCNum Integer            -- ^ Numbers
             | TCBit                    -- ^ Bit
             | TCInteger                -- ^ Integer
-            | TCFloat                  -- ^ Float
-            | TCIntMod                 -- ^ @Z _@
-            | TCRational               -- ^ @Rational@
-            | TCArray                  -- ^ @Array _ _@
             | TCSeq                    -- ^ @[_] _@
             | TCFun                    -- ^ @_ -> _@
             | TCTuple Int              -- ^ @(_, _, _)@
@@ -287,15 +250,11 @@ instance PP PC where
       PLogic     -> text "Logic"
       PRing      -> text "Ring"
       PIntegral  -> text "Integral"
-      PField     -> text "Field"
-      PRound     -> text "Round"
       PEq        -> text "Eq"
       PCmp       -> text "Cmp"
       PSignedCmp -> text "SignedCmp"
       PLiteral   -> text "Literal"
       PLiteralLessThan -> text "LiteralLessThan"
-      PFLiteral  -> text "FLiteral"
-      PValidFloat -> text "ValidFloat"
       PTrue      -> text "True"
       PAnd       -> text "(&&)"
 
@@ -305,10 +264,6 @@ instance PP TC where
       TCNum n   -> integer n
       TCBit     -> text "Bit"
       TCInteger -> text "Integer"
-      TCIntMod  -> text "Z"
-      TCRational -> text "Rational"
-      TCArray   -> text "Array"
-      TCFloat   -> text "Float"
       TCSeq     -> text "[]"
       TCFun     -> text "(->)"
       TCTuple 0 -> text "()"

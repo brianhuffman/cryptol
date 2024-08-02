@@ -17,7 +17,6 @@ import           Cryptol.TypeCheck.FFI.FFIType
 import           Cryptol.TypeCheck.SimpType
 import           Cryptol.TypeCheck.Type
 import           Cryptol.Utils.RecordMap
-import           Cryptol.Utils.Types
 
 -- | Convert a 'Schema' to a 'FFIFunType', along with any 'Prop's that must be
 -- satisfied for the 'FFIFunType' to be valid.
@@ -97,13 +96,6 @@ toFFIBasicType t =
       | n <= 64 -> word FFIWord64
       | otherwise -> Just $ Left $ FFITypeError t FFIBadWordSize
       where word = Just . Right . FFIBasicVal . FFIWord n
-    TCon (TC TCFloat) [TCon (TC (TCNum e)) [], TCon (TC (TCNum p)) []]
-      | (e, p) == float32ExpPrec -> float FFIFloat32
-      | (e, p) == float64ExpPrec -> float FFIFloat64
-      | otherwise -> Just $ Left $ FFITypeError t FFIBadFloatSize
-      where float = Just . Right . FFIBasicVal . FFIFloat e p
     TCon (TC TCInteger) [] -> integer Nothing
-    TCon (TC TCIntMod) [n] -> integer $ Just n
-    TCon (TC TCRational) [] -> Just $ Right $ FFIBasicRef FFIRational
     _ -> Nothing
   where integer = Just . Right . FFIBasicRef . FFIInteger

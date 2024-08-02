@@ -19,10 +19,9 @@ module Cryptol.Eval.Concrete
   , toExpr
   ) where
 
-import Control.Monad (guard, zipWithM, foldM, mzero)
+import Control.Monad (guard, zipWithM, mzero)
 import Data.Foldable (foldl')
 import Data.List (find)
-import Data.Word(Word32, Word64)
 import MonadLib( ChoiceT, findOne, lift )
 import qualified Cryptol.F2 as F2
 
@@ -43,12 +42,10 @@ import Cryptol.Eval.Generic
 import Cryptol.Eval.Prims
 import Cryptol.Eval.Type
 import Cryptol.Eval.Value
-import qualified Cryptol.SHA as SHA
-import qualified Cryptol.AES as AES
 import Cryptol.ModuleSystem.Name
 import Cryptol.TypeCheck.AST as AST
 import Cryptol.Utils.Panic (panic)
-import Cryptol.Utils.Ident (PrimIdent,prelPrim,suiteBPrim)
+import Cryptol.Utils.Ident (PrimIdent,prelPrim)
 import Cryptol.Utils.PP
 import Cryptol.Utils.RecordMap
 
@@ -144,7 +141,6 @@ toExpr prims t0 v0 = findOne (go t0 v0)
 primTable :: IO EvalOpts -> Map PrimIdent (Prim Concrete)
 primTable getEOpts = let sym = Concrete in
   Map.union (genericPrimTable sym getEOpts) $
-  Map.union suiteBPrims $
 
   Map.fromList $ map (\(n, v) -> (prelPrim n, v))
 
@@ -190,182 +186,6 @@ primTable getEOpts = let sym = Concrete in
           do assertSideCondition sym (m /= 0) DivideByZero
              return . VWord w . wordVal . mkBv w $! F2.pdiv (fromInteger w) x m)
   ]
-
-
-suiteBPrims :: Map.Map PrimIdent (Prim Concrete)
-suiteBPrims = Map.fromList $ map (\(n, v) -> (suiteBPrim n, v))
-  [ ("processSHA2_224", {-# SCC "SuiteB::processSHA2_224" #-}
-     PFinPoly \n ->
-     PFun     \xs ->
-     PPrim
-        do blks <- enumerateSeqMap n . fromVSeq <$> xs
-           (SHA.SHA256S w0 w1 w2 w3 w4 w5 w6 _) <-
-              foldM (\st blk -> seq st (SHA.processSHA256Block st <$> (toSHA256Block =<< blk)))
-                    SHA.initialSHA224State blks
-           let f :: Word32 -> Eval Value
-               f = pure . VWord 32 . wordVal . BV 32 . toInteger
-               zs = finiteSeqMap Concrete (map f [w0,w1,w2,w3,w4,w5,w6])
-           seq zs (pure (VSeq 7 zs)))
-
-  , ("processSHA2_256", {-# SCC "SuiteB::processSHA2_256" #-}
-     PFinPoly \n ->
-     PFun     \xs ->
-     PPrim
-        do blks <- enumerateSeqMap n . fromVSeq <$> xs
-           (SHA.SHA256S w0 w1 w2 w3 w4 w5 w6 w7) <-
-             foldM (\st blk -> seq st (SHA.processSHA256Block st <$> (toSHA256Block =<< blk)))
-                   SHA.initialSHA256State blks
-           let f :: Word32 -> Eval Value
-               f = pure . VWord 32 . wordVal . BV 32 . toInteger
-               zs = finiteSeqMap Concrete (map f [w0,w1,w2,w3,w4,w5,w6,w7])
-           seq zs (pure (VSeq 8 zs)))
-
-  , ("processSHA2_384", {-# SCC "SuiteB::processSHA2_384" #-}
-     PFinPoly \n ->
-     PFun     \xs ->
-     PPrim
-        do blks <- enumerateSeqMap n . fromVSeq <$> xs
-           (SHA.SHA512S w0 w1 w2 w3 w4 w5 _ _) <-
-             foldM (\st blk -> seq st (SHA.processSHA512Block st <$> (toSHA512Block =<< blk)))
-                   SHA.initialSHA384State blks
-           let f :: Word64 -> Eval Value
-               f = pure . VWord 64 . wordVal . BV 64 . toInteger
-               zs = finiteSeqMap Concrete (map f [w0,w1,w2,w3,w4,w5])
-           seq zs (pure (VSeq 6 zs)))
-
-  , ("processSHA2_512", {-# SCC "SuiteB::processSHA2_512" #-}
-     PFinPoly \n ->
-     PFun     \xs ->
-     PPrim
-        do blks <- enumerateSeqMap n . fromVSeq <$> xs
-           (SHA.SHA512S w0 w1 w2 w3 w4 w5 w6 w7) <-
-             foldM (\st blk -> seq st (SHA.processSHA512Block st <$> (toSHA512Block =<< blk)))
-                   SHA.initialSHA512State blks
-           let f :: Word64 -> Eval Value
-               f = pure . VWord 64 . wordVal . BV 64 . toInteger
-               zs = finiteSeqMap Concrete (map f [w0,w1,w2,w3,w4,w5,w6,w7])
-           seq zs (pure (VSeq 8 zs)))
-
-  , ("AESKeyExpand", {-# SCC "SuiteB::AESKeyExpand" #-}
-      PFinPoly \k ->
-      PFun     \seed ->
-      PPrim
-         do ss <- fromVSeq <$> seed
-            let toWord :: Integer -> Eval Word32
-                toWord i = fromInteger. bvVal <$> (fromVWord Concrete "AESInfKeyExpand" =<< lookupSeqMap ss i)
-            let fromWord :: Word32 -> Eval Value
-                fromWord = pure . VWord 32 . wordVal . BV 32 . toInteger
-            kws <- mapM toWord [0 .. k-1]
-            let ws = AES.keyExpansionWords k kws
-            let len = 4*(k+7)
-            pure (VSeq len (finiteSeqMap Concrete (map fromWord ws))))
-
-  , ("AESInvMixColumns", {-# SCC "SuiteB::AESInvMixColumns" #-}
-      PFun \st ->
-      PPrim
-         do ss <- fromVSeq <$> st
-            let toWord :: Integer -> Eval Word32
-                toWord i = fromInteger. bvVal <$> (fromVWord Concrete "AESInvMixColumns" =<< lookupSeqMap ss i)
-            let fromWord :: Word32 -> Eval Value
-                fromWord = pure . VWord 32 . wordVal . BV 32 . toInteger
-            ws <- mapM toWord [0,1,2,3]
-            let ws' = AES.invMixColumns ws
-            pure . VSeq 4 . finiteSeqMap Concrete . map fromWord $ ws')
-
-  , ("AESEncRound", {-# SCC "SuiteB::AESEncRound" #-}
-      PFun \st ->
-      PPrim
-         do ss <- fromVSeq <$> st
-            let toWord :: Integer -> Eval Word32
-                toWord i = fromInteger. bvVal <$> (fromVWord Concrete "AESEncRound" =<< lookupSeqMap ss i)
-            let fromWord :: Word32 -> Eval Value
-                fromWord = pure . VWord 32 . wordVal . BV 32 . toInteger
-            ws <- mapM toWord [0,1,2,3]
-            let ws' = AES.aesRound ws
-            pure . VSeq 4 . finiteSeqMap Concrete . map fromWord $ ws')
-
-  , ("AESEncFinalRound", {-# SCC "SuiteB::AESEncFinalRound" #-}
-     PFun \st ->
-     PPrim
-         do ss <- fromVSeq <$> st
-            let toWord :: Integer -> Eval Word32
-                toWord i = fromInteger. bvVal <$> (fromVWord Concrete "AESEncFinalRound" =<< lookupSeqMap ss i)
-            let fromWord :: Word32 -> Eval Value
-                fromWord = pure . VWord 32 . wordVal . BV 32 . toInteger
-            ws <- mapM toWord [0,1,2,3]
-            let ws' = AES.aesFinalRound ws
-            pure . VSeq 4 . finiteSeqMap Concrete . map fromWord $ ws')
-
-  , ("AESDecRound", {-# SCC "SuiteB::AESDecRound" #-}
-      PFun \st ->
-      PPrim
-         do ss <- fromVSeq <$> st
-            let toWord :: Integer -> Eval Word32
-                toWord i = fromInteger. bvVal <$> (fromVWord Concrete "AESDecRound" =<< lookupSeqMap ss i)
-            let fromWord :: Word32 -> Eval Value
-                fromWord = pure . VWord 32 . wordVal . BV 32 . toInteger
-            ws <- mapM toWord [0,1,2,3]
-            let ws' = AES.aesInvRound ws
-            pure . VSeq 4 . finiteSeqMap Concrete . map fromWord $ ws')
-
-  , ("AESDecFinalRound", {-# SCC "SuiteB::AESDecFinalRound" #-}
-     PFun \st ->
-     PPrim
-         do ss <- fromVSeq <$> st
-            let toWord :: Integer -> Eval Word32
-                toWord i = fromInteger. bvVal <$> (fromVWord Concrete "AESDecFinalRound" =<< lookupSeqMap ss i)
-            let fromWord :: Word32 -> Eval Value
-                fromWord = pure . VWord 32 . wordVal . BV 32 . toInteger
-            ws <- mapM toWord [0,1,2,3]
-            let ws' = AES.aesInvFinalRound ws
-            pure . VSeq 4 . finiteSeqMap Concrete . map fromWord $ ws')
-  ]
-
-
-toSHA256Block :: Value -> Eval SHA.SHA256Block
-toSHA256Block blk =
-  do let ws = fromVSeq blk
-     let toWord i = fromInteger . bvVal <$> (fromVWord Concrete "toSHA256Block" =<< lookupSeqMap ws i)
-     SHA.SHA256Block <$>
-        (toWord 0) <*>
-        (toWord 1) <*>
-        (toWord 2) <*>
-        (toWord 3) <*>
-        (toWord 4) <*>
-        (toWord 5) <*>
-        (toWord 6) <*>
-        (toWord 7) <*>
-        (toWord 8) <*>
-        (toWord 9) <*>
-        (toWord 10) <*>
-        (toWord 11) <*>
-        (toWord 12) <*>
-        (toWord 13) <*>
-        (toWord 14) <*>
-        (toWord 15)
-
-
-toSHA512Block :: Value -> Eval SHA.SHA512Block
-toSHA512Block blk =
-  do let ws = fromVSeq blk
-     let toWord i = fromInteger . bvVal <$> (fromVWord Concrete "toSHA512Block" =<< lookupSeqMap ws i)
-     SHA.SHA512Block <$>
-        (toWord 0) <*>
-        (toWord 1) <*>
-        (toWord 2) <*>
-        (toWord 3) <*>
-        (toWord 4) <*>
-        (toWord 5) <*>
-        (toWord 6) <*>
-        (toWord 7) <*>
-        (toWord 8) <*>
-        (toWord 9) <*>
-        (toWord 10) <*>
-        (toWord 11) <*>
-        (toWord 12) <*>
-        (toWord 13) <*>
-        (toWord 14) <*>
-        (toWord 15)
 
 
 -- Sequence Primitives ---------------------------------------------------------

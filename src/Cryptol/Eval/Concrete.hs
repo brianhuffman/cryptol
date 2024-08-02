@@ -45,11 +45,10 @@ import Cryptol.Eval.Type
 import Cryptol.Eval.Value
 import qualified Cryptol.SHA as SHA
 import qualified Cryptol.AES as AES
-import qualified Cryptol.PrimeEC as PrimeEC
 import Cryptol.ModuleSystem.Name
 import Cryptol.TypeCheck.AST as AST
 import Cryptol.Utils.Panic (panic)
-import Cryptol.Utils.Ident (PrimIdent,prelPrim,suiteBPrim,primeECPrim)
+import Cryptol.Utils.Ident (PrimIdent,prelPrim,suiteBPrim)
 import Cryptol.Utils.PP
 import Cryptol.Utils.RecordMap
 
@@ -146,7 +145,6 @@ primTable :: IO EvalOpts -> Map PrimIdent (Prim Concrete)
 primTable getEOpts = let sym = Concrete in
   Map.union (genericPrimTable sym getEOpts) $
   Map.union suiteBPrims $
-  Map.union primeECPrims $
 
   Map.fromList $ map (\(n, v) -> (prelPrim n, v))
 
@@ -192,64 +190,6 @@ primTable getEOpts = let sym = Concrete in
           do assertSideCondition sym (m /= 0) DivideByZero
              return . VWord w . wordVal . mkBv w $! F2.pdiv (fromInteger w) x m)
   ]
-
-
-primeECPrims :: Map.Map PrimIdent (Prim Concrete)
-primeECPrims = Map.fromList $ map (\(n,v) -> (primeECPrim n, v))
-  [ ("ec_double", {-# SCC "PrimeEC::ec_double" #-}
-       PFinPoly \p ->
-       PFun     \s ->
-       PPrim
-          do s' <- toProjectivePoint =<< s
-             let r = PrimeEC.ec_double (PrimeEC.primeModulus p) s'
-             fromProjectivePoint $! r)
-
-  , ("ec_add_nonzero", {-# SCC "PrimeEC::ec_add_nonzero" #-}
-       PFinPoly \p ->
-       PFun     \s ->
-       PFun     \t ->
-       PPrim
-          do s' <- toProjectivePoint =<< s
-             t' <- toProjectivePoint =<< t
-             let r = PrimeEC.ec_add_nonzero (PrimeEC.primeModulus p) s' t'
-             fromProjectivePoint $! r)
-
-  , ("ec_mult", {-# SCC "PrimeEC::ec_mult" #-}
-       PFinPoly \p ->
-       PFun     \d ->
-       PFun     \s ->
-       PPrim
-          do d' <- fromVInteger <$> d
-             s' <- toProjectivePoint =<< s
-             let r = PrimeEC.ec_mult (PrimeEC.primeModulus p) d' s'
-             fromProjectivePoint $! r)
-
-  , ("ec_twin_mult", {-# SCC "PrimeEC::ec_twin_mult" #-}
-       PFinPoly \p  ->
-       PFun     \d0 ->
-       PFun     \s  ->
-       PFun     \d1 ->
-       PFun     \t  ->
-       PPrim
-          do d0' <- fromVInteger <$> d0
-             s'  <- toProjectivePoint =<< s
-             d1' <- fromVInteger <$> d1
-             t'  <- toProjectivePoint =<< t
-             let r = PrimeEC.ec_twin_mult (PrimeEC.primeModulus p) d0' s' d1' t'
-             fromProjectivePoint $! r)
-  ]
-
-toProjectivePoint :: Value -> Eval PrimeEC.ProjectivePoint
-toProjectivePoint v = PrimeEC.toProjectivePoint <$> f "x" <*> f "y" <*> f "z"
-  where
-   f nm = fromVInteger <$> lookupRecord nm v
-
-fromProjectivePoint :: PrimeEC.ProjectivePoint -> Eval Value
-fromProjectivePoint (PrimeEC.ProjectivePoint x y z) =
-   pure . VRecord . recordFromFields $ [("x", f x), ("y", f y), ("z", f z)]
-  where
-   f i = pure (VInteger (PrimeEC.bigNatToInteger i))
-
 
 
 suiteBPrims :: Map.Map PrimIdent (Prim Concrete)

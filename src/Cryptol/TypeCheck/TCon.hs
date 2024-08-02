@@ -63,7 +63,6 @@ builtInType nm =
     , "Integral"          ~> PC PIntegral
     , "Eq"                ~> PC PEq
     , "Cmp"               ~> PC PCmp
-    , "SignedCmp"         ~> PC PSignedCmp
     , "Literal"           ~> PC PLiteral
     , "LiteralLessThan"   ~> PC PLiteralLessThan
 
@@ -128,7 +127,6 @@ instance HasKind PC where
       PIntegral  -> KType :-> KProp
       PEq        -> KType :-> KProp
       PCmp       -> KType :-> KProp
-      PSignedCmp -> KType :-> KProp
       PLiteral   -> KNum :-> KType :-> KProp
       PLiteralLessThan -> KNum :-> KType :-> KProp
       PAnd       -> KProp :-> KProp :-> KProp
@@ -173,7 +171,6 @@ data PC     = PEqual        -- ^ @_ == _@
             | PIntegral     -- ^ @Integral _@
             | PEq           -- ^ @Eq _@
             | PCmp          -- ^ @Cmp _@
-            | PSignedCmp    -- ^ @SignedCmp _@
             | PLiteral      -- ^ @Literal _ _@
             | PLiteralLessThan -- ^ @LiteralLessThan _ _@
             | PAnd          -- ^ This is useful when simplifying things in place
@@ -248,7 +245,6 @@ instance PP PC where
       PIntegral  -> text "Integral"
       PEq        -> text "Eq"
       PCmp       -> text "Cmp"
-      PSignedCmp -> text "SignedCmp"
       PLiteral   -> text "Literal"
       PLiteralLessThan -> text "LiteralLessThan"
       PTrue      -> text "True"

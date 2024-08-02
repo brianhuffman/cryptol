@@ -618,14 +618,12 @@ greaterThanEqV :: Backend sym => sym -> Binary sym
 greaterThanEqV sym ty v1 v2 = VBit <$> valGt sym ty v1 v2 (bitLit sym True)
 
 {-# INLINE signedLessThanV #-}
-signedLessThanV :: Backend sym => sym -> Binary sym
-signedLessThanV sym ty v1 v2 = VBit <$> cmpValue sym fb fw fi ty v1 v2 (pure $ bitLit sym False)
-  where
-  fb _ _ _   = panic "signedLessThan" ["Attempted to perform signed comparison on bit type"]
-  fw x y k   = lexCombine sym (wordSignedLessThan sym x y) (wordEq sym x y) k
-  fi _ _ _   = panic "signedLessThan" ["Attempted to perform signed comparison on Integer type"]
-
-
+signedLessThanV :: Backend sym => sym -> Prim sym
+signedLessThanV sym =
+  PFinPoly \_w ->
+  PWordFun \x ->
+  PWordFun \y ->
+  PPrim (VBit <$> wordSignedLessThan sym x y)
 
 {-# SPECIALIZE zeroV ::
   Concrete ->
@@ -1589,12 +1587,15 @@ genericPrimTable sym getEOpts =
   , ("toSignedInteger"
                   , {-# SCC "Prelude::toSignedInteger" #-}
                     toSignedIntegerV sym)
+  , ("<$"         , {-# SCC "Prelude::(<$)" #-}
+                    signedLessThanV sym)
   , ("/$"         , {-# SCC "Prelude::(/$)" #-}
                     sdivV sym)
   , ("%$"         , {-# SCC "Prelude::(%$)" #-}
                     smodV sym)
   , ("lg2"        , {-# SCC "Prelude::lg2" #-}
                     lg2V sym)
+
 
     -- Cmp
   , ("<"          , {-# SCC "Prelude::(<)" #-}
@@ -1609,10 +1610,6 @@ genericPrimTable sym getEOpts =
                     binary (eqV sym))
   , ("!="         , {-# SCC "Prelude::(!=)" #-}
                     binary (distinctV sym))
-
-    -- SignedCmp
-  , ("<$"         , {-# SCC "Prelude::(<$)" #-}
-                    binary (signedLessThanV sym))
 
     -- Finite enumerations
   , ("fromTo"     , {-# SCC "Prelude::fromTo" #-}

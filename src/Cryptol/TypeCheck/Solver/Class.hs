@@ -17,7 +17,6 @@ module Cryptol.TypeCheck.Solver.Class
   , solveIntegralInst
   , solveEqInst
   , solveCmpInst
-  , solveSignedCmpInst
   , solveLiteralInst
   , solveLiteralLessThanInst
   ) where
@@ -222,52 +221,6 @@ solveCmpInst ty = case tNoUser ty of
   TRec fs -> SolvedIf [ pCmp e | e <- recordElements fs ]
 
   -- Cmp <nominal> -> fails
-  TNominal{} -> Unsolvable
-
-  _ -> Unsolved
-
-
--- | Solve a SignedCmp constraint for a sequence.  The type passed here is the
--- element type of the sequence.
-solveSignedCmpSeq :: Type -> Type -> Solved
-solveSignedCmpSeq n ty = case tNoUser ty of
-
-  -- (fin n, n >=1 ) => SignedCmp [n]Bit
-  TCon (TC TCBit) [] -> SolvedIf [ n >== tNum (1 :: Integer) ]
-
-  -- variables are not solvable.
-  TVar {} -> Unsolved
-
-  -- (fin n, SignedCmp ty) => SignedCmp [n]ty, when ty != Bit
-  _ -> SolvedIf [ pSignedCmp ty ]
-
-
--- | Solve SignedCmp constraints.
-solveSignedCmpInst :: Type -> Solved
-solveSignedCmpInst ty = case tNoUser ty of
-
-  -- SignedCmp Error -> fails
-  TCon (TError {}) _ -> Unsolvable
-
-  -- SignedCmp Bit fails
-  TCon (TC TCBit) [] -> Unsolvable
-
-  -- SignedCmp Integer fails
-  TCon (TC TCInteger) [] -> Unsolvable
-
-  -- SignedCmp for sequences
-  TCon (TC TCSeq) [n,a] -> solveSignedCmpSeq n a
-
-  -- (SignedCmp a, SignedCmp b) => SignedCmp (a,b)
-  TCon (TC (TCTuple _)) es -> SolvedIf (map pSignedCmp es)
-
-  -- SignedCmp (a -> b) fails
-  TCon (TC TCFun) [_,_] -> Unsolvable
-
-  -- (SignedCmp a, SignedCmp b) => SignedCmp { x:a, y:b }
-  TRec fs -> SolvedIf [ pSignedCmp e | e <- recordElements fs ]
-
-  -- SignedCmp <nominal> -> fails
   TNominal{} -> Unsolvable
 
   _ -> Unsolved

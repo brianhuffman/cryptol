@@ -341,12 +341,6 @@ sLg2 x = pure $ go 0
     go i | i < SBV.intSizeOf x = SBV.svIte (SBV.svLessEq x (lit (2^i))) (lit (toInteger i)) (go (i + 1))
          | otherwise           = lit (toInteger i)
 
-svDivisible :: SBV -> Integer -> SInteger SBV -> SEval SBV (SBit SBV)
-svDivisible sym m x =
-  do m' <- integerLit sym m
-     z  <- integerLit sym 0
-     pure $ SBV.svEqual (SBV.svRem x m') z
-
 signedQuot :: SWord SBV -> SWord SBV -> SWord SBV
 signedQuot x y = SBV.svUnsign (SBV.svQuot (SBV.svSign x) (SBV.svSign y))
 

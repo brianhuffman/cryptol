@@ -461,7 +461,6 @@ superclassSet (TCon (PC p0) [t]) = go p0
   go PLogic     = super PZero
   go PIntegral  = super PRing
   go PCmp       = super PEq
-  go PSignedCmp = super PEq
   go _ = mempty
 
 superclassSet _ = mempty
@@ -626,11 +625,6 @@ pIsCmp ty = case tNoUser ty of
               TCon (PC PCmp) [t1] -> Just t1
               _                   -> Nothing
 
-pIsSignedCmp :: Prop -> Maybe Type
-pIsSignedCmp ty = case tNoUser ty of
-                    TCon (PC PSignedCmp) [t1] -> Just t1
-                    _                         -> Nothing
-
 pIsLiteral :: Prop -> Maybe (Type, Type)
 pIsLiteral ty = case tNoUser ty of
                   TCon (PC PLiteral) [t1, t2] -> Just (t1, t2)
@@ -786,9 +780,6 @@ pEq t = TCon (PC PEq) [t]
 
 pCmp :: Type -> Prop
 pCmp t = TCon (PC PCmp) [t]
-
-pSignedCmp :: Type -> Prop
-pSignedCmp t = TCon (PC PSignedCmp) [t]
 
 pLiteral :: Type -> Type -> Prop
 pLiteral x y = TCon (PC PLiteral) [x, y]
@@ -1092,7 +1083,6 @@ instance PP (WithNames Type) where
           (PIntegral, [t1])   -> pp pc <+> go 5 t1
 
           (PCmp, [t1])        -> pp pc <+> go 5 t1
-          (PSignedCmp, [t1])  -> pp pc <+> go 5 t1
           (PLiteral, [t1,t2]) -> pp pc <+> go 5 t1 <+> go 5 t2
           (PLiteralLessThan, [t1,t2]) -> pp pc <+> go 5 t1 <+> go 5 t2
 

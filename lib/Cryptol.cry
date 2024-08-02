@@ -461,34 +461,6 @@ abs : {a} (Cmp a, Ring a) => a -> a
 abs x = if x < fromInteger(0) then negate(x) else x
 
 
-// The SignedCmp class ----------------------------------------------
-
-/** Value types that support signed comparisons. */
-primitive type SignedCmp : * -> Prop
-
-/**
- * 2's complement signed less-than.
- */
-primitive (<$) : {a} (SignedCmp a) => a -> a -> Bit
-
-/**
- * 2's complement signed greater-than.
- */
-(>$) : {a} (SignedCmp a) => a -> a -> Bit
-x >$ y = y <$ x
-
-/**
- * 2's complement signed less-than-or-equal.
- */
-(<=$) : {a} (SignedCmp a) => a -> a -> Bit
-x <=$ y = ~(y <$ x)
-
-/**
- * 2's complement signed greater-than-or-equal.
- */
-(>=$) : {a} (SignedCmp a) => a -> a -> Bit
-x >=$ y = ~(x <$ y)
-
 // The Option and Result types ------------------------------------
 
 /**
@@ -547,6 +519,29 @@ a ==> b = if a then b else True
 
 
 // Bitvector specific operations ----------------------------------
+
+/**
+ * 2's complement signed less-than.
+ */
+primitive (<$) : {n} (n >= 1) => [n] -> [n] -> Bit
+
+/**
+ * 2's complement signed greater-than.
+ */
+(>$) : {n} (n >= 1) => [n] -> [n] -> Bit
+x >$ y = y <$ x
+
+/**
+ * 2's complement signed less-than-or-equal.
+ */
+(<=$) : {n} (n >= 1) => [n] -> [n] -> Bit
+x <=$ y = ~(y <$ x)
+
+/**
+ * 2's complement signed greater-than-or-equal.
+ */
+(>=$) : {n} (n >= 1) => [n] -> [n] -> Bit
+x >=$ y = ~(x <$ y)
 
 /**
  * 2's complement signed division.  Division rounds toward 0.

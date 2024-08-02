@@ -670,9 +670,13 @@ by corresponding type classes:
 >   , ">="         ~> binary (cmpOrder (\o -> o /= LT))
 >   , "=="         ~> binary (cmpOrder (\o -> o == EQ))
 >   , "!="         ~> binary (cmpOrder (\o -> o /= EQ))
->   , "<$"         ~> binary signedLessThan
 >
 >   -- Bitvector
+>   , "<$"         ~> vFinPoly $ \_n -> pure $
+>                     VFun $ \l -> pure $
+>                     VFun $ \r ->
+>                     VBit <$> ((<) <$> (fromSignedVWord =<< l)
+>                                   <*> (fromSignedVWord =<< r))
 >   , "/$"         ~> vFinPoly $ \n -> pure $
 >                     VFun $ \l -> pure $
 >                     VFun $ \r ->
@@ -1237,42 +1241,6 @@ bits to the *left* of that position are equal.
 >     LT -> pure LT
 >     EQ -> lexList es
 >     GT -> pure GT
-
-Signed comparisons may be applied to any type made up of non-empty
-bitvectors using finite sequences, tuples and records.
-All such types are compared using a lexicographic
-ordering: Lists and tuples are compared left-to-right, and record
-fields are compared in alphabetical order.
-
-> signedLessThan :: TValue -> E Value -> E Value -> E Value
-> signedLessThan ty l r = VBit . (== LT) <$> (lexSignedCompare ty l r)
->
-> -- | Lexicographic ordering on two signed values.
-> lexSignedCompare :: TValue -> E Value -> E Value -> E Ordering
-> lexSignedCompare ty l r =
->   case ty of
->     TVBit ->
->       evalPanic "lexSignedCompare" ["invalid type"]
->     TVInteger ->
->       evalPanic "lexSignedCompare" ["invalid type"]
->     TVSeq _w ety
->       | isTBit ety ->
->           compare <$> (fromSignedVWord =<< l) <*> (fromSignedVWord =<< r)
->       | otherwise ->
->           lexList =<< (zipWith (lexSignedCompare ety) <$>
->                            (fromVList <$> l) <*> (fromVList <$> r))
->     TVFun _ _ ->
->       evalPanic "lexSignedCompare" ["invalid type"]
->     TVTuple etys ->
->       lexList =<< (zipWith3 lexSignedCompare etys <$>
->                        (fromVTuple <$> l) <*> (fromVTuple <$> r))
->     TVRec fields ->
->       do let tys    = map snd (canonicalFields fields)
->          ls <- map snd . sortBy (comparing fst) . fromVRecord <$> l
->          rs <- map snd . sortBy (comparing fst) . fromVRecord <$> r
->          lexList (zipWith3 lexSignedCompare tys ls rs)
->     TVNominal {} ->
->       evalPanic "lexSignedCompare" ["Nominal type not in `Cmp`"]
 
 
 Sequences

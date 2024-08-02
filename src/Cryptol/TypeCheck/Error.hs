@@ -795,9 +795,6 @@ explainUnsolvable names gs =
           PCmp        ->
             custom ("Type" <+> doc1 </> "does not support comparisons.")
 
-          PSignedCmp  ->
-            custom ("Type" <+> doc1 </> "does not support signed comparisons.")
-
           PLiteral ->
             let doc2 = tys !! 1
             in custom (doc1 </> "is not a valid literal of type" <+> doc2)

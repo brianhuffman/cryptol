@@ -4,7 +4,7 @@ module Cryptol.TypeCheck.SimpleSolver ( simplify , simplifyStep) where
 import Cryptol.TypeCheck.Type hiding
   ( tSub, tMul, tDiv, tMod, tExp, tMin, tLenFromThenTo)
 import Cryptol.TypeCheck.Solver.Types
-import Cryptol.TypeCheck.Solver.Numeric(cryIsEqual, cryIsNotEqual, cryIsGeq, cryIsPrime)
+import Cryptol.TypeCheck.Solver.Numeric(cryIsEqual, cryIsNotEqual, cryIsGeq)
 import Cryptol.TypeCheck.Solver.Class
   ( solveZeroInst, solveLogicInst, solveRingInst
   , solveIntegralInst
@@ -55,8 +55,6 @@ simplifyStep ctxt prop =
     TCon (PC PSignedCmp) [ty]  -> solveSignedCmpInst ty
     TCon (PC PLiteral) [t1,t2] -> solveLiteralInst t1 t2
     TCon (PC PLiteralLessThan) [t1,t2] -> solveLiteralLessThanInst t1 t2
-
-    TCon (PC PPrime) [ty]      -> cryIsPrime ctxt ty
 
     TCon (PC PEqual) [t1,t2]   -> cryIsEqual ctxt t1 t2
     TCon (PC PNeq)  [t1,t2]    -> cryIsNotEqual ctxt t1 t2

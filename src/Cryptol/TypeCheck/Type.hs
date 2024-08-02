@@ -453,9 +453,6 @@ type SType  = Type
 --   given prop via superclass constraints.
 superclassSet :: Prop -> Set Prop
 
-superclassSet (TCon (PC PPrime) [n]) =
-  Set.fromList [ n >== tTwo ]
-
 superclassSet (TCon (PC p0) [t]) = go p0
   where
   super p = Set.insert (TCon (PC p) [t]) (go p)
@@ -588,11 +585,6 @@ tSplitFun f t0 = go t0 []
                      Just (a,b) -> go a (go b xs)
                      Nothing    -> ty : xs
 
-
-pIsPrime :: Prop -> Maybe Type
-pIsPrime ty = case tNoUser ty of
-                TCon (PC PPrime) [t1] -> Just t1
-                _                     -> Nothing
 
 pIsGeq :: Prop -> Maybe (Type,Type)
 pIsGeq ty = case tNoUser ty of
@@ -836,16 +828,9 @@ pSplitAnd p0 = go [p0]
       TCon (PC PTrue) _    -> go qs
       _                    -> q : go qs
 
-pPrime :: Type -> Prop
-pPrime ty =
-  case tNoUser ty of
-    _ -> prop
-  where
-  prop = TCon (PC PPrime) [ty]
-
 -- Negation --------------------------------------------------------------------
 
-{-| `pNegNumeric` negates a simple (i.e., not And, not prime, etc) prop
+{-| `pNegNumeric` negates a simple (i.e., not And, etc) prop
 over numeric type vars.  The result is a conjunction of properties.  -}
 pNegNumeric :: Prop -> [Prop]
 pNegNumeric prop =
@@ -1099,7 +1084,6 @@ instance PP (WithNames Type) where
           (PEqual, [t1,t2])   -> go 0 t1 <+> text "==" <+> go 0 t2
           (PNeq ,  [t1,t2])   -> go 0 t1 <+> text "!=" <+> go 0 t2
           (PGeq,  [t1,t2])    -> go 0 t1 <+> text ">=" <+> go 0 t2
-          (PPrime,  [t1])     -> optParens (prec > 3) $ text "prime" <+> (go 5 t1)
           (PHas x, [t1,t2])   -> ppSelector x <+> text "of"
                                <+> go 0 t1 <+> text "is" <+> go 0 t2
           (PAnd, [t1,t2])     -> nest 1 (parens (commaSepFill (map (go 0) (t1 : pSplitAnd t2))))

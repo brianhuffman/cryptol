@@ -768,7 +768,6 @@ explainUnsolvable names gs =
           PEqual      -> useCtr
           PNeq        -> useCtr
           PGeq        -> useCtr
-          PPrime      -> useCtr
 
           PHas sel ->
             custom ("Type" <+> doc1 </> "does not have field" <+> f

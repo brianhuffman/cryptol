@@ -258,8 +258,6 @@ checkProp = \case
       PC PEqual | [n1, n2] <- ns -> n1 == n2
       PC PNeq | [n1, n2] <- ns -> n1 /= n2
       PC PGeq | [n1, n2] <- ns -> n1 >= n2
-      -- TODO: instantiate UniqueFactorization for Nat'?
-      -- PC PPrime | [n] <- ns -> isJust (isPrime n) 
       PC PTrue -> True
       TError {} -> False
       _ -> evalPanic "evalProp" ["cannot use this as a guarding constraint: ", show . pp $ TCon tcon ts ]

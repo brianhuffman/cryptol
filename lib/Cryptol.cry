@@ -45,9 +45,6 @@ primitive type (!=) : # -> # -> Prop
 /** Assert that the first numeric type is larger than, or equal to the second.*/
 primitive type (>=) : # -> # -> Prop
 
-/** Assert that a numeric type is a prime number. */
-primitive type prime : # -> Prop
-
 /** Add numeric types. */
 primitive type (+) : # -> # -> #
 

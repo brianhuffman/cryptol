@@ -1,15 +1,12 @@
 {-# LANGUAGE PatternGuards, MagicHash, MultiWayIf, TypeOperators #-}
 module Cryptol.TypeCheck.Solver.Numeric
-  ( cryIsEqual, cryIsNotEqual, cryIsGeq, cryIsPrime, primeTable
+  ( cryIsEqual, cryIsNotEqual, cryIsGeq
   ) where
 
 import           Control.Applicative(Alternative(..))
 import           Control.Monad (guard,mzero)
 import qualified Control.Monad.Fail as Fail
 import           Data.List (sortBy)
-import           Data.MemoTrie
-
-import Math.NumberTheory.Primes.Testing (isPrime)
 
 import Cryptol.Utils.Patterns
 import Cryptol.TypeCheck.Type hiding (tMul)
@@ -72,24 +69,6 @@ cryIsGeq i t1 t2 =
 
   -- XXX: max t 10 >= 2 --> True
   -- XXX: max t 2 >= 10 --> a >= 10
-
-{-# NOINLINE primeTable #-}
-primeTable :: Integer :->: Bool
-primeTable = trie isPrime
-
-cryIsPrime :: Ctxt -> Type -> Solved
-cryIsPrime _varInfo ty =
-  case tNoUser ty of
-
-    TCon (TC tc) []
-      | TCNum n <- tc ->
-          if untrie primeTable n then
-            SolvedIf []
-          else
-            Unsolvable
-
-    _ -> Unsolved
-
 
 -- | Try to solve something by evaluation.
 pBin :: (Nat' -> Nat' -> Bool) -> Type -> Type -> Match Solved
@@ -295,7 +274,7 @@ tryEqVar ty x =
 
 -- e.g., 10 = t
 tryEqK :: Ctxt -> Type -> Nat' -> Match Solved
-tryEqK ctxt ty lk =
+tryEqK _ctxt ty lk =
 
   -- (K1 + t = K2, K2 >= K1) ~~~> t = (K2 - K1)
   do (rk, b) <- matches ty (anAdd, aNat', __)

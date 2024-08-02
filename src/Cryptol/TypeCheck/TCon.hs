@@ -57,7 +57,6 @@ builtInType nm =
     , "=="                ~> PC PEqual
     , "!="                ~> PC PNeq
     , ">="                ~> PC PGeq
-    , "prime"             ~> PC PPrime
     , "Zero"              ~> PC PZero
     , "Logic"             ~> PC PLogic
     , "Ring"              ~> PC PRing
@@ -122,7 +121,6 @@ instance HasKind PC where
       PEqual     -> KNum :-> KNum :-> KProp
       PNeq       -> KNum :-> KNum :-> KProp
       PGeq       -> KNum :-> KNum :-> KProp
-      PPrime     -> KNum :-> KProp
       PHas _     -> KType :-> KType :-> KProp
       PZero      -> KType :-> KProp
       PLogic     -> KType :-> KProp
@@ -166,7 +164,6 @@ data TCon   = TC TC | PC PC | TF TFun | TError Kind
 data PC     = PEqual        -- ^ @_ == _@
             | PNeq          -- ^ @_ /= _@
             | PGeq          -- ^ @_ >= _@
-            | PPrime        -- ^ @prime _@
 
             -- classes
             | PHas Selector -- ^ @Has sel type field@ does not appear in schemas
@@ -244,7 +241,6 @@ instance PP PC where
       PEqual     -> text "(==)"
       PNeq       -> text "(/=)"
       PGeq       -> text "(>=)"
-      PPrime     -> text "prime"
       PHas sel   -> parens (ppSelector sel)
       PZero      -> text "Zero"
       PLogic     -> text "Logic"

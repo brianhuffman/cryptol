@@ -36,7 +36,6 @@ module Cryptol.Backend.Concrete
 import qualified Control.Exception as X
 import Data.Bits
 import Numeric (showIntAtBase)
-import qualified GHC.Num.Compat as Integer
 
 import qualified Cryptol.Backend.Arch as Arch
 import Cryptol.Backend

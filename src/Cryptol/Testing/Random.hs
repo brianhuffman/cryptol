@@ -32,7 +32,7 @@ module Cryptol.Testing.Random
 import qualified Control.Exception as X
 import Control.Monad          (liftM2)
 import Control.Monad.IO.Class (MonadIO(..))
-import Data.List              (unfoldr, genericTake, genericIndex,
+import Data.List              (unfoldr, genericTake,
                                genericReplicate, mapAccumL)
 import qualified Data.IntMap.Strict as IntMap
 import qualified Data.Sequence as Seq

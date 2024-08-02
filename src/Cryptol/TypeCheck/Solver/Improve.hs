@@ -12,7 +12,6 @@ import Cryptol.Utils.Patterns
 import Cryptol.TypeCheck.Type
 import Cryptol.TypeCheck.SimpType as Mk
 import Cryptol.TypeCheck.Solver.Types
-import Cryptol.TypeCheck.Solver.Numeric.Interval
 import Cryptol.TypeCheck.TypePat
 import Cryptol.TypeCheck.Subst
 

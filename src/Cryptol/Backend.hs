@@ -16,7 +16,7 @@ import Control.Monad.IO.Class
 import Data.Kind (Type)
 
 import Cryptol.Backend.Monad
-  ( EvalError(..), Unsupported(..), CallStack, pushCallFrame )
+  ( EvalError(..), CallStack, pushCallFrame )
 import Cryptol.ModuleSystem.Name(Name)
 import Cryptol.Parser.Position
 import Cryptol.TypeCheck.Solver.InfNat(Nat'(..),widthInteger)

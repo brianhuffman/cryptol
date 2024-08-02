@@ -207,7 +207,6 @@ iIntersect i j =
             (Nothing,Nothing)           -> Nothing
             (Just l,Nothing)            -> Just l
             (Nothing,Just r)            -> Just r
-            _                           -> Nothing
 
 
 -- | Any value

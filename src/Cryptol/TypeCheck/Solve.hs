@@ -353,7 +353,7 @@ buildSolverCtxt ps0 =
  saturateProps gs [] = gs
  saturateProps gs (p:ps)
    | Set.member p gs = saturateProps gs ps
-   | Just (n,_) <- pIsLiteral p =
+   | Just (_n,_) <- pIsLiteral p =
        let gs' = Set.fromList [p] <> gs
         in saturateProps gs' ps
    | otherwise =

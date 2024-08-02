@@ -7,7 +7,6 @@ import Cryptol.Eval.Type
 import Cryptol.Eval.Value
 import Cryptol.ModuleSystem.Name
 import Cryptol.TypeCheck.Solver.InfNat(Nat'(..))
-import Cryptol.Utils.Panic
 
 -- | This type provides a lightweight syntactic framework for defining
 --   Cryptol primitives.  The main purpose of this type is to provide

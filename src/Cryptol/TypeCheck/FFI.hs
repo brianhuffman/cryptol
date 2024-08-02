@@ -96,6 +96,6 @@ toFFIBasicType t =
       | n <= 64 -> word FFIWord64
       | otherwise -> Just $ Left $ FFITypeError t FFIBadWordSize
       where word = Just . Right . FFIBasicVal . FFIWord n
-    TCon (TC TCInteger) [] -> integer Nothing
+    TCon (TC TCInteger) [] -> integer
     _ -> Nothing
-  where integer = Just . Right . FFIBasicRef . FFIInteger
+  where integer = Just $ Right $ FFIBasicRef $ FFIInteger

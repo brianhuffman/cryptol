@@ -320,15 +320,12 @@ foreignPrim name FFIFunType {..} impl tenv = buildFun ffiArgTypes []
   -- | Call the callback with a 'BasicRefRet' for the given type.
   getBasicRefRet :: FFIBasicRefType ->
     (forall a. Storable a => BasicRefRet a -> b) -> b
-  getBasicRefRet (FFIInteger mbMod) f = f BasicRefRet
+  getBasicRefRet FFIInteger f = f BasicRefRet
     { initBasicRefRet = mpz_init
     , clearBasicRefRet = mpz_clear
     , marshalBasicRefRet = \mpz -> do
         n <- io $ peekInteger' mpz
-        VInteger <$>
-          case mbMod of
-            Nothing -> pure n
-            Just m  -> intToZn Concrete (evalFinType m) n }
+        VInteger <$> pure n }
 
   -- Evaluate a finite numeric type expression.
   evalFinType :: Type -> Integer
@@ -388,7 +385,7 @@ getMarshalBasicRefArg :: FFIBasicRefType ->
       (GenValue Concrete -> (rep -> IO val) -> IO val) ->
       result) ->
   result
-getMarshalBasicRefArg (FFIInteger _) f = f \val g ->
+getMarshalBasicRefArg FFIInteger f = f \val g ->
   withInInteger' (fromVInteger val) g
 
 #else

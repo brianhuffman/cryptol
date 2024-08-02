@@ -65,5 +65,4 @@ data FFIFloatSize
 -- | Basic type which is passed and returned by reference through a parameter.
 data FFIBasicRefType
   = FFIInteger
-      (Maybe Type) -- ^ Modulus (Just for Z, Nothing for Integer)
   deriving (Show, Generic, NFData)

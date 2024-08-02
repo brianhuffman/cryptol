@@ -322,28 +322,6 @@ instance Backend Concrete where
     do assertSideCondition sym (y /= 0) DivideByZero
        pure $! x `mod` y
 
-  intToZn _ 0 _ = evalPanic "intToZn" ["0 modulus not allowed"]
-  intToZn _ m x = pure $! x `mod` m
-
-  -- NB: requires we maintain the invariant that
-  --     Z_n is in reduced form
-  znToInt _ _m x = pure x
-  znEq _ _m x y = pure $! x == y
-
-  -- NB: under the precondition that `m` is prime,
-  -- the only values for which no inverse exists are
-  -- congruent to 0 modulo m.
-  znRecip sym m x =
-    case Integer.integerRecipMod x m of
-      Just r  -> integerLit sym r
-      Nothing -> raiseError sym DivideByZero
-
-  znPlus  _ = liftBinIntMod (+)
-  znMinus _ = liftBinIntMod (-)
-  znMult  _ = liftBinIntMod (*)
-  znNegate _ 0 _ = evalPanic "znNegate" ["0 modulus not allowed"]
-  znNegate _ m x = pure $! (negate x) `mod` m
-
 {-# INLINE liftBinIntMod #-}
 liftBinIntMod :: Monad m =>
   (Integer -> Integer -> Integer) -> Integer -> Integer -> Integer -> m Integer

@@ -28,8 +28,6 @@ import           Data.Text (Text)
 import           Data.Parameterized.NatRepr
 import           Data.Parameterized.Some
 
-import qualified GHC.Num.Compat as Integer
-
 import qualified What4.Interface as W4
 import qualified What4.SWord as SW
 
@@ -410,73 +408,6 @@ instance W4.IsSymExprBuilder sym => Backend (What4 sym) where
   intLessThan sym x y = liftIO $ W4.intLt (w4 sym) x y
   intGreaterThan sym x y = liftIO $ W4.intLt (w4 sym) y x
 
-  -- NB, we don't do reduction here on symbolic values
-  intToZn sym m x
-    | Just xi <- W4.asInteger x
-    = liftIO $ W4.intLit (w4 sym) (xi `mod` m)
-
-    | otherwise
-    = pure x
-
-  znToInt _ 0 _ = evalPanic "znToInt" ["0 modulus not allowed"]
-  znToInt sym m x = liftIO (W4.intMod (w4 sym) x =<< W4.intLit (w4 sym) m)
-
-  znEq _ 0 _ _ = evalPanic "znEq" ["0 modulus not allowed"]
-  znEq sym m x y = liftIO $
-     do diff <- W4.intSub (w4 sym) x y
-        W4.intDivisible (w4 sym) diff (fromInteger m)
-
-  znPlus   sym m x y = liftIO $ sModAdd (w4 sym) m x y
-  znMinus  sym m x y = liftIO $ sModSub (w4 sym) m x y
-  znMult   sym m x y = liftIO $ sModMult (w4 sym) m x y
-  znNegate sym m x   = liftIO $ sModNegate (w4 sym) m x
-  znRecip = sModRecip
-
-
-sModAdd :: W4.IsSymExprBuilder sym =>
-  sym -> Integer -> W4.SymInteger sym -> W4.SymInteger sym -> IO (W4.SymInteger sym)
-sModAdd _sym 0 _ _ = evalPanic "sModAdd" ["0 modulus not allowed"]
-sModAdd sym m x y
-  | Just xi <- W4.asInteger x
-  , Just yi <- W4.asInteger y
-  = W4.intLit sym ((xi+yi) `mod` m)
-
-  | otherwise
-  = W4.intAdd sym x y
-
-sModSub :: W4.IsSymExprBuilder sym =>
-  sym -> Integer -> W4.SymInteger sym -> W4.SymInteger sym -> IO (W4.SymInteger sym)
-sModSub _sym 0 _ _ = evalPanic "sModSub" ["0 modulus not allowed"]
-sModSub sym m x y
-  | Just xi <- W4.asInteger x
-  , Just yi <- W4.asInteger y
-  = W4.intLit sym ((xi-yi) `mod` m)
-
-  | otherwise
-  = W4.intSub sym x y
-
-
-sModMult :: W4.IsSymExprBuilder sym =>
-  sym -> Integer -> W4.SymInteger sym -> W4.SymInteger sym -> IO (W4.SymInteger sym)
-sModMult _sym 0 _ _ = evalPanic "sModMult" ["0 modulus not allowed"]
-sModMult sym m x y
-  | Just xi <- W4.asInteger x
-  , Just yi <- W4.asInteger y
-  = W4.intLit sym ((xi*yi) `mod` m)
-
-  | otherwise
-  = W4.intMul sym x y
-
-sModNegate :: W4.IsSymExprBuilder sym =>
-  sym -> Integer -> W4.SymInteger sym -> IO (W4.SymInteger sym)
-sModNegate _sym 0 _ = evalPanic "sModMult" ["0 modulus not allowed"]
-sModNegate sym m x
-  | Just xi <- W4.asInteger x
-  = W4.intLit sym ((negate xi) `mod` m)
-
-  | otherwise
-  = W4.intNeg sym x
-
 
 -- | Try successive powers of 2 to find the first that dominates the input.
 --   We could perhaps reduce to using CLZ instead...
@@ -528,38 +459,3 @@ w4bvRol sym x y = liftIO $ SW.bvRol sym x y
 
 w4bvRor  :: W4.IsSymExprBuilder sym => sym -> SW.SWord sym -> SW.SWord sym -> W4Eval sym (SW.SWord sym)
 w4bvRor sym x y = liftIO $ SW.bvRor sym x y
-
-
--- Create a fresh constant and assert that it is the
--- multiplicitive inverse of x; return the constant.
--- Such an inverse must exist under the precondition
--- that the modulus is prime and the input is nonzero.
-sModRecip ::
-  W4.IsSymExprBuilder sym =>
-  What4 sym ->
-  Integer ->
-  W4.SymInteger sym ->
-  W4Eval sym (W4.SymInteger sym)
-sModRecip _sym 0 _ = panic "sModRecip" ["0 modulus not allowed"]
-sModRecip sym m x
-  -- If the input is concrete, evaluate the answer
-  | Just xi <- W4.asInteger x
-  = case Integer.integerRecipMod xi m of
-      Just r  -> integerLit sym r
-      Nothing -> raiseError sym DivideByZero
-
-  -- If the input is symbolic, create a new symbolic constant
-  -- and assert that it is the desired multiplicitive inverse.
-  -- Such an inverse will exist under the precondition that
-  -- the modulus is prime, and as long as the input is nonzero.
-  | otherwise
-  = do divZero <- liftIO (W4.intDivisible (w4 sym) x (fromInteger m))
-       ok <- liftIO (W4.notPred (w4 sym) divZero)
-       assertSideCondition sym ok DivideByZero
-
-       z <- liftIO (W4.freshBoundedInt (w4 sym) W4.emptySymbol (Just 1) (Just (m-1)))
-       xz <- liftIO (W4.intMul (w4 sym) x z)
-       rel <- znEq sym m xz =<< liftIO (W4.intLit (w4 sym) 1)
-       addDefEqn sym =<< liftIO (W4.orPred (w4 sym) divZero rel)
-
-       return z

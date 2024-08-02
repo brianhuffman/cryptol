@@ -88,14 +88,6 @@ intV sym i =
     (\w -> wordFromInt sym w i)
     (pure i)
 
-{-# SPECIALIZE fromZV :: Concrete -> Prim Concrete #-}
-fromZV :: Backend sym => sym -> Prim sym
-fromZV sym =
-  PFinPoly \n ->
-  PFun     \v ->
-  PPrim
-    (VInteger <$> (znToInt sym n . fromVInteger =<< v))
-
 -- Operation Lifting -----------------------------------------------------------
 
 
@@ -1769,8 +1761,5 @@ genericPrimTable sym getEOpts =
 
   , ("parmap"     , {-# SCC "Prelude::parmap" #-}
                     parmapV sym)
-
-  , ("fromZ"      , {-# SCC "Prelude::fromZ" #-}
-                    fromZV sym)
 
   ]

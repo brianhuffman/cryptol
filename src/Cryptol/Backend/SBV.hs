@@ -314,23 +314,6 @@ instance Backend SBV where
        let p = svLessThan z b
        pure $! svSymbolicMerge KUnbounded True p (svRem a b) (svUNeg (svRem (svUNeg a) (svUNeg b)))
 
-  -- NB, we don't do reduction here
-  intToZn _ _m a = pure a
-
-  znToInt _ 0 _ = evalPanic "znToInt" ["0 modulus not allowed"]
-  znToInt _ m a =
-    do let m' = svInteger KUnbounded m
-       pure $! svRem a m'
-
-  znEq _ 0 _ _ = evalPanic "znEq" ["0 modulus not allowed"]
-  znEq sym m a b = svDivisible sym m (SBV.svMinus a b)
-
-  znPlus  sym m a b = sModAdd sym m a b
-  znMinus sym m a b = sModSub sym m a b
-  znMult  sym m a b = sModMult sym m a b
-  znNegate sym m a  = sModNegate sym m a
-  znRecip = sModRecip
-
 
 svToInteger :: SWord SBV -> SInteger SBV
 svToInteger w =
@@ -349,69 +332,6 @@ svFromInteger n i =
 
 evalPanic :: String -> [String] -> a
 evalPanic cxt = panic ("[SBV] " ++ cxt)
-
-
-sModAdd :: SBV -> Integer -> SInteger SBV -> SInteger SBV -> SEval SBV (SInteger SBV)
-sModAdd _ 0 _ _ = evalPanic "sModAdd" ["0 modulus not allowed"]
-sModAdd sym modulus x y =
-  case (SBV.svAsInteger x, SBV.svAsInteger y) of
-    (Just i, Just j) -> integerLit sym ((i + j) `mod` modulus)
-    _                -> pure $ SBV.svPlus x y
-
-sModSub :: SBV -> Integer -> SInteger SBV -> SInteger SBV -> SEval SBV (SInteger SBV)
-sModSub _ 0 _ _ = evalPanic "sModSub" ["0 modulus not allowed"]
-sModSub sym modulus x y =
-  case (SBV.svAsInteger x, SBV.svAsInteger y) of
-    (Just i, Just j) -> integerLit sym ((i - j) `mod` modulus)
-    _                -> pure $ SBV.svMinus x y
-
-sModNegate :: SBV -> Integer -> SInteger SBV -> SEval SBV (SInteger SBV)
-sModNegate _ 0 _ = evalPanic "sModNegate" ["0 modulus not allowed"]
-sModNegate sym modulus x =
-  case SBV.svAsInteger x of
-    Just i -> integerLit sym ((negate i) `mod` modulus)
-    _      -> pure $ SBV.svUNeg x
-
-sModMult :: SBV -> Integer -> SInteger SBV -> SInteger SBV -> SEval SBV (SInteger SBV)
-sModMult _ 0 _ _ = evalPanic "sModMult" ["0 modulus not allowed"]
-sModMult sym modulus x y =
-  case (SBV.svAsInteger x, SBV.svAsInteger y) of
-    (Just i, Just j) -> integerLit sym ((i * j) `mod` modulus)
-    _                -> pure $ SBV.svTimes x y
-
--- Create a fresh constant and assert that it is the
--- multiplicitive inverse of x; return the constant.
--- Such an inverse must exist under the precondition
--- that the modulus is prime and the input is nonzero.
-sModRecip ::
-  SBV ->
-  Integer {- ^ modulus: must be prime -} ->
-  SInteger SBV ->
-  SEval SBV (SInteger SBV)
-sModRecip _sym 0 _ = panic "sModRecip" ["0 modulus not allowed"]
-sModRecip sym m x
-  -- If the input is concrete, evaluate the answer
-  | Just xi <- svAsInteger x
-  = case Integer.integerRecipMod xi m of
-      Just r  -> integerLit sym r
-      Nothing -> raiseError sym DivideByZero
-
-  -- If the input is symbolic, create a new symbolic constant
-  -- and assert that it is the desired multiplicitive inverse.
-  -- Such an inverse will exist under the precondition that
-  -- the modulus is prime, and as long as the input is nonzero.
-  | otherwise
-  = do divZero <- svDivisible sym m x
-       assertSideCondition sym (svNot divZero) DivideByZero
-
-       z <- liftIO (freshSInteger_ sym)
-       let xz = svTimes x z
-       rel <- znEq sym m xz (svInteger KUnbounded 1)
-       let range = svAnd (svLessThan (svInteger KUnbounded 0) z)
-                         (svLessThan z (svInteger KUnbounded m))
-       liftIO (addDefEqn sym (svAnd range (svOr divZero rel)))
-
-       return z
 
 -- | Ceiling (log_2 x)
 sLg2 :: SWord SBV -> SEval SBV (SWord SBV)

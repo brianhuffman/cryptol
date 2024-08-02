@@ -240,23 +240,6 @@ primitive fromThenTo : {first, next, last, a, len}
                        , first != next
                        , lengthFromThenTo first next last == len) => [len]a
 
-// Fractional Literals ---------------------
-
-/** 'FLiteral m n r a' asserts that the type 'a' contains the
-fraction 'm/n'.  The flag 'r' indicates if we should round ('r >= 1')
-or report an error if the number can't be represented exactly. */
-primitive type FLiteral : # -> # -> # -> * -> Prop
-
-/** A fractional literal corresponding to 'm/n' */
-primitive
-  fraction : { m, n, r, a } FLiteral m n r a => a
-
-
-
-
-
-
-
 // The Zero class -------------------------------------------------------
 
 /** Value types that have a notion of 'zero'. */
@@ -300,9 +283,6 @@ primitive complement : {a} (Logic a) => a -> a
 
 /**
  * Value types that support ring addition and multiplication.
- *
- * Floating-point values are only approximately a ring, but
- * nonetheless inhabit this class.
  */
 primitive type Ring : * -> Prop
 
@@ -310,8 +290,6 @@ primitive type Ring : * -> Prop
  * Converts an unbounded integer to a value in a Ring using the following rules:
  *   * to bitvector type [n]:
  *     the value is reduced modulo 2^^n,
- *   * floating point types:
- *     the value is rounded to the nearest representable value,
  *   * sequences other than bitvectors:
  *     elements are computed by using `fromInteger` pointwise
  *     Example: (fromInteger 2 : [3][8]) === [ 0x02, 0x02, 0x02 ]

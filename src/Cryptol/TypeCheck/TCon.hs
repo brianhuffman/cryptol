@@ -52,7 +52,6 @@ builtInType nm =
   -- Built-in types from Float.cry
   builtInFloat = Map.fromList
     [ "Float"             ~> TC TCFloat
-    , "ValidFloat"        ~> PC PValidFloat
     ]
 
   -- Built-in types from Cryptol.cry
@@ -78,7 +77,6 @@ builtInType nm =
     , "SignedCmp"         ~> PC PSignedCmp
     , "Literal"           ~> PC PLiteral
     , "LiteralLessThan"   ~> PC PLiteralLessThan
-    , "FLiteral"          ~> PC PFLiteral
 
     -- Type functions
     , "+"                ~> TF TCAdd
@@ -155,8 +153,6 @@ instance HasKind PC where
       PSignedCmp -> KType :-> KProp
       PLiteral   -> KNum :-> KType :-> KProp
       PLiteralLessThan -> KNum :-> KType :-> KProp
-      PFLiteral  -> KNum :-> KNum :-> KNum :-> KType :-> KProp
-      PValidFloat -> KNum :-> KNum :-> KProp
       PAnd       -> KProp :-> KProp :-> KProp
       PTrue      -> KProp
 
@@ -204,11 +200,6 @@ data PC     = PEqual        -- ^ @_ == _@
             | PSignedCmp    -- ^ @SignedCmp _@
             | PLiteral      -- ^ @Literal _ _@
             | PLiteralLessThan -- ^ @LiteralLessThan _ _@
-            | PFLiteral     -- ^ @FLiteral _ _ _@
-
-            | PValidFloat   -- ^ @ValidFloat _ _@ constraints on supported
-                            -- floating point representaitons
-
             | PAnd          -- ^ This is useful when simplifying things in place
             | PTrue         -- ^ Ditto
               deriving (Show, Eq, Ord, Generic, NFData)
@@ -290,8 +281,6 @@ instance PP PC where
       PSignedCmp -> text "SignedCmp"
       PLiteral   -> text "Literal"
       PLiteralLessThan -> text "LiteralLessThan"
-      PFLiteral  -> text "FLiteral"
-      PValidFloat -> text "ValidFloat"
       PTrue      -> text "True"
       PAnd       -> text "(&&)"
 

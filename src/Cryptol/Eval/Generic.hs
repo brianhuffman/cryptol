@@ -96,22 +96,6 @@ intV sym i =
     (pure i)
     (\e p -> fpRndMode sym >>= \r -> fpFromInteger sym e p r i)
 
-{-# SPECIALIZE ecFractionV :: Concrete -> Prim Concrete
-  #-}
-ecFractionV :: Backend sym => sym -> Prim sym
-ecFractionV sym =
-  PFinPoly \n  ->
-  PFinPoly \d  ->
-  PFinPoly \_r ->
-  PTyPoly  \ty ->
-  PPrim
-    case ty of
-      TVFloat e p -> VFloat <$> fpLit sym e p (n % d)
-      _ -> evalPanic "ecFractionV"
-            [ "Unexpected `FLiteral` type: " ++ show ty ]
-
-
-
 {-# SPECIALIZE fromZV :: Concrete -> Prim Concrete #-}
 fromZV :: Backend sym => sym -> Prim sym
 fromZV sym =
@@ -1835,7 +1819,6 @@ genericPrimTable sym getEOpts =
   , ("False"      , PVal $ VBit (bitLit sym False))
   , ("number"     , {-# SCC "Prelude::number" #-}
                     ecNumberV sym)
-  , ("fraction"   , ecFractionV sym)
 
     -- Zero
   , ("zero"       , {-# SCC "Prelude::zero" #-}

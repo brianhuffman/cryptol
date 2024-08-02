@@ -665,11 +665,6 @@ pIsLiteralLessThan ty =
     TCon (PC PLiteralLessThan) [t1, t2] -> Just (t1, t2)
     _                                   -> Nothing
 
-pIsFLiteral :: Prop -> Maybe (Type,Type,Type,Type)
-pIsFLiteral ty = case tNoUser ty of
-                   TCon (PC PFLiteral) [t1,t2,t3,t4] -> Just (t1,t2,t3,t4)
-                   _                                 -> Nothing
-
 pIsTrue :: Prop -> Bool
 pIsTrue ty  = case tNoUser ty of
                 TCon (PC PTrue) _ -> True
@@ -679,11 +674,6 @@ pIsWidth :: Prop -> Maybe Type
 pIsWidth ty = case tNoUser ty of
                 TCon (TF TCWidth) [t1] -> Just t1
                 _                      -> Nothing
-
-pIsValidFloat :: Prop -> Maybe (Type,Type)
-pIsValidFloat ty = case tNoUser ty of
-                     TCon (PC PValidFloat) [a,b] -> Just (a,b)
-                     _                           -> Nothing
 
 --------------------------------------------------------------------------------
 
@@ -879,9 +869,6 @@ pFin ty =
     _                     -> prop
   where
   prop = TCon (PC PFin) [ty]
-
-pValidFloat :: Type -> Type -> Type
-pValidFloat e p = TCon (PC PValidFloat) [e,p]
 
 pPrime :: Type -> Prop
 pPrime ty =

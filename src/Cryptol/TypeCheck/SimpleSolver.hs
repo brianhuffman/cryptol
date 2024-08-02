@@ -12,7 +12,6 @@ import Cryptol.TypeCheck.Solver.Class
   , solveEqInst, solveCmpInst, solveSignedCmpInst
   , solveLiteralInst
   , solveLiteralLessThanInst
-  , solveValidFloat, solveFLiteralInst
   )
 
 import Cryptol.Utils.Debug(ppTrace)
@@ -57,9 +56,7 @@ simplifyStep ctxt prop =
     TCon (PC PSignedCmp) [ty]  -> solveSignedCmpInst ty
     TCon (PC PLiteral) [t1,t2] -> solveLiteralInst t1 t2
     TCon (PC PLiteralLessThan) [t1,t2] -> solveLiteralLessThanInst t1 t2
-    TCon (PC PFLiteral) [t1,t2,t3,t4] -> solveFLiteralInst t1 t2 t3 t4
 
-    TCon (PC PValidFloat) [t1,t2] -> solveValidFloat t1 t2
     TCon (PC PPrime) [ty]      -> cryIsPrime ctxt ty
     TCon (PC PFin)   [ty]      -> cryIsFinType ctxt ty
 

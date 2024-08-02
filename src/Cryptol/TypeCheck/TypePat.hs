@@ -13,6 +13,7 @@ module Cryptol.TypeCheck.TypePat
   , aLiteral
   , aLiteralLessThan
   , aLogic
+  , aRing
 
   , aTVar
   , aFreeTVar
@@ -180,6 +181,9 @@ aLiteralLessThan = tp PLiteralLessThan ar2
 
 aLogic :: Pat Prop Type
 aLogic = tp PLogic ar1
+
+aRing :: Pat Prop Type
+aRing = tp PRing ar1
 
 --------------------------------------------------------------------------------
 anError :: Kind -> Pat Type ()

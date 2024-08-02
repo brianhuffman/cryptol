@@ -97,13 +97,13 @@ solveRingInst ty = case tNoUser ty of
   TCon (TError {}) _ -> Unsolvable
 
   -- Ring [n]e
-  TCon (TC TCSeq) [n, e] -> solveRingSeq n e
+  TCon (TC TCSeq) [_, e] -> solveRingSeq e
 
   -- Ring b => Ring (a -> b)
-  TCon (TC TCFun) [_,b] -> SolvedIf [ pRing b ]
+  TCon (TC TCFun) _ -> Unsolvable
 
-  -- (Ring a, Ring b) => Arith (a,b)
-  TCon (TC (TCTuple _)) es -> SolvedIf [ pRing e | e <- es ]
+  -- Ring (a,b) fails
+  TCon (TC (TCTuple _)) _ -> Unsolvable
 
   -- Ring Bit fails
   TCon (TC TCBit) [] -> Unsolvable
@@ -111,8 +111,8 @@ solveRingInst ty = case tNoUser ty of
   -- Ring Integer
   TCon (TC TCInteger) [] -> SolvedIf []
 
-  -- (Ring a, Ring b) => Ring { x1 : a, x2 : b }
-  TRec fs -> SolvedIf [ pRing ety | ety <- recordElements fs ]
+  -- Ring { x1 : a, x2 : b } fails
+  TRec {} -> Unsolvable
 
   -- Ring <nominal> -> fails
   TNominal {} -> Unsolvable
@@ -122,21 +122,17 @@ solveRingInst ty = case tNoUser ty of
 
 -- | Solve a Ring constraint for a sequence.  The type passed here is the
 -- element type of the sequence.
-solveRingSeq :: Type -> Type -> Solved
-solveRingSeq n ty = case tNoUser ty of
+solveRingSeq :: Type -> Solved
+solveRingSeq ty = case tNoUser ty of
 
   -- fin n => Ring [n]Bit
   TCon (TC TCBit) [] -> SolvedIf []
 
   -- variables are not solvable.
-  TVar {} -> case tNoUser n of
-                {- We are sure that the lenght is not `fin`, so the
-                special case for `Bit` does not apply.
-                Arith ty => Arith [n]ty -}
-                _                  -> Unsolved
+  TVar {} -> Unsolved
 
-  -- Ring ty => Ring [n]ty
-  _ -> SolvedIf [ pRing ty ]
+  -- Ring [n]ty for ty!=Bit fails
+  _ -> Unsolvable
 
 
 -- | Solve an Integral constraint by instance, if possible.

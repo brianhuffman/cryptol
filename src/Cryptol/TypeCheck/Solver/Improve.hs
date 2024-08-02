@@ -43,6 +43,7 @@ improveProps impSkol ctxt ps0 = loop emptySubst ps0
 improveProp :: Bool -> Ctxt -> Prop -> Match (Subst,[Prop])
 improveProp impSkol ctxt prop =
   improveEq impSkol ctxt prop <|>
+  improveRing impSkol prop <|>
   improveLit impSkol prop
   -- XXX: others
 
@@ -57,6 +58,16 @@ improveLit impSkol prop =
      let su = uncheckedSingleSubst a tBit
      return (su, [])
 
+-- Whenever we have `Ring [m]a`,
+-- we can learn that `a = Bit`
+improveRing :: Bool -> Prop -> Match (Subst, [Prop])
+improveRing impSkol prop =
+  do t     <- aRing prop
+     (_,b) <- aSeq t
+     a     <- aTVar b
+     unless impSkol $ guard (isFreeTV a)
+     let su = uncheckedSingleSubst a tBit
+     return (su, [])
 
 -- | Improvements from equality constraints.
 -- Invariant:

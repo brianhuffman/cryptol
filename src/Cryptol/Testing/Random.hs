@@ -174,7 +174,6 @@ randomValue sym ty =
                           traverse (traverse (randomValue sym)) cons
         TVAbstract -> Nothing
 
-    TVArray{} -> Nothing
     TVFun{} -> Nothing
 
 {-# INLINE randomBit #-}
@@ -395,7 +394,6 @@ typeSize :: TValue -> Maybe Integer
 typeSize ty = case ty of
   TVBit -> Just 2
   TVInteger -> Nothing
-  TVArray{} -> Nothing
   TVStream{} -> Nothing
   TVSeq n el -> (^ n) <$> typeSize el
   TVTuple els -> product <$> mapM typeSize els
@@ -415,7 +413,6 @@ typeValues ty =
   case ty of
     TVBit       -> [ VBit False, VBit True ]
     TVInteger   -> []
-    TVArray{}   -> []
     TVStream{}  -> []
     TVSeq n TVBit ->
       [ VWord n (wordVal (BV n x))

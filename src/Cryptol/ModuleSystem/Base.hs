@@ -77,7 +77,7 @@ import qualified Cryptol.TypeCheck.PP as T
 import qualified Cryptol.TypeCheck.Sanity as TcSanity
 import qualified Cryptol.Backend.FFI.Error as FFI
 
-import Cryptol.Utils.Ident ( preludeName, floatName, arrayName, suiteBName, primeECName
+import Cryptol.Utils.Ident ( preludeName, floatName, suiteBName, primeECName
                            , preludeReferenceName, interactiveName, modNameChunks
                            , modNameToNormalModName )
 import Cryptol.Utils.PP (pretty, pp, hang, vcat, ($$), (<+>), (<.>), colon)
@@ -85,7 +85,7 @@ import Cryptol.Utils.Panic (panic)
 import Cryptol.Utils.Logger(logPutStrLn, logPrint)
 import Cryptol.Utils.Benchmark
 
-import Cryptol.Prelude ( preludeContents, floatContents, arrayContents
+import Cryptol.Prelude ( preludeContents, floatContents
                        , suiteBContents, primeECContents, preludeReferenceContents )
 import Cryptol.Transform.MonoValues (rewModule)
 
@@ -375,7 +375,6 @@ findModule n = do
     case n of
       m | m == preludeName -> pure (InMem "Cryptol" preludeContents)
         | m == floatName   -> pure (InMem "Float" floatContents)
-        | m == arrayName   -> pure (InMem "Array" arrayContents)
         | m == suiteBName  -> pure (InMem "SuiteB" suiteBContents)
         | m == primeECName -> pure (InMem "PrimeEC" primeECContents)
         | m == preludeReferenceName -> pure (InMem "Cryptol::Reference" preludeReferenceContents)

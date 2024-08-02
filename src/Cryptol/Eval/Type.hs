@@ -34,7 +34,6 @@ import Control.DeepSeq
 data TValue
   = TVBit                     -- ^ @ Bit @  
   | TVInteger                 -- ^ @ Integer @
-  | TVArray TValue TValue     -- ^ @ Array a b @
   | TVSeq Integer TValue      -- ^ @ [n]a @
   | TVStream TValue           -- ^ @ [inf]t @
   | TVTuple [TValue]          -- ^ @ (a, b, c )@
@@ -75,7 +74,6 @@ tValTy tv =
   case tv of
     TVBit       -> tBit
     TVInteger   -> tInteger
-    TVArray a b -> tArray (tValTy a) (tValTy b)
     TVSeq n t   -> tSeq (tNum n) (tValTy t)
     TVStream t  -> tSeq tInf (tValTy t)
     TVTuple ts  -> tTuple (map tValTy ts)
@@ -155,7 +153,6 @@ evalType env ty =
       case (c, ts) of
         (TCBit, [])     -> Right $ TVBit
         (TCInteger, []) -> Right $ TVInteger
-        (TCArray, [a, b]) -> Right $ TVArray (val a) (val b)
         (TCSeq, [n, t]) -> Right $ tvSeq (num n) (val t)
         (TCFun, [a, b]) -> Right $ TVFun (val a) (val b)
         (TCTuple _, _)  -> Right $ TVTuple (map val ts)

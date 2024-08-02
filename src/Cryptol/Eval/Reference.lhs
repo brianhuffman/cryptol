@@ -76,7 +76,6 @@ are as follows:
 |:------------------|:------------------|:----------------------------|
 | `Bit`             | booleans          | `TVBit`                     |
 | `Integer`         | integers          | `TVInteger`                 |
-| `Array`           | arrays            | `TVArray`                   |
 | `[n]a`            | finite lists      | `TVSeq n a`                 |
 | `[inf]a`          | infinite lists    | `TVStream a`                |
 | `(a, b, c)`       | tuples            | `TVTuple [a,b,c]`           |
@@ -973,7 +972,6 @@ For functions, `zero` returns the constant function that returns
 > zero :: TValue -> Value
 > zero TVBit          = VBit False
 > zero TVInteger      = VInteger 0
-> zero TVArray{}      = evalPanic "zero" ["Array type not in `Zero`"]
 > zero (TVSeq n ety)  = VList (Nat n) (genericReplicate n (pure (zero ety)))
 > zero (TVStream ety) = VList Inf (repeat (pure (zero ety)))
 > zero (TVTuple tys)  = VTuple (map (pure . zero) tys)
@@ -1022,7 +1020,6 @@ at the same positions.
 >                                | (f, fty) <- canonicalFields fields ]
 >         TVFun _ bty  -> pure $ VFun (\v -> go bty (appFun val v))
 >         TVInteger    -> evalPanic "logicUnary" ["Integer not in class Logic"]
->         TVArray{}    -> evalPanic "logicUnary" ["Array not in class Logic"]
 >         TVNominal {}  -> evalPanic "logicUnary" ["Nominal type not in `Logic`"]
 
 > logicBinary :: (Bool -> Bool -> Bool) -> TValue -> E Value -> E Value -> E Value
@@ -1057,7 +1054,6 @@ at the same positions.
 >                               r' <- r
 >                               go bty (fromVFun l' v) (fromVFun r' v)
 >         TVInteger    -> evalPanic "logicBinary" ["Integer not in class Logic"]
->         TVArray{}    -> evalPanic "logicBinary" ["Array not in class Logic"]
 >         TVNominal {} -> evalPanic "logicBinary" ["Nominal type not in `Logic`"]
 
 
@@ -1083,8 +1079,6 @@ False]`, but to `error "foo"`.
 >           evalPanic "arithNullary" ["Bit not in class Ring"]
 >         TVInteger ->
 >           VInteger <$> i
->         TVArray{} ->
->           evalPanic "arithNullary" ["Array not in class Ring"]
 >         TVSeq w a
 >           | isTBit a  -> vWord w <$> i
 >           | otherwise -> pure $ VList (Nat w) (genericReplicate w (go a))
@@ -1111,8 +1105,6 @@ False]`, but to `error "foo"`.
 >           evalPanic "arithUnary" ["Bit not in class Ring"]
 >         TVInteger ->
 >           VInteger <$> appOp1 iop (fromVInteger <$> val)
->         TVArray{} ->
->           evalPanic "arithUnary" ["Array not in class Ring"]
 >         TVSeq w a
 >           | isTBit a  -> vWord w <$> (iop =<< (fromVWord =<< val))
 >           | otherwise -> VList (Nat w) . map (go a) . fromVList <$> val
@@ -1141,8 +1133,6 @@ False]`, but to `error "foo"`.
 >           evalPanic "arithBinary" ["Bit not in class Ring"]
 >         TVInteger ->
 >           VInteger <$> appOp2 iop (fromVInteger <$> l) (fromVInteger <$> r)
->         TVArray{} ->
->           evalPanic "arithBinary" ["Array not in class Ring"]
 >         TVSeq w a
 >           | isTBit a  -> vWord w <$> appOp2 iop (fromVWord =<< l) (fromVWord =<< r)
 >           | otherwise ->
@@ -1240,8 +1230,6 @@ bits to the *left* of that position are equal.
 >       compare <$> (fromVBit <$> l) <*> (fromVBit <$> r)
 >     TVInteger ->
 >       compare <$> (fromVInteger <$> l) <*> (fromVInteger <$> r)
->     TVArray{} ->
->       evalPanic "lexCompare" ["invalid type"]
 >     TVSeq _w ety ->
 >       lexList =<< (zipWith (lexCompare ety) <$>
 >                      (fromVList <$> l) <*> (fromVList <$> r))
@@ -1284,8 +1272,6 @@ fields are compared in alphabetical order.
 >     TVBit ->
 >       evalPanic "lexSignedCompare" ["invalid type"]
 >     TVInteger ->
->       evalPanic "lexSignedCompare" ["invalid type"]
->     TVArray{} ->
 >       evalPanic "lexSignedCompare" ["invalid type"]
 >     TVSeq _w ety
 >       | isTBit ety ->

@@ -17,7 +17,6 @@ import           Cryptol.TypeCheck.FFI.FFIType
 import           Cryptol.TypeCheck.SimpType
 import           Cryptol.TypeCheck.Type
 import           Cryptol.Utils.RecordMap
-import           Cryptol.Utils.Types
 
 -- | Convert a 'Schema' to a 'FFIFunType', along with any 'Prop's that must be
 -- satisfied for the 'FFIFunType' to be valid.

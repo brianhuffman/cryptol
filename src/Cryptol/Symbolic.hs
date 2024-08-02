@@ -166,7 +166,6 @@ finType ty =
         TVEnum cs     -> FEnum   <$> traverse (traverse finType) cs
         TVAbstract    -> Nothing
 
-    TVArray{}           -> Nothing
     TVStream{}          -> Nothing
     TVFun{}             -> Nothing
 

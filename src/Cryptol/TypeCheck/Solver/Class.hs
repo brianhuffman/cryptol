@@ -204,17 +204,17 @@ solveCmpInst ty = case tNoUser ty of
   -- Cmp Integer
   TCon (TC TCInteger) [] -> SolvedIf []
 
-  -- (Cmp a) => Cmp [n]a
-  TCon (TC TCSeq) [_,a] -> SolvedIf [ pCmp a ]
+  -- Cmp [n]Bit
+  TCon (TC TCSeq) [_,a] -> solveRingSeq a
 
-  -- (Cmp a, Cmp b) => Cmp (a,b)
-  TCon (TC (TCTuple _)) es -> SolvedIf (map pCmp es)
+  -- Cmp (a,b) fails
+  TCon (TC (TCTuple _)) _ -> Unsolvable
 
   -- Cmp (a -> b) fails
   TCon (TC TCFun) [_,_] -> Unsolvable
 
-  -- (Cmp a, Cmp b) => Cmp { x:a, y:b }
-  TRec fs -> SolvedIf [ pCmp e | e <- recordElements fs ]
+  -- Cmp { x:a, y:b } fails
+  TRec {} -> Unsolvable
 
   -- Cmp <nominal> -> fails
   TNominal{} -> Unsolvable

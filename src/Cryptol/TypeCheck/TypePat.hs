@@ -14,6 +14,7 @@ module Cryptol.TypeCheck.TypePat
   , aLiteralLessThan
   , aLogic
   , aRing
+  , aCmp
 
   , aTVar
   , aFreeTVar
@@ -184,6 +185,9 @@ aLogic = tp PLogic ar1
 
 aRing :: Pat Prop Type
 aRing = tp PRing ar1
+
+aCmp :: Pat Prop Type
+aCmp = tp PCmp ar1
 
 --------------------------------------------------------------------------------
 anError :: Kind -> Pat Type ()

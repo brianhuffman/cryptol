@@ -44,6 +44,7 @@ improveProp :: Bool -> Ctxt -> Prop -> Match (Subst,[Prop])
 improveProp impSkol ctxt prop =
   improveEq impSkol ctxt prop <|>
   improveRing impSkol prop <|>
+  improveCmp impSkol prop <|>
   improveLit impSkol prop
   -- XXX: others
 
@@ -63,6 +64,17 @@ improveLit impSkol prop =
 improveRing :: Bool -> Prop -> Match (Subst, [Prop])
 improveRing impSkol prop =
   do t     <- aRing prop
+     (_,b) <- aSeq t
+     a     <- aTVar b
+     unless impSkol $ guard (isFreeTV a)
+     let su = uncheckedSingleSubst a tBit
+     return (su, [])
+
+-- Whenever we have `Cmp [m]a`,
+-- we can learn that `a = Bit`
+improveCmp :: Bool -> Prop -> Match (Subst, [Prop])
+improveCmp impSkol prop =
+  do t     <- aCmp prop
      (_,b) <- aSeq t
      a     <- aTVar b
      unless impSkol $ guard (isFreeTV a)

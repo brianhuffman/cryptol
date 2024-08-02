@@ -67,7 +67,6 @@ module Cryptol.Eval.Value
   , mergeValue
   ) where
 
-import Data.Ratio
 import Numeric (showIntAtBase)
 import Data.Map(Map)
 import qualified Data.Map as Map

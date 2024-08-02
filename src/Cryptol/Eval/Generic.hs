@@ -541,56 +541,6 @@ fieldDivideV sym =
       _ -> evalPanic "recip"  [show a ++ "is not a Field"]
 
 --------------------------------------------------------------
--- Round
-
-{-# SPECIALIZE roundOp ::
-  Concrete ->
-  String ->
-  (SFloat Concrete -> SEval Concrete (SInteger Concrete)) ->
-  Unary Concrete #-}
-
-roundOp ::
-  Backend sym =>
-  sym ->
-  String ->
-  (SFloat sym -> SEval sym (SInteger sym)) ->
-  Unary sym
-roundOp _sym nm opfp ty v =
-  case ty of
-    TVFloat _ _ -> VInteger <$> opfp (fromVFloat v)
-    _ -> evalPanic nm [show ty ++ " is not a Field"]
-
-{-# INLINE floorV #-}
-floorV :: Backend sym => sym -> Unary sym
-floorV sym = roundOp sym "floor" opfp
-  where
-  opfp = \x -> fpRndRTN sym >>= \r -> fpToInteger sym "floor" r x
-
-{-# INLINE ceilingV #-}
-ceilingV :: Backend sym => sym -> Unary sym
-ceilingV sym = roundOp sym "ceiling" opfp
-  where
-  opfp = \x -> fpRndRTP sym >>= \r -> fpToInteger sym "ceiling" r x
-
-{-# INLINE truncV #-}
-truncV :: Backend sym => sym -> Unary sym
-truncV sym = roundOp sym "trunc" opfp
-  where
-  opfp = \x -> fpRndRTZ sym >>= \r -> fpToInteger sym "trunc" r x
-
-{-# INLINE roundAwayV #-}
-roundAwayV :: Backend sym => sym -> Unary sym
-roundAwayV sym = roundOp sym "roundAway" opfp
-  where
-  opfp = \x -> fpRndRNA sym >>= \r -> fpToInteger sym "roundAway" r x
-
-{-# INLINE roundToEvenV #-}
-roundToEvenV :: Backend sym => sym -> Unary sym
-roundToEvenV sym = roundOp sym "roundToEven" opfp
-  where
-  opfp = \x -> fpRndRNE sym >>= \r -> fpToInteger sym "roundToEven" r x
-
---------------------------------------------------------------
 -- Logic
 
 {-# INLINE andV #-}
@@ -1927,24 +1877,6 @@ genericPrimTable sym getEOpts =
                     infFromV sym)
   , ("infFromThen", {-# SCC "Prelude::infFromThen" #-}
                     infFromThenV sym)
-
-    -- Field
-  , ("recip"      , {-# SCC "Prelude::recip" #-}
-                    recipV sym)
-  , ("/."         , {-# SCC "Prelude::(/.)" #-}
-                    fieldDivideV sym)
-
-    -- Round
-  , ("floor"      , {-# SCC "Prelude::floor" #-}
-                    unary (floorV sym))
-  , ("ceiling"    , {-# SCC "Prelude::ceiling" #-}
-                    unary (ceilingV sym))
-  , ("trunc"      , {-# SCC "Prelude::trunc" #-}
-                    unary (truncV sym))
-  , ("roundAway"  , {-# SCC "Prelude::roundAway" #-}
-                    unary (roundAwayV sym))
-  , ("roundToEven", {-# SCC "Prelude::roundToEven" #-}
-                    unary (roundToEvenV sym))
 
     -- Bitvector specific operations
   , ("toSignedInteger"

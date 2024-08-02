@@ -135,9 +135,6 @@ addIncompatible g i =
   do tv <- tIsVar =<< pIsIntegral (goal g)
      pure i { integralTVars = Map.insert tv g (integralTVars i) }
   <|>
-  do tv <- tIsVar =<< pIsField (goal g)
-     pure i { fracTVars = Map.insert tv g (fracTVars i) }
-  <|>
   do (_,_,_,t) <- pIsFLiteral (goal g)
      tv        <- tIsVar t
      pure i { fracTVars = Map.insert tv g (fracTVars i) }

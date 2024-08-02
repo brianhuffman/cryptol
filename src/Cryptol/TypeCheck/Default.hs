@@ -48,8 +48,7 @@ defaultLiterals as gs = let (binds,warns) = unzip (mapMaybe tryDefVar as)
       Nothing
         | isLiteralGoal a -> do
            defT <- if has pLogic a then mzero
-                   else if not (has pField a) then pure tInteger
-                   else mzero
+                   else pure tInteger
            let d    = tvInfo a
                w    = DefaultingTo d defT
            guard (not (Set.member a (fvs defT)))  -- Currently shouldn't happen

@@ -8,7 +8,7 @@ import Cryptol.TypeCheck.Solver.Numeric.Fin(cryIsFinType)
 import Cryptol.TypeCheck.Solver.Numeric(cryIsEqual, cryIsNotEqual, cryIsGeq, cryIsPrime)
 import Cryptol.TypeCheck.Solver.Class
   ( solveZeroInst, solveLogicInst, solveRingInst
-  , solveIntegralInst, solveFieldInst, solveRoundInst
+  , solveIntegralInst
   , solveEqInst, solveCmpInst, solveSignedCmpInst
   , solveLiteralInst
   , solveLiteralLessThanInst
@@ -50,9 +50,7 @@ simplifyStep ctxt prop =
     TCon (PC PZero)  [ty]      -> solveZeroInst ty
     TCon (PC PLogic) [ty]      -> solveLogicInst ty
     TCon (PC PRing)  [ty]      -> solveRingInst ty
-    TCon (PC PField) [ty]      -> solveFieldInst ty
     TCon (PC PIntegral) [ty]   -> solveIntegralInst ty
-    TCon (PC PRound) [ty]      -> solveRoundInst ty
 
     TCon (PC PEq)    [ty]      -> solveEqInst ty
     TCon (PC PCmp)   [ty]      -> solveCmpInst ty

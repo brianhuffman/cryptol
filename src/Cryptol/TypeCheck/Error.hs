@@ -791,12 +791,6 @@ explainUnsolvable names gs =
           PIntegral ->
             custom (doc1 </> "is not an integral type.")
 
-          PField ->
-            custom ("Type" <+> doc1 </> "does not support field operations.")
-
-          PRound ->
-            custom ("Type" <+> doc1 </> "does not support rounding operations.")
-
           PEq ->
             custom ("Type" <+> doc1 </> "does not support equality.")
 

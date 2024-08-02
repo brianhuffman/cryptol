@@ -73,8 +73,6 @@ builtInType nm =
     , "Logic"             ~> PC PLogic
     , "Ring"              ~> PC PRing
     , "Integral"          ~> PC PIntegral
-    , "Field"             ~> PC PField
-    , "Round"             ~> PC PRound
     , "Eq"                ~> PC PEq
     , "Cmp"               ~> PC PCmp
     , "SignedCmp"         ~> PC PSignedCmp
@@ -152,8 +150,6 @@ instance HasKind PC where
       PLogic     -> KType :-> KProp
       PRing      -> KType :-> KProp
       PIntegral  -> KType :-> KProp
-      PField     -> KType :-> KProp
-      PRound     -> KType :-> KProp
       PEq        -> KType :-> KProp
       PCmp       -> KType :-> KProp
       PSignedCmp -> KType :-> KProp
@@ -203,8 +199,6 @@ data PC     = PEqual        -- ^ @_ == _@
             | PLogic        -- ^ @Logic _@
             | PRing         -- ^ @Ring _@
             | PIntegral     -- ^ @Integral _@
-            | PField        -- ^ @Field _@
-            | PRound        -- ^ @Round _@
             | PEq           -- ^ @Eq _@
             | PCmp          -- ^ @Cmp _@
             | PSignedCmp    -- ^ @SignedCmp _@
@@ -291,8 +285,6 @@ instance PP PC where
       PLogic     -> text "Logic"
       PRing      -> text "Ring"
       PIntegral  -> text "Integral"
-      PField     -> text "Field"
-      PRound     -> text "Round"
       PEq        -> text "Eq"
       PCmp       -> text "Cmp"
       PSignedCmp -> text "SignedCmp"

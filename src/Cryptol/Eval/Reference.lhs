@@ -694,29 +694,6 @@ by corresponding type classes:
 >                     VFun $ \e ->
 >                       ringExp aty a =<< cryToInteger ety e
 >
->   -- Field
->   , "/."         ~> binary (fieldBinary (fpBin FP.bfDiv fpImplicitRound)
->                             )
->
->   , "recip"      ~> unary (fieldUnary fpRecip)
->
->   -- Round
->   , "floor"      ~> unary (roundUnary
->                      (eitherToE . FP.floatToInteger "floor" FP.ToNegInf))
->
->   , "ceiling"    ~> unary (roundUnary
->                      (eitherToE . FP.floatToInteger "ceiling" FP.ToPosInf))
->
->   , "trunc"      ~> unary (roundUnary
->                      (eitherToE . FP.floatToInteger "trunc" FP.ToZero))
->
->   , "roundAway"  ~> unary (roundUnary
->                      (eitherToE . FP.floatToInteger "roundAway" FP.Away))
->
->   , "roundToEven"~> unary (roundUnary
->                      (eitherToE . FP.floatToInteger "roundToEven" FP.NearEven))
->
->
 >   -- Comparison
 >   , "<"          ~> binary (cmpOrder (\o -> o == LT))
 >   , ">"          ~> binary (cmpOrder (\o -> o == GT))
@@ -1294,38 +1271,6 @@ same sign as `x`. Accordingly, they are implemented with Haskell's
 > lg2Wrap x = if x < 0 then cryError LogNegative else pure (lg2 x)
 
 
-Field
------
-
-Types that represent fields have, in addition to the ring operations,
-a reciprocal operator and a field division operator (not to be
-confused with integral division).
-
-> fieldUnary :: (Integer -> Integer -> BigFloat -> E BigFloat) ->
->               TValue -> E Value -> E Value
-> fieldUnary flop ty v = case ty of
->   TVFloat e p -> VFloat . fpToBF e p <$> appOp1 (flop e p) (fromVFloat <$> v)
->   _ -> evalPanic "fieldUnary" [show ty ++ " is not a Field type"]
->
-> fieldBinary ::
->    (Integer -> Integer -> BigFloat -> BigFloat -> E BigFloat) ->
->    TValue -> E Value -> E Value -> E Value
-> fieldBinary flop ty l r = case ty of
->   TVFloat e p -> VFloat . fpToBF e p <$>
->                       appOp2 (flop e p) (fromVFloat <$> l) (fromVFloat <$> r)
->   _ -> evalPanic "fieldBinary" [show ty ++ " is not a Field type"]
-
-Round
------
-
-> roundUnary :: (BF -> E Integer) ->
->               TValue -> E Value -> E Value
-> roundUnary flop ty v = case ty of
->   TVFloat {} -> VInteger <$> (flop . fromVFloat' =<< v)
->   _ -> evalPanic "roundUnary" [show ty ++ " is not a Round type"]
->
-
-
 Comparison
 ----------
 
@@ -1604,15 +1549,6 @@ This just captures a common pattern for binary floating point primitives.
 >          FP.RoundMode -> Integer -> Integer ->
 >          BigFloat -> BigFloat -> E BigFloat
 > fpBin f r e p x y = pure (FP.fpCheckStatus (f (FP.fpOpts e p r) x y))
-
-
-Computes the reciprocal of a floating point number via division.
-This assumes that 1 can be represented exactly, which should be
-true for all supported precisions.
-
-> fpRecip :: Integer -> Integer -> BigFloat -> E BigFloat
-> fpRecip e p x = pure (FP.fpCheckStatus (FP.bfDiv opts (FP.bfFromInteger 1) x))
->   where opts = FP.fpOpts e p fpImplicitRound
 
 
 > floatPrimTable :: Map PrimIdent Value

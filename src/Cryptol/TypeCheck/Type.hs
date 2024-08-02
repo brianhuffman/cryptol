@@ -462,9 +462,7 @@ superclassSet (TCon (PC p0) [t]) = go p0
 
   go PRing      = super PZero
   go PLogic     = super PZero
-  go PField     = super PRing
   go PIntegral  = super PRing
-  go PRound     = super PField <> super PCmp
   go PCmp       = super PEq
   go PSignedCmp = super PEq
   go _ = mempty
@@ -636,20 +634,10 @@ pIsRing ty = case tNoUser ty of
                 TCon (PC PRing) [t1] -> Just t1
                 _                    -> Nothing
 
-pIsField :: Prop -> Maybe Type
-pIsField ty = case tNoUser ty of
-                TCon (PC PField) [t1] -> Just t1
-                _                     -> Nothing
-
 pIsIntegral :: Prop -> Maybe Type
 pIsIntegral ty = case tNoUser ty of
                    TCon (PC PIntegral) [t1] -> Just t1
                    _                        -> Nothing
-
-pIsRound :: Prop -> Maybe Type
-pIsRound ty = case tNoUser ty of
-                     TCon (PC PRound) [t1] -> Just t1
-                     _                     -> Nothing
 
 pIsEq :: Prop -> Maybe Type
 pIsEq ty = case tNoUser ty of
@@ -835,12 +823,6 @@ pRing t = TCon (PC PRing) [t]
 
 pIntegral :: Type -> Prop
 pIntegral t = TCon (PC PIntegral) [t]
-
-pField :: Type -> Prop
-pField t = TCon (PC PField) [t]
-
-pRound :: Type -> Prop
-pRound t = TCon (PC PRound) [t]
 
 pEq :: Type -> Prop
 pEq t = TCon (PC PEq) [t]
@@ -1153,6 +1135,7 @@ instance PP (WithNames Type) where
           (TCInf,   [])       -> text "inf"
           (TCBit,   [])       -> text "Bit"
           (TCInteger, [])     -> text "Integer"
+          (TCRational, [])    -> text "Rational"
 
           (TCSeq,   [t1,TCon (TC TCBit) []]) -> brackets (go 0 t1)
           (TCSeq,   [t1,t2])  -> optParens (prec > 4)
@@ -1177,9 +1160,7 @@ instance PP (WithNames Type) where
           (PAnd, [t1,t2])     -> nest 1 (parens (commaSepFill (map (go 0) (t1 : pSplitAnd t2))))
 
           (PRing, [t1])       -> pp pc <+> go 5 t1
-          (PField, [t1])      -> pp pc <+> go 5 t1
           (PIntegral, [t1])   -> pp pc <+> go 5 t1
-          (PRound, [t1])      -> pp pc <+> go 5 t1
 
           (PCmp, [t1])        -> pp pc <+> go 5 t1
           (PSignedCmp, [t1])  -> pp pc <+> go 5 t1

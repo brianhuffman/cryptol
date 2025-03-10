@@ -597,8 +597,7 @@ simpleApp                      :: { Expr PName }
 
 -- Prefix application expression, may end with a long expression
 longApp                        :: { Expr PName }
-  : simpleApp longExpr            { at ($1,$2) (EApp $1 $2) }
-  | longExpr                      { $1 }
+  : longExpr                      { $1 }
   | simpleApp                     { $1 }
 
 funapp                         :: { NonEmpty (Expr PName) }

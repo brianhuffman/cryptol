@@ -114,8 +114,6 @@ import Paths_cryptol
   -- '.'         { Located $$ (Token (Sym Dot     ) _)}
   '{'         { Located $$ (Token (Sym CurlyL  ) _)}
   '}'         { Located $$ (Token (Sym CurlyR  ) _)}
-  '<|'        { Located $$ (Token (Sym TriL    ) _)}
-  '|>'        { Located $$ (Token (Sym TriR    ) _)}
   '='         { Located $$ (Token (Sym EqDef   ) _)}
   '`'         { Located $$ (Token (Sym BackTick) _)}
   ':'         { Located $$ (Token (Sym Colon   ) _)}
@@ -644,9 +642,6 @@ no_sel_aexpr                   :: { Expr PName                             }
 
   | '(' qop ')'                   { at ($1,$3) $ EVar $ thing $2           }
 
-  | '<|'            '|>'          {% mkPoly (rComb $1 $2) [] }
-  | '<|' poly_terms '|>'          {% mkPoly (rComb $1 $3) $2 }
-
 sel_expr                       :: { Expr PName }
   : no_sel_aexpr selector         { at ($1,$2) $ ESel $1 (thing $2)   }
   | sel_expr     selector         { at ($1,$2) $ ESel $1 (thing $2)   }
@@ -654,15 +649,6 @@ sel_expr                       :: { Expr PName }
 selector                       :: { Located Selector }
   : SELECTOR                      { mkSelector `fmap` $1 }
 
-poly_terms                     :: { [(Bool, Integer)] }
-  : poly_term                     { [$1] }
-  | poly_terms '+' poly_term      { $3 : $1 }
-
-poly_term                      :: { (Bool, Integer) }
-  : NUM                           {% polyTerm (srcRange $1) (getNum $1) 0 }
-  | 'x'                           {% polyTerm $1 1 1 }
-  | 'x' '^^' NUM                  {% polyTerm (rComb $1 (srcRange $3))
-                                                            1 (getNum $3) }
 tuple_exprs                    :: { [Expr PName] }
   : expr ',' expr                 { [ $3, $1] }
   | tuple_exprs ',' expr          { $3 : $1   }

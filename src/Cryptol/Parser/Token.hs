@@ -84,7 +84,6 @@ data TokenSym = Bar
               | ParenL   | ParenR
               | BracketL | BracketR
               | CurlyL   | CurlyR
-              | TriL     | TriR
               | Lt | Gt
               | Underscore
                 deriving (Eq, Show, Generic, NFData)

@@ -160,8 +160,6 @@ $white+                   { emit $ White Space }
 "]"                       { emit $ Sym BracketR }
 "{"                       { emit $ Sym CurlyL }
 "}"                       { emit $ Sym CurlyR }
-"<|"                      { emit $ Sym TriL }
-"|>"                      { emit $ Sym TriR }
 
 \"                        { startString }
 \'                        { startChar }

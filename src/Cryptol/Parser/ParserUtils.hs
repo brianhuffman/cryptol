@@ -21,7 +21,6 @@ module Cryptol.Parser.ParserUtils where
 import qualified Data.Text as Text
 import Data.Char(isAlphaNum)
 import Data.Maybe(fromMaybe)
-import Data.Bits(testBit,setBit)
 import Data.Maybe(mapMaybe)
 import Data.List(foldl')
 import Data.List.NonEmpty ( NonEmpty(..) )
@@ -732,27 +731,6 @@ polyTerm rng k p
   | k == 0          = return (False, p)
   | k == 1          = return (True, p)
   | otherwise       = errorMessage rng ["Invalid polynomial coefficient"]
-
-mkPoly :: Range -> [ (Bool,Integer) ] -> ParseM (Expr PName)
-mkPoly rng terms
-  | w <= toInteger (maxBound :: Int) = mk 0 (map fromInteger bits)
-  | otherwise = errorMessage rng ["Polynomial literal too large: " ++ show w]
-
-  where
-  w    = case terms of
-           [] -> 0
-           _  -> 1 + maximum (map snd terms)
-
-  bits = [ n | (True,n) <- terms ]
-
-  mk :: Integer -> [Int] -> ParseM (Expr PName)
-  mk res [] = return $ ELit $ ECNum res (PolyLit (fromInteger w :: Int))
-
-  mk res (n : ns)
-    | testBit res n = errorMessage rng
-                       ["Polynomial contains multiple terms with exponent " ++ show n]
-    | otherwise     = mk (setBit res n) ns
-
 
 -- NOTE: The list of patterns is reversed!
 mkProperty :: LPName -> [Pattern PName] -> Expr PName -> Decl PName

@@ -104,7 +104,6 @@ data SelectorType = RecordSelectorTok Text | TupleSelectorTok Int
                 deriving (Eq, Show, Generic, NFData)
 
 data TokenT   = Num !Integer !Int !Int    -- ^ value, base, number of digits
-              | Frac !Rational !Int       -- ^ value, base.
               | ChrLit  !Char             -- ^ character literal
               | Ident ![Text] !Text       -- ^ (qualified) identifier
               | StrLit !String            -- ^ string literal

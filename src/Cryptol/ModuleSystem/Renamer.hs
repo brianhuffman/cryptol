@@ -1143,6 +1143,7 @@ instance Rename Expr where
     ETuple es       -> ETuple  <$> traverse rename es
     ERecord fs      -> ERecord <$> traverse (traverse rename) fs
     ESel e' s       -> ESel    <$> rename e' <*> pure s
+    EIndex e' x     -> EIndex  <$> rename e' <*> rename x
     EUpd mb fs      -> do checkLabels fs
                           EUpd <$> traverse rename mb <*> traverse rename fs
     EList es        -> EList   <$> traverse rename es

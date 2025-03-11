@@ -168,6 +168,7 @@ noPatE expr =
     ETuple es     -> ETuple  <$> mapM noPatE es
     ERecord es    -> ERecord <$> traverse (traverse noPatE) es
     ESel e s      -> ESel    <$> noPatE e <*> return s
+    EIndex e1 e2  -> EIndex  <$> noPatE e1 <*> noPatE e2
     EUpd mb fs    -> EUpd    <$> traverse noPatE mb <*> traverse noPatUF fs
     EList es      -> EList   <$> mapM noPatE es
     EFromTo {}    -> return expr

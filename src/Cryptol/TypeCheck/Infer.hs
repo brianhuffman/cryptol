@@ -187,6 +187,7 @@ appTys expr ts tGoal =
     P.ERecord   {} -> mono
     P.EUpd      {} -> mono
     P.ESel      {} -> mono
+    P.EIndex    {} -> mono
     P.EList     {} -> mono
     P.EFromTo   {} -> mono
     P.EFromToBy {} -> mono
@@ -285,6 +286,10 @@ checkE expr tGoal =
          e' <- checkE e (WithSource t src (getLoc expr))
          f <- newHasGoal l t (twsType tGoal)
          return (hasDoSelect f e')
+
+    P.EIndex e x ->
+      do prim <- mkPrim "@"
+         checkE (P.EApp ((P.EApp prim) e) x) tGoal
 
     P.EList [] ->
       do (len,a) <- expectSeq tGoal

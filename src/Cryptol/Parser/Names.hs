@@ -96,6 +96,7 @@ namesE expr =
     ETuple es     -> Set.unions (map namesE es)
     ERecord fs    -> Set.unions (map (namesE . snd) (recordElements fs))
     ESel e _      -> namesE e
+    EIndex e1 e2  -> Set.union (namesE e1) (namesE e2)
     EUpd mb fs    -> let e = maybe Set.empty namesE mb
                      in Set.unions (e : map namesUF fs)
     EList es      -> Set.unions (map namesE es)
@@ -242,6 +243,7 @@ tnamesE expr =
     ETuple es       -> Set.unions (map tnamesE es)
     ERecord fs      -> Set.unions (map (tnamesE . snd) (recordElements fs))
     ESel e _        -> tnamesE e
+    EIndex e1 e2    -> Set.union (tnamesE e1) (tnamesE e2)
     EUpd mb fs      -> let e = maybe Set.empty tnamesE mb
                        in Set.unions (e : map tnamesUF fs)
     EList es        -> Set.unions (map tnamesE es)

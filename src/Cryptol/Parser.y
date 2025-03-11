@@ -624,6 +624,7 @@ funargs                        :: { [Expr PName] } -- reverse order
 aexpr                          :: { Expr PName }
   : no_sel_aexpr                  { $1 }
   | aexpr selector                { at ($1,$2) $ ESel $1 (thing $2)   }
+  | aexpr '[' expr ']'            { at ($1,$4) $ EIndex $1 $3         }
 
 no_sel_aexpr                   :: { Expr PName                             }
   : funapp                        { $1                                     }

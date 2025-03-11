@@ -595,6 +595,7 @@ data Expr n   = EVar n                          -- ^ @ x @
               | ETuple [Expr n]                 -- ^ @ (1,2,3) @
               | ERecord (Rec (Expr n))          -- ^ @ { x = 1, y = 2 } @
               | ESel (Expr n) Selector          -- ^ @ e.l @
+              | EIndex (Expr n) (Expr n)        -- ^ @ f[x] @
               | EUpd (Maybe (Expr n)) [ UpdField n ]  -- ^ @ { r | x = e } @
               | EList [Expr n]                  -- ^ @ [1,2,3] @
               | EFromTo (Type n) (Maybe (Type n)) (Type n) (Maybe (Type n))
@@ -1266,6 +1267,7 @@ instance (Show name, PPName name) => PP (Expr name) where
       ETypeVal t    -> text "`" <.> ppPrec 5 t     -- XXX
       EAppT e ts    -> ppPrec 4 e <.> text "`" <.> braces (commaSep (map pp ts))
       ESel    e l   -> ppPrec 4 e <.> text "." <.> pp l
+      EIndex  e x   -> ppPrec 4 e <.> brackets (pp x)
 
       -- low prec
       EFun _ xs e   -> wrap n 0 ((text "\\" <.> hsep (map (ppPrec 3) xs)) <+>
@@ -1587,6 +1589,7 @@ instance NoPos (Expr name) where
       ETuple x        -> ETuple   (noPos x)
       ERecord x       -> ERecord  (fmap noPos x)
       ESel x y        -> ESel     (noPos x) y
+      EIndex x y      -> EIndex   (noPos x) (noPos y)
       EUpd x y        -> EUpd     (noPos x) (noPos y)
       EList x         -> EList    (noPos x)
       EFromTo x y z t -> EFromTo  (noPos x) (noPos y) (noPos z) (noPos t)

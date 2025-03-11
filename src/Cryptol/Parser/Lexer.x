@@ -49,7 +49,6 @@ $unitick        = \x7
 @qual_op      = @qual @op
 
 @num          = [0-9] @id_next*
-@fnum         = [0-9] @id_next* "." (@id_next | [pPeE][\+\-])+
 
 @selector     = "." @id_next+
 
@@ -133,7 +132,6 @@ $white+                   { emit $ White Space }
 "Prop"                    { emit $ KW KW_Prop }
 
 @num                      { emitS numToken }
-@fnum                     { emitFancy fnumTokens }
 
 "_"                       { emit $ Sym Underscore }
 @id                       { mkIdent }

@@ -28,7 +28,6 @@ import qualified Control.Monad.Fail as Fail
 import           Data.Text(Text)
 import qualified Data.Text as T
 import qualified Data.Map as Map
-import Text.Read(readMaybe)
 
 import GHC.Generics (Generic)
 import Control.DeepSeq
@@ -255,17 +254,6 @@ numLit Token { tokenText = txt, tokenType = Num x base digs }
   | base == 16  = ELit $ ECNum x (HexLit txt digs)
 
 numLit x = panic "[Parser] numLit" ["invalid numeric literal", show x]
-
-fracLit :: Token -> Expr PName
-fracLit tok =
-  case tokenType tok of
-    Frac x base
-      | base == 2   -> ELit $ ECFrac x $ BinFrac $ tokenText tok
-      | base == 8   -> ELit $ ECFrac x $ OctFrac $ tokenText tok
-      | base == 10  -> ELit $ ECFrac x $ DecFrac $ tokenText tok
-      | base == 16  -> ELit $ ECFrac x $ HexFrac $ tokenText tok
-    _ -> panic "[Parser] fracLit" [ "Invalid fraction", show tok ]
-
 
 intVal :: Located Token -> ParseM Integer
 intVal tok =
@@ -1101,22 +1089,6 @@ exprToFieldPath e0 = reverse <$> go noLoc e0
       ELit (ECNum n (DecLit {})) ->
         pure [ Located { thing = TupleSel (fromInteger n) Nothing
                        , srcRange = loc } ]
-
-      ELit (ECFrac _ (DecFrac txt))
-        | (as,bs') <- T.break (== '.') txt
-        , Just a <- readMaybe (T.unpack as)
-        , Just (_,bs) <- T.uncons bs'
-        , Just b <- readMaybe (T.unpack bs)
-        , let fromP = from loc
-        , let midP  = fromP { col = col fromP + T.length as + 1 } ->
-          -- these are backward because we reverse above
-          pure [ Located { thing    = TupleSel b Nothing
-                         , srcRange = loc { from = midP }
-                         }
-               , Located { thing    = TupleSel a Nothing
-                         , srcRange = loc { to = midP }
-                         }
-               ]
 
       _ -> errorMessage loc ["Invalid label in record update."]
 

@@ -124,9 +124,8 @@ import qualified Data.Map as Map
 import           Data.List(intersperse)
 import           Data.Bits(shiftR)
 import           Data.Maybe (catMaybes,mapMaybe)
-import           Data.Ratio(numerator,denominator)
 import           Data.Text (Text)
-import           Numeric(showIntAtBase,showFloat,showHFloat)
+import           Numeric(showIntAtBase)
 
 import GHC.Generics (Generic)
 import Control.DeepSeq
@@ -585,7 +584,6 @@ data FracInfo = BinFrac Text
 -- | Literals.
 data Literal  = ECNum Integer NumInfo           -- ^ @0x10@  (HexLit 2)
               | ECChar Char                     -- ^ @'a'@
-              | ECFrac Rational FracInfo        -- ^ @1.2e3@
               | ECString String                 -- ^ @\"hello\"@
                 deriving (Eq, Show, Generic, NFData)
 
@@ -1157,23 +1155,7 @@ instance PP Literal where
     case lit of
       ECNum n i     -> ppNumLit n i
       ECChar c      -> text (show c)
-      ECFrac n i    -> ppFracLit n i
       ECString s    -> text (show s)
-
-ppFracLit :: Rational -> FracInfo -> Doc
-ppFracLit x i
-  | toRational dbl == x =
-    case i of
-      BinFrac _ -> frac
-      OctFrac _ -> frac
-      DecFrac _ -> text (showFloat dbl "")
-      HexFrac _ -> text (showHFloat dbl "")
-  | otherwise = frac
-  where
-  dbl = fromRational x :: Double
-  frac = "fraction`" <.> braces
-                      (commaSep (map integer [ numerator x, denominator x ]))
-
 
 ppNumLit :: Integer -> NumInfo -> Doc
 ppNumLit n info =

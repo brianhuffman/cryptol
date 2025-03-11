@@ -64,7 +64,6 @@ import qualified Data.Set as Set
 import           Data.List(foldl', sortBy, groupBy, partition)
 import           Data.Either(partitionEithers)
 import           Data.Maybe(isJust, fromMaybe, mapMaybe)
-import           Data.Ratio(numerator,denominator)
 import           Data.Traversable(forM)
 import           Data.Function(on)
 import           Control.Monad(zipWithM, unless, foldM, forM_, mplus, zipWithM,
@@ -115,7 +114,6 @@ desugarLiteral :: P.Literal -> InferM (P.Expr Name)
 desugarLiteral lit =
   do l <- curRange
      numberPrim <- mkPrim "number"
-     fracPrim   <- mkPrim "fraction"
      let named (x,y)  = P.NamedInst
                         P.Named { name = Located l (packIdent x), value = y }
          number fs    = P.EAppT numberPrim (map named fs)
@@ -130,15 +128,6 @@ desugarLiteral lit =
            P.HexLit _ n  -> [ ("rep", tBits (4 * toInteger n)) ]
            P.DecLit _    -> [ ]
            P.PolyLit _n  -> [ ("rep", P.TSeq P.TWild P.TBit) ]
-
-       P.ECFrac fr info ->
-         let arg f = P.PosInst (P.TNum (f fr))
-             rnd   = P.PosInst (P.TNum (case info of
-                                          P.DecFrac _ -> 0
-                                          P.BinFrac _ -> 1
-                                          P.OctFrac _ -> 1
-                                          P.HexFrac _ -> 1))
-         in P.EAppT fracPrim [ arg numerator, arg denominator, rnd ]
 
        P.ECChar c ->
          number [ ("val", P.TNum (toInteger (fromEnum c)))

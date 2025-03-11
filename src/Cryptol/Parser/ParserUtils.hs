@@ -23,8 +23,6 @@ import Data.Char(isAlphaNum)
 import Data.Maybe(fromMaybe)
 import Data.Maybe(mapMaybe)
 import Data.List(foldl')
-import Data.List.NonEmpty ( NonEmpty(..) )
-import qualified Data.List.NonEmpty as NE
 import Control.Monad(liftM,ap,unless,guard,msum)
 import qualified Control.Monad.Fail as Fail
 import           Data.Text(Text)
@@ -322,79 +320,6 @@ mkRecord rng f xs =
   res = recordFromFieldsErr ys
   ys = map (\ (Named (Located r nm) x) -> (nm,(r,x))) (reverse xs)
 
-
--- | Input expression are reversed
-mkEApp :: NonEmpty (Expr PName) -> ParseM (Expr PName)
-
-mkEApp es@(eLast :| _) =
-    do f :| xs <- cvtTypeParams eFirst rest
-       pure (at (eFirst,eLast) $ foldl EApp f xs)
-
-  where
-  eFirst :| rest = NE.reverse es
-
-  {- Type applications are parsed as `ETypeVal (TTyApp fs)` expressions.
-     Here we associate them with their corresponding functions,
-     converting them into `EAppT` constructs.  For example:
-
-     [ f, x, `{ a = 2 }, y ]
-     becomes
-     [ f, x ` { a = 2 }, y ]
-
-     The parser associates field and tuple projectors that follow an
-     explicit type application onto the TTyApp term, so we also
-     have to unwind those projections and reapply them.  For example:
-
-     [ f, x, `{ a = 2 }.f.2, y ]
-     becomes
-     [ f, (x`{ a = 2 }).f.2, y ]
-
-  -}
-  cvtTypeParams e [] = pure (e :| [])
-  cvtTypeParams e (p : ps) =
-    case toTypeParam p Nothing of
-      Nothing -> NE.cons e <$> cvtTypeParams p ps
-
-      Just (fs,ss,rng) ->
-        if checkAppExpr e then
-          let e'  = foldr (flip ESel) (EAppT e fs) ss
-              e'' = case rCombMaybe (getLoc e) rng of
-                      Just r -> ELocated e' r
-                      Nothing -> e'
-           in cvtTypeParams e'' ps
-        else
-          errorMessage (fromMaybe emptyRange (getLoc e))
-                  [ "Explicit type applications can only be applied to named values."
-                  , "Unexpected: " ++ show (pp e)
-                  ]
-
-  {- Check if the given expression is a legal target for explicit type application.
-     This is basically only variables, but we also allow the parenthesis and
-     the phantom "located" AST node.
-   -}
-  checkAppExpr e =
-    case e of
-      ELocated e' _ -> checkAppExpr e'
-      EParens e'    -> checkAppExpr e'
-      EVar{}        -> True
-      _             -> False
-
-  {- Look under a potential chain of selectors to see if we have a TTyApp.
-     If so, return the ty app information and the collected selectors
-     to reapply.
-   -}
-  toTypeParam e mr =
-    case e of
-      ELocated e' rng -> toTypeParam e' (rCombMaybe mr (Just rng))
-      ETypeVal t -> toTypeParam' t mr
-      ESel e' s  -> ( \(fs,ss,r) -> (fs,s:ss,r) ) <$> toTypeParam e' mr
-      _          ->  Nothing
-
-  toTypeParam' t mr =
-    case t of
-      TLocated t' rng -> toTypeParam' t' (rCombMaybe mr (Just rng))
-      TTyApp fs -> Just (map mkTypeInst fs, [], mr)
-      _ -> Nothing
 
 unOp :: Expr PName -> Expr PName -> Expr PName
 unOp f x = at (f,x) $ EApp f x

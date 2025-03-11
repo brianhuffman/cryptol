@@ -591,24 +591,29 @@ longRHS                        :: { Expr PName }
 
 -- Prefix application expression, ends with an atom.
 simpleApp                      :: { Expr PName }
-  : funapp                        {% mkEApp $1 }
+  : aexpr                         { $1 }
 
 -- Prefix application expression, may end with a long expression
 longApp                        :: { Expr PName }
   : longExpr                      { $1 }
   | simpleApp                     { $1 }
 
-funapp                         :: { NonEmpty (Expr PName) }
-  : aexpr                         { $1 :| [] }
-  | aexpr tyargs                  { (ETypeVal $2) :| [$1] }
-  | aexpr funargs                 { foldr cons ($1 :| []) $2 }
-  | aexpr tyargs funargs          { foldr cons (ETypeVal $2 :| [$1]) $3 }
+varexpr                        :: { Expr PName }
+  : qname                         { at $1 $ EVar (thing $1)                }
 
-tyargs                         :: { Type PName }
-  : '{' '}'                       { at ($1,$2) (TTyApp [])             }
-  | '{' field_ty_vals '}'         { at ($1,$3) (TTyApp (reverse $2))   }
-  | '{' type '}'                  { anonTyApp (getLoc ($1,$3)) [$2]    }
-  | '{' tuple_types '}'           { anonTyApp (getLoc ($1,$3)) (reverse $2) }
+tyapp                          :: { Expr PName }
+  : varexpr                       { $1                                    }
+  | varexpr tyargs                { at $2 $ EAppT $1 (reverse (thing $2)) }
+
+funapp                         :: { Expr PName }
+  : tyapp                         { $1 }
+  | tyapp funargs                 { foldr (flip EApp) $1 $2 }
+
+tyargs                         :: { Located [TypeInst PName] } -- reverse order
+  : '{' '}'                       { at ($1,$2) (Located emptyRange [])                 }
+  | '{' field_ty_vals '}'         { at ($1,$3) (Located emptyRange (map NamedInst $2)) }
+  | '{' type '}'                  { at ($1,$3) (Located emptyRange [PosInst $2])       }
+  | '{' tuple_types '}'           { at ($1,$3) (Located emptyRange (map PosInst $2))   }
 
 funargs                        :: { [Expr PName] } -- reverse order
   : '(' ')'                       { []   }
@@ -618,10 +623,10 @@ funargs                        :: { [Expr PName] } -- reverse order
 -- Expression atom (needs no parens)
 aexpr                          :: { Expr PName }
   : no_sel_aexpr                  { $1 }
-  | sel_expr                      { $1 }
+  | aexpr selector                { at ($1,$2) $ ESel $1 (thing $2)   }
 
 no_sel_aexpr                   :: { Expr PName                             }
-  : qname                         { at $1 $ EVar (thing $1)                }
+  : funapp                        { $1                                     }
 
   | NUM                           { at $1 $ numLit (thing $1)              }
   | FRAC                          { at $1 $ fracLit (thing $1)             }
@@ -641,10 +646,6 @@ no_sel_aexpr                   :: { Expr PName                             }
   | '`' tick_ty                   { at ($1,$2) $ ETypeVal $2               }
 
   | '(' qop ')'                   { at ($1,$3) $ EVar $ thing $2           }
-
-sel_expr                       :: { Expr PName }
-  : no_sel_aexpr selector         { at ($1,$2) $ ESel $1 (thing $2)   }
-  | sel_expr     selector         { at ($1,$2) $ ESel $1 (thing $2)   }
 
 selector                       :: { Located Selector }
   : SELECTOR                      { mkSelector `fmap` $1 }
@@ -786,7 +787,7 @@ iapats_indices          :: { ([Pattern PName], [Pattern PName]) }
 
 opt_iapats_indices      :: { ([Pattern PName], [Pattern PName]) }
   : {- empty -}            { ([],[]) }
-  | iapats_indices         { $1 }
+--  | iapats_indices         { $1 }
 
 
 

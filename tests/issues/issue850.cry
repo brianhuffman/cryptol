@@ -5,7 +5,7 @@ foo p q = ([0,1], zipWith (-) p q)
 
 bar: T -> T -> T
 bar p q = s1 where
-  tuples = [(p, p, q, [0,1])] # map (baz q) tuples
+  tuples = [(p, p, q, [0,1])] # map (baz q) (take`{3} tuples)
   (p1,p2,s1,s2) = tuples@2
 
 baz m (p1, p2, s1, s2) =

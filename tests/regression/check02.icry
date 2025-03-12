@@ -1,3 +1,0 @@
-:load check02.cry
-ones @@ [0 .. 10]
-check2

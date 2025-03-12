@@ -1,8 +1,0 @@
-:load check09.cry
-:set base=16
-ss @@ [0 .. 3]
-ls @@ [0 .. 3]
-keyX "abcd"
-check9a
-check9b
-check9

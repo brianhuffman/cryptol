@@ -5,7 +5,7 @@ submodule A where
 submodule F where
   parameter
     type n : #
-    type constraint (fin n)
+    type constraint (n >= 0)
 
   newtype X = { x : [n] }
   f : X -> X

@@ -12,10 +12,10 @@ type SigVerifyTest p n =
   }
 
 
-ZtoZ : {p, q} (fin p, fin q, p >= 1, q >= 1) => Z p -> Z q
+ZtoZ : {p, q} (p >= 1, q >= 1) => Z p -> Z q
 ZtoZ x = fromInteger (fromZ x)
 
-sigverify_test : {p, n, h} (prime p, p > 3, prime n, n > 3, fin h) =>
+sigverify_test : {p, n, h} (prime p, p > 3, prime n, n > 3) =>
   ([1024] -> [h]) -> AffinePoint p -> Z p -> SigVerifyTest p n -> Bit
 sigverify_test hash G b tst = result == (tst.Result == 0)
   where

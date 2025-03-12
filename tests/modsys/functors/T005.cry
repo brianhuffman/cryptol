@@ -1,6 +1,6 @@
 interface submodule A where
   type n : #
-  type constraint (fin n, n >= 1)
+  type constraint (n >= 1)
   x : [n]
 
 submodule F where

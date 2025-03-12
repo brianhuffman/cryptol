@@ -1,4 +1,0 @@
-nats : [32] -> [100][32]
-nats n = [n] # init (nats (n + 1))
-
-check3 = (nats 0 @ 45 == 45) && (nats 45 @ 0 == 45)

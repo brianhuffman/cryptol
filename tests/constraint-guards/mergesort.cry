@@ -1,4 +1,4 @@
-sort : {n,a} Cmp a => (fin n) => [n]a -> [n]a
+sort : {n,a} Cmp a => [n]a -> [n]a
 sort xs
   | n <= 1 => xs
   | ()     => merge (sort left) (sort right)

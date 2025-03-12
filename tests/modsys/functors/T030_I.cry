@@ -4,7 +4,7 @@ interface module T030_I where
   /** This is W's doc */
   type W = X
   type X = [n]
-  type constraint P = fin n
+  type constraint P = n >= 0
   type constraint (P, n >= 1)
   f : X
 

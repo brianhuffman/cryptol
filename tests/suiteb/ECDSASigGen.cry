@@ -13,10 +13,10 @@ type SigGenTest p n =
   , S   : Z n
   }
 
-ZtoZ : {p, q} (fin p, fin q, p >= 1, q >= 1) => Z p -> Z q
+ZtoZ : {p, q} (p >= 1, q >= 1) => Z p -> Z q
 ZtoZ x = fromInteger (fromZ x)
 
-siggen_test : {p, n, h} (prime p, p > 3, prime n, n > 3, fin h) =>
+siggen_test : {p, n, h} (prime p, p > 3, prime n, n > 3) =>
   ([1024] -> [h]) -> AffinePoint p -> SigGenTest p n -> Bit
 siggen_test hash G tst =
      tst.Qx == Q.x /\ tst.Qy == Q.y /\ tst.R == r /\ tst.S == s     

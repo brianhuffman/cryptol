@@ -147,6 +147,7 @@ ExpandKey : [AESKeySize] -> KeySchedule
 ExpandKey key = (keys @ 0, keys @@ [1 .. (Nr - 1)], keys @ `Nr)
   where   seed : [Nk][4][8]
           seed = split (split key)
+          keys : [Nr+1]RoundKey
           keys = ExpandKeyForever seed
 
 fromKS : KeySchedule -> [Nr+1][4][32]

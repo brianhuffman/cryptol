@@ -1,7 +1,6 @@
 :l issue845.cry
 fraction`{1,2,0,Rational}
 fraction`{1,0,0,Rational}
-fraction`{inf,2,0,Rational}
 :m Float
 fraction`{1,2,0,Float64}
 fraction`{1,0,0,Float64}

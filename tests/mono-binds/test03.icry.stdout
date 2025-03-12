@@ -4,9 +4,9 @@ Loading module test03
 module test03
 
 /* Not recursive */
-test03::test : {a} (fin a, a >= width a) => [a]
+test03::test : {a} (a >= width a) => [a]
 test03::test =
-  \{a} (fin a, a >= width a) ->
+  \{a} (a >= width a) ->
     foo [a] <>
     where
       /* Not recursive */
@@ -20,9 +20,9 @@ Loading module test03
 module test03
 
 /* Not recursive */
-test03::test : {a} (fin a, a >= width a) => [a]
+test03::test : {a} (a >= width a) => [a]
 test03::test =
-  \{a} (fin a, a >= width a) ->
+  \{a} (a >= width a) ->
     foo
     where
       /* Not recursive */

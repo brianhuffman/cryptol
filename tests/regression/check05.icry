@@ -1,3 +1,0 @@
-:load check05.cry
-twoones @@ [0 .. 10]
-check5

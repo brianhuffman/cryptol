@@ -441,12 +441,8 @@ floor`{Float _ _} : {n, m} (ValidFloat n m) => Float n m -> Integer
   where
   ?a is type wildcard (_) at instance.icry:119:14--119:15
 number`{rep = Bit} : {n} (1 >= n) => Bit
-
-[error] at instance.icry:122:4--122:10:
-  Ambiguous numeric type: type argument 'val' of 'number'
-
-[error] at instance.icry:123:4--123:10:
-  Ambiguous numeric type: type argument 'val' of 'number'
+number`{rep = Integer} : Integer
+number`{rep = Rational} : Rational
 number`{rep = Z _} : {n, m} (m >= 1 + n, m >= 1) => Z m
 number`{rep = [_]_} : {n, m} (m >= width n) => [m]
 
@@ -510,11 +506,8 @@ fromToLessThan`{a = Bit} : {n, m} (2 >= m, m >= n) => [m - n]
 fromToLessThan`{a = Integer} : {n, m} (m >= n) => [m - n]Integer
 fromToLessThan`{a = Rational} : {n, m} (m >= n) => [m - n]Rational
 fromToLessThan`{a = [_]} :
-  {n, m, i}
-    (i >= width (max 1 m - 1), m >= n) =>
-    [m - n][i]
-fromToLessThan`{a = Z _} :
-  {n, m, i} (i >= 1, i >= m, m >= n, fin i) => [m - n](Z i)
+  {n, m, i} (i >= width (max 1 m - 1), m >= n) => [m - n][i]
+fromToLessThan`{a = Z _} : {n, m, i} (i >= 1, i >= m, m >= n) => [m - n](Z i)
 fromToLessThan`{a = [_]_} :
   {n, m, i, a} (LiteralLessThan m ([i]a), m >= n) => [m - n][i]a
 

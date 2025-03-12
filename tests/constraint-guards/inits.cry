@@ -5,14 +5,14 @@
 // [3]     | [1,2]   | [1,1,2]
 // []      | [1,2,3] | [1,1,2,1,2,3]
 
-inits : {n, a} (fin n) => [n]a -> [(n * (n+1))/2]a
+inits : {n, a} [n]a -> [(n * (n+1))/2]a
 inits xs
   | n == 0 => []
   | n >  0 => initsLoop xs' x []
     where
       (x : [1]_) # xs' = xs
 
-initsLoop : {n, l, m, a} (fin l, fin m, l + m == n, m >= 1) =>
+initsLoop : {n, l, m, a} (l + m == n, m >= 1) =>
         [l]a -> [m]a ->
         [((m-1) * ((m-1)+1))/2]a ->
         [(n * (n+1))/2]a

@@ -225,7 +225,6 @@ library
                        Cryptol.AES,
                        Cryptol.F2,
                        Cryptol.SHA,
-                       Cryptol.PrimeEC,
 
                        Cryptol.Testing.Random,
 

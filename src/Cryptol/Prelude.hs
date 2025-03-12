@@ -16,7 +16,6 @@
 module Cryptol.Prelude
   ( preludeContents
   , preludeReferenceContents
-  , floatContents
   , suiteBContents
   , cryptolTcContents
   ) where
@@ -31,9 +30,6 @@ preludeContents = B.pack [there|lib/Cryptol.cry|]
 
 preludeReferenceContents :: ByteString
 preludeReferenceContents = B.pack [there|lib/Cryptol/Reference.cry|]
-
-floatContents :: ByteString
-floatContents = B.pack [there|lib/Float.cry|]
 
 suiteBContents :: ByteString
 suiteBContents = B.pack [there|lib/SuiteB.cry|]

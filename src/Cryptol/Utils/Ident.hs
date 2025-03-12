@@ -30,9 +30,7 @@ module Cryptol.Utils.Ident
   , preludeName
   , preludeReferenceName
   , undefinedModName
-  , floatName
   , suiteBName
-  , arrayName
   , interactiveName
   , noModuleName
   , exprModName
@@ -69,7 +67,6 @@ module Cryptol.Utils.Ident
     -- * Identifiers for primitives
   , PrimIdent(..)
   , prelPrim
-  , arrayPrim
   , suiteBPrim
   ) where
 
@@ -232,12 +229,6 @@ undefinedModName = packModName ["Undefined module"]
 preludeReferenceName :: ModName
 preludeReferenceName = packModName ["Cryptol","Reference"]
 
-floatName :: ModName
-floatName = packModName ["Float"]
-
-arrayName :: ModName
-arrayName  = packModName ["Array"]
-
 suiteBName :: ModName
 suiteBName = packModName ["SuiteB"]
 
@@ -391,8 +382,5 @@ prelPrim = PrimIdent preludeName
 
 suiteBPrim :: T.Text -> PrimIdent
 suiteBPrim = PrimIdent suiteBName
-
-arrayPrim :: T.Text -> PrimIdent
-arrayPrim = PrimIdent arrayName
 
 instance NFData PrimIdent

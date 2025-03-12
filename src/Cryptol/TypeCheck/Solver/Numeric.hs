@@ -295,7 +295,7 @@ tryEqVar ty x =
 
 -- e.g., 10 = t
 tryEqK :: Ctxt -> Type -> Nat' -> Match Solved
-tryEqK ctxt ty lk =
+tryEqK _ctxt ty lk =
 
   -- (K1 + t = K2, K2 >= K1) ~~~> t = (K2 - K1)
   do (rk, b) <- matches ty (anAdd, aNat', __)

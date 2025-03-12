@@ -1,19 +1,18 @@
 -- |
--- Module      :  Cryptol.TypeCheck.Solver.InfNat
+-- Module      :  Cryptol.TypeCheck.Solver.Nat
 -- Copyright   :  (c) 2013-2016 Galois, Inc.
 -- License     :  BSD3
 -- Maintainer  :  cryptol@galois.com
 -- Stability   :  provisional
 -- Portability :  portable
 --
--- This module defines natural numbers with an additional infinity
--- element, and various arithmetic operators on them.
+-- This module defines natural numbers and various arithmetic operators on them.
 
 {-# LANGUAGE Safe #-}
 
 {-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE DeriveGeneric #-}
-module Cryptol.TypeCheck.Solver.InfNat where
+module Cryptol.TypeCheck.Solver.Nat where
 
 import Data.Bits
 import Cryptol.Utils.Panic
@@ -21,11 +20,11 @@ import Cryptol.Utils.Panic
 import GHC.Generics (Generic)
 import Control.DeepSeq
 
--- | Natural numbers with an infinity element
-newtype Nat' = Nat Integer
+-- | Natural numbers
+newtype Nat = Nat Integer
             deriving (Show, Eq, Ord, Generic, NFData)
 
-fromNat :: Nat' -> Maybe Integer
+fromNat :: Nat -> Maybe Integer
 fromNat n' =
   case n' of
     Nat i -> Just i
@@ -36,7 +35,7 @@ fromNat n' =
 --------------------------------------------------------------------------------
 
 
-nAdd :: Nat' -> Nat' -> Nat'
+nAdd :: Nat -> Nat -> Nat
 nAdd (Nat x) (Nat y) = Nat (x + y)
 
 {-| Some algebraic properties of interest:
@@ -48,7 +47,7 @@ nAdd (Nat x) (Nat y) = Nat (x + y)
 > x * (a + b) = x * a + x * b
 
 -}
-nMul :: Nat' -> Nat' -> Nat'
+nMul :: Nat -> Nat -> Nat
 nMul (Nat x) (Nat y) = Nat (x * y)
 
 
@@ -60,19 +59,19 @@ nMul (Nat x) (Nat y) = Nat (x * y)
 > x ^ (m * n)  = (x ^ m) ^ n
 
 -}
-nExp :: Nat' -> Nat' -> Nat'
+nExp :: Nat -> Nat -> Nat
 nExp _ (Nat 0)       = Nat 1
 nExp (Nat x) (Nat y) = Nat (x ^ y)
 
-nMin :: Nat' -> Nat' -> Nat'
+nMin :: Nat -> Nat -> Nat
 nMin (Nat x) (Nat y)  = Nat (min x y)
 
-nMax :: Nat' -> Nat' -> Nat'
+nMax :: Nat -> Nat -> Nat
 nMax (Nat x) (Nat y)  = Nat (max x y)
 
 {- | @nSub x y = Just z@ iff @z@ is the unique value
 such that @Add y z = Just x@.  -}
-nSub :: Nat' -> Nat' -> Maybe Nat'
+nSub :: Nat -> Nat -> Maybe Nat
 nSub (Nat x) (Nat y)
   | x >= y                    = Just (Nat (x - y))
 nSub _ _                      = Nothing
@@ -93,11 +92,11 @@ We don't allow `Inf` in the first argument for two reasons:
   1. It matches the behavior of `nMod`,
   2. The well-formedness constraints can be expressed as a conjunction.
 -}
-nDiv :: Nat' -> Nat' -> Maybe Nat'
+nDiv :: Nat -> Nat -> Maybe Nat
 nDiv _       (Nat 0)  = Nothing
 nDiv (Nat x) (Nat y)  = Just (Nat (div x y))
 
-nMod :: Nat' -> Nat' -> Maybe Nat'
+nMod :: Nat -> Nat -> Maybe Nat
 nMod _       (Nat 0)  = Nothing
 nMod (Nat x) (Nat y)  = Just (Nat (mod x y))
 
@@ -105,20 +104,20 @@ nMod (Nat x) (Nat y)  = Just (Nat (mod x y))
 -- @msgLen <= blockSize * n@. It is undefined when @blockSize = 0@,
 -- or when @blockSize = inf@. @inf@ divided by any positive
 -- finite value is @inf@.
-nCeilDiv :: Nat' -> Nat' -> Maybe Nat'
+nCeilDiv :: Nat -> Nat -> Maybe Nat
 nCeilDiv _       (Nat 0)  = Nothing
 nCeilDiv (Nat x) (Nat y)  = Just (Nat (- div (- x) y))
 
 -- | @nCeilMod msgLen blockSize@ computes the least @k@ such that
 -- @blockSize@ divides @msgLen + k@. It is undefined when @blockSize = 0@
 -- or @blockSize = inf@.  @inf@ modulus any positive finite value is @0@.
-nCeilMod :: Nat' -> Nat' -> Maybe Nat'
+nCeilMod :: Nat -> Nat -> Maybe Nat
 nCeilMod _       (Nat 0)  = Nothing
 nCeilMod (Nat x) (Nat y)  = Just (Nat (mod (- x) y))
 
 -- | Rounds up.
 -- @lg2 x = y@, iff @y@ is the smallest number such that @x <= 2 ^ y@
-nLg2 :: Nat' -> Nat'
+nLg2 :: Nat -> Nat
 nLg2 (Nat 0)  = Nat 0
 nLg2 (Nat n)  = case genLog n 2 of
                   Just (x,exact) | exact     -> Nat x
@@ -128,13 +127,13 @@ nLg2 (Nat n)  = case genLog n 2 of
 
 -- | @nWidth n@ is number of bits needed to represent all numbers
 -- from 0 to n, inclusive. @nWidth x = nLg2 (x + 1)@.
-nWidth :: Nat' -> Nat'
+nWidth :: Nat -> Nat
 nWidth (Nat n)  = Nat (widthInteger n)
 
 
 
 -- | @length [ x, y .. z ]@
-nLenFromThenTo :: Nat' -> Nat' -> Nat' -> Maybe Nat'
+nLenFromThenTo :: Nat -> Nat -> Nat -> Maybe Nat
 nLenFromThenTo (Nat x) (Nat y) (Nat z)
   | step /= 0 = let len = div dist step + 1
                 in Just $ Nat $ if x > y

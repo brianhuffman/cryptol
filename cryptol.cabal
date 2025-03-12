@@ -182,7 +182,7 @@ library
 
                        Cryptol.TypeCheck.Solver.Types,
                        Cryptol.TypeCheck.Solver.SMT,
-                       Cryptol.TypeCheck.Solver.InfNat,
+                       Cryptol.TypeCheck.Solver.Nat,
                        Cryptol.TypeCheck.Solver.Class,
                        Cryptol.TypeCheck.Solver.Selector,
                        Cryptol.TypeCheck.Solver.Utils,

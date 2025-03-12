@@ -51,7 +51,7 @@ import           GHC.Num.Compat (BigNat#)
 import qualified GHC.Num.Compat as BN
 import           GHC.Exts
 
-import Cryptol.TypeCheck.Solver.InfNat (widthInteger)
+import Cryptol.TypeCheck.Solver.Nat (widthInteger)
 import Cryptol.Utils.Panic
 
 -- | Points in the projective plane represented in

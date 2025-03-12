@@ -86,7 +86,7 @@ import Cryptol.Backend.WordValue
 
 import Cryptol.Eval.Type
 
-import Cryptol.TypeCheck.Solver.InfNat(Nat'(..))
+import Cryptol.TypeCheck.Solver.Nat(Nat(..))
 
 import Cryptol.Utils.Ident (Ident,unpackIdent)
 import Cryptol.Utils.Logger(Logger)
@@ -127,7 +127,7 @@ data GenValue sym
   | VWord !Integer !(WordValue sym)            -- ^ @ [n]Bit @
   | VFun  CallStack (SEval sym (GenValue sym) -> SEval sym (GenValue sym)) -- ^ functions
   | VPoly CallStack (TValue -> SEval sym (GenValue sym))   -- ^ polymorphic values (kind *)
-  | VNumPoly CallStack (Nat' -> SEval sym (GenValue sym))  -- ^ polymorphic values (kind #)
+  | VNumPoly CallStack (Nat -> SEval sym (GenValue sym))  -- ^ polymorphic values (kind #)
  deriving Generic
 
 type ConValue sym = ConInfo (SEval sym (GenValue sym))
@@ -354,7 +354,7 @@ tlam :: Backend sym => sym -> (TValue -> SEval sym (GenValue sym)) -> SEval sym 
 tlam sym f = VPoly <$> sGetCallStack sym <*> pure f
 
 -- | A type lambda that expects a 'Type' of kind #.
-nlam :: Backend sym => sym -> (Nat' -> SEval sym (GenValue sym)) -> SEval sym (GenValue sym)
+nlam :: Backend sym => sym -> (Nat -> SEval sym (GenValue sym)) -> SEval sym (GenValue sym)
 nlam sym f = VNumPoly <$> sGetCallStack sym <*> pure f
 
 -- | A type lambda that expects a finite numeric type.
@@ -365,7 +365,7 @@ ilam sym f =
 
 -- | Construct either a finite sequence, or a stream.  In the finite case,
 -- record whether or not the elements were bits, to aid pretty-printing.
-mkSeq :: Backend sym => sym -> Nat' -> TValue -> SeqMap sym (GenValue sym) -> SEval sym (GenValue sym)
+mkSeq :: Backend sym => sym -> Nat -> TValue -> SeqMap sym (GenValue sym) -> SEval sym (GenValue sym)
 mkSeq sym len elty vals = case len of
   Nat n
     | isTBit elty -> VWord n <$> bitmapWordVal sym n (fromVBit <$> vals)
@@ -451,7 +451,7 @@ fromVPoly sym val = case val of
   _ -> evalPanic "fromVPoly" ["not a polymorphic value", show val]
 
 -- | Extract a polymorphic function from a value.
-fromVNumPoly :: Backend sym => sym -> GenValue sym -> (Nat' -> SEval sym (GenValue sym))
+fromVNumPoly :: Backend sym => sym -> GenValue sym -> (Nat -> SEval sym (GenValue sym))
 fromVNumPoly sym val = case val of
   VNumPoly fnstk f ->
     \x -> sModifyCallStack sym (\stk -> combineCallStacks stk fnstk) (f x)

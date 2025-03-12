@@ -6,7 +6,7 @@ import Cryptol.Backend
 import Cryptol.Eval.Type
 import Cryptol.Eval.Value
 import Cryptol.ModuleSystem.Name
-import Cryptol.TypeCheck.Solver.InfNat(Nat'(..))
+import Cryptol.TypeCheck.Solver.Nat(Nat(..))
 import Cryptol.Utils.Panic
 
 -- | This type provides a lightweight syntactic framework for defining
@@ -19,7 +19,7 @@ data Prim sym
   | PWordFun (SWord sym -> Prim sym)
   | PFloatFun (SFloat sym -> Prim sym)
   | PTyPoly (TValue -> Prim sym)
-  | PNumPoly (Nat' -> Prim sym)
+  | PNumPoly (Nat -> Prim sym)
   | PFinPoly (Integer -> Prim sym)
   | PPrim (SEval sym (GenValue sym))
   | PVal (GenValue sym)

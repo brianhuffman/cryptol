@@ -3,7 +3,7 @@
 module Cryptol.F2 where
 
 import Data.Bits
-import Cryptol.TypeCheck.Solver.InfNat (widthInteger)
+import Cryptol.TypeCheck.Solver.Nat (widthInteger)
 
 pmult :: Int -> Integer -> Integer -> Integer
 pmult w x y = go (w-1) 0

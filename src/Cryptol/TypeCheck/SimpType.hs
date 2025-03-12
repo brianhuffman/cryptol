@@ -8,7 +8,7 @@ import Control.Applicative((<|>))
 import Cryptol.TypeCheck.Type hiding
   (tSub,tMul,tDiv,tMod,tExp,tMin,tCeilDiv,tCeilMod,tLenFromThenTo)
 import Cryptol.TypeCheck.TypePat
-import Cryptol.TypeCheck.Solver.InfNat
+import Cryptol.TypeCheck.Solver.Nat
 import Control.Monad(msum,guard)
 
 
@@ -144,7 +144,7 @@ tMul x y
   mulK 0 _ = tNum (0 :: Int)
   mulK 1 t = t
   mulK n t | TCon (TF TCMul) [a,b] <- t'
-           , Just a' <- tIsNat' a = case a' of
+           , Just a' <- tIsNat a = case a' of
                                      Nat m -> tf2 TCMul (tNum (n * m)) b
            | TCon (TF TCDiv) [a,b] <- t'
            , Just b' <- tIsNum b
@@ -203,8 +203,8 @@ tExp x y
 tMin :: Type -> Type -> Type
 tMin x y
   | Just t <- tOp TCMin (total (op2 nMin)) [x,y] = t
-  | Just n <- tIsNat' x = minK n y
-  | Just n <- tIsNat' y = minK n x
+  | Just n <- tIsNat x = minK n y
+  | Just n <- tIsNat y = minK n x
   | Just n <- matchMaybe (minPlusK x y <|> minPlusK y x) = n
   | Just n <- matchMaybe $ do (k,a) <- isMinK x
                               return $ minK k (tMin a y)
@@ -248,8 +248,8 @@ tMin x y
 tMax :: Type -> Type -> Type
 tMax x y
   | Just t <- tOp TCMax (total (op2 nMax)) [x,y] = t
-  | Just n <- tIsNat' x = maxK n y
-  | Just n <- tIsNat' y = maxK n x
+  | Just n <- tIsNat x = maxK n y
+  | Just n <- tIsNat y = maxK n x
   | otherwise           = tf2 TCMax x y
   where
   maxK (Nat 0) t = t
@@ -258,7 +258,7 @@ tMax x y
     -- max 1 t ~> t,   if t = a ^ b && a >= 1
     | k == 1
     , TCon (TF TCExp) [a,_] <- t'
-    , Just base <- tIsNat' a
+    , Just base <- tIsNat a
     , base >= Nat 1 = t
 
     | TCon (TF TCAdd) [a,b] <- t'
@@ -267,7 +267,7 @@ tMax x y
                              else tAdd (tNum n) (tMax (tNum (k - n)) b)
 
     | TCon (TF TCSub) [a,b] <- t'
-    , Just n <- tIsNat' a =
+    , Just n <- tIsNat a =
       case n of
         Nat m -> if k >= m then tNum k else tSub a (tMin (tNum (m - k)) b)
 
@@ -295,7 +295,7 @@ tLenFromThenTo x y z
   | Just t <- tOp TCLenFromThenTo (op3 nLenFromThenTo) [x,y,z] = t
   | otherwise = tf3 TCLenFromThenTo x y z
 
-total :: ([Nat'] -> Nat') -> ([Nat'] -> Maybe Nat')
+total :: ([Nat] -> Nat) -> ([Nat] -> Maybe Nat)
 total f xs = Just (f xs)
 
 op1 :: (a -> b) -> [a] -> b
@@ -309,15 +309,15 @@ op3 f ~[x,y,z] = f x y z
 
 -- | Common checks: check for error, or simple full evaluation.
 -- We assume that input kinds and the result kind are the same (i.e., Nat)
-tOp :: TFun -> ([Nat'] -> Maybe Nat') -> [Type] -> Maybe Type
+tOp :: TFun -> ([Nat] -> Maybe Nat) -> [Type] -> Maybe Type
 tOp tf f ts
   | Just t <- msum (map tIsError ts) = Just (tError t)
     -- assumes result kind the same as input kind
 
-  | Just xs <- mapM tIsNat' ts =
+  | Just xs <- mapM tIsNat ts =
       Just $ case f xs of
-               Nothing -> tError (TCon (TF tf) (map tNat' xs))
-               Just n  -> tNat' n
+               Nothing -> tError (TCon (TF tf) (map tNat xs))
+               Just n  -> tNat n
   | otherwise = Nothing
 
 

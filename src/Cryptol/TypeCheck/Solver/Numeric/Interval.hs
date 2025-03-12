@@ -15,7 +15,7 @@
 module Cryptol.TypeCheck.Solver.Numeric.Interval where
 
 import Cryptol.TypeCheck.AST
-import Cryptol.TypeCheck.Solver.InfNat
+import Cryptol.TypeCheck.Solver.Nat
 import Cryptol.TypeCheck.PP(NameMap,ppWithNames)
 import Cryptol.Utils.PP hiding (int)
 
@@ -149,10 +149,10 @@ propInterval varInts prop = catMaybes
 --------------------------------------------------------------------------------
 
 data Interval = Interval
-  { iLower :: Nat'          -- ^ lower bound (inclusive)
-  , iUpper :: Maybe Nat'    -- ^ upper bound (inclusive)
+  { iLower :: Nat           -- ^ lower bound (inclusive)
+  , iUpper :: Maybe Nat     -- ^ upper bound (inclusive)
                             -- If there is no upper bound,
-                            -- then all *natural* numbers.
+                            -- then all natural numbers.
   } deriving (Eq,Show)
 
 ppIntervals :: Map TVar Interval -> Doc
@@ -177,7 +177,7 @@ ppInterval x = brackets (hsep [ ppr (iLower x)
            Nat n -> integer n
 
 
-iIsExact :: Interval -> Maybe Nat'
+iIsExact :: Interval -> Maybe Nat
 iIsExact i = if iUpper i == Just (iLower i) then Just (iLower i) else Nothing
 
 -- | Finite positive number. @[1 ..  inf)@.
@@ -222,7 +222,7 @@ iAny :: Interval
 iAny = Interval (Nat 0) Nothing
 
 -- | Exactly this value
-iConst :: Nat' -> Interval
+iConst :: Nat -> Interval
 iConst x = Interval x (Just x)
 
 

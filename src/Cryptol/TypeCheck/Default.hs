@@ -212,7 +212,7 @@ defaultReplExpr' sol as props =
        Nothing -> return Nothing
        Just mdl0 ->
          do mdl <- shrinkModel sol params props mdl0
-            let su = listSubst [ (x, tNat' n) | (x,n) <- mdl ]
+            let su = listSubst [ (x, tNat n) | (x,n) <- mdl ]
             return $
               do guard (null (concatMap pSplitAnd (apSubst su props)))
                  tys <- mapM (bindParam su) params

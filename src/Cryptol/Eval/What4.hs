@@ -53,7 +53,7 @@ import Cryptol.Eval.Value
 
 import qualified Cryptol.SHA as SHA
 
-import Cryptol.TypeCheck.Solver.InfNat( Nat'(..) )
+import Cryptol.TypeCheck.Solver.Nat( Nat(..) )
 
 import Cryptol.Utils.Ident
 import Cryptol.Utils.Panic
@@ -500,7 +500,7 @@ applyAESStateFunc sym funNm x =
 indexFront_int ::
   W4.IsSymExprBuilder sym =>
   What4 sym ->
-  Nat' ->
+  Nat ->
   TValue ->
   SeqMap (What4 sym) (GenValue (What4 sym)) ->
   TValue ->
@@ -545,7 +545,7 @@ indexFront_int sym mblen _a xs _ix idx
 indexFront_segs ::
   W4.IsSymExprBuilder sym =>
   What4 sym ->
-  Nat' ->
+  Nat ->
   TValue ->
   SeqMap (What4 sym) (GenValue (What4 sym)) ->
   TValue ->
@@ -596,7 +596,7 @@ indexFront_segs sym mblen _a xs _ix idx_bits segs =
 updateFrontSym ::
   W4.IsSymExprBuilder sym =>
   What4 sym ->
-  Nat' ->
+  Nat ->
   TValue ->
   SeqMap (What4 sym) (GenValue (What4 sym)) ->
   Either (SInteger (What4 sym)) (WordValue (What4 sym)) ->
@@ -620,7 +620,7 @@ updateFrontSym sym len _eltTy vs (Right wv) val =
 updateBackSym ::
   W4.IsSymExprBuilder sym =>
   What4 sym ->
-  Nat' ->
+  Nat ->
   TValue ->
   SeqMap (What4 sym) (GenValue (What4 sym)) ->
   Either (SInteger (What4 sym)) (WordValue (What4 sym)) ->
@@ -647,7 +647,7 @@ updateBackSym sym (Nat n) _eltTy vs (Right wv) val =
 updateFrontSym_word ::
   W4.IsSymExprBuilder sym =>
   What4 sym ->
-  Nat' ->
+  Nat ->
   TValue ->
   WordValue (What4 sym) ->
   Either (SInteger (What4 sym)) (WordValue (What4 sym)) ->
@@ -664,7 +664,7 @@ updateFrontSym_word sym (Nat _n) _eltTy w (Right idx) val =
 updateBackSym_word ::
   W4.IsSymExprBuilder sym =>
   What4 sym ->
-  Nat' ->
+  Nat ->
   TValue ->
   WordValue (What4 sym) ->
   Either (SInteger (What4 sym)) (WordValue (What4 sym)) ->

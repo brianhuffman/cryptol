@@ -38,7 +38,7 @@ import Cryptol.Utils.Ident (Ident)
 import Cryptol.Utils.Patterns
 import Cryptol.Utils.RecordMap
 import Cryptol.TypeCheck.Type
-import Cryptol.TypeCheck.Solver.InfNat
+import Cryptol.TypeCheck.Solver.Nat
 
 
 tcon :: TCon -> ([Type] -> a) -> Pat Type a
@@ -75,7 +75,7 @@ aNat = \a -> case tNoUser a of
                TCon (TC (TCNum n)) _ -> return n
                _                     -> mzero
 
-aNat' :: Pat Type Nat'
+aNat' :: Pat Type Nat
 aNat' = \a -> (Nat <$> aNat a)
 
 anAdd :: Pat Type (Type,Type)

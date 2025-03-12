@@ -19,7 +19,7 @@ import Cryptol.Eval.Type
 import Cryptol.Eval.Value
 import Cryptol.ModuleSystem.Name
 import Cryptol.TypeCheck.AST
-import Cryptol.TypeCheck.Solver.InfNat
+import Cryptol.TypeCheck.Solver.Nat
 import Cryptol.Utils.PP
 
 import qualified Data.IntMap.Strict as IntMap
@@ -94,11 +94,11 @@ lookupVar n env = IntMap.lookup (nameUnique n) (envVars env)
 
 -- | Bind a type variable of kind *.
 {-# INLINE bindType #-}
-bindType :: TVar -> Either Nat' TValue -> GenEvalEnv sym -> GenEvalEnv sym
+bindType :: TVar -> Either Nat TValue -> GenEvalEnv sym -> GenEvalEnv sym
 bindType p ty env = env{ envTypes = bindTypeVar p ty (envTypes env) }
 
 -- | Lookup a type variable.
 {-# INLINE lookupType #-}
-lookupType :: TVar -> GenEvalEnv sym -> Maybe (Either Nat' TValue)
+lookupType :: TVar -> GenEvalEnv sym -> Maybe (Either Nat TValue)
 lookupType p env = lookupTypeVar p (envTypes env)
 

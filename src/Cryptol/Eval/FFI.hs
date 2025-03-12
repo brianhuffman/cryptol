@@ -343,7 +343,7 @@ foreignPrim name FFIFunType {..} impl tenv = buildFun ffiArgTypes []
 
   -- Evaluate a finite numeric type expression.
   evalFinType :: Type -> Integer
-  evalFinType = finNat' . evalNumType tenv
+  evalFinType = finNat . evalNumType tenv
 
 -- | Given a way to 'getRetAsOutArgs', create a 'GetRet', where the
 -- 'getRetAsValue' simply allocates a temporary space to call 'getRetAsOutArgs'

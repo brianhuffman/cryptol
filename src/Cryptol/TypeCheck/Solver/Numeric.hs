@@ -15,7 +15,7 @@ import Cryptol.Utils.Patterns
 import Cryptol.TypeCheck.Type hiding (tMul)
 import Cryptol.TypeCheck.TypePat
 import Cryptol.TypeCheck.Solver.Types
-import Cryptol.TypeCheck.Solver.InfNat
+import Cryptol.TypeCheck.Solver.Nat
 import Cryptol.TypeCheck.Solver.Numeric.Interval
 import Cryptol.TypeCheck.SimpType as Simp
 
@@ -92,7 +92,7 @@ cryIsPrime _varInfo ty =
 
 
 -- | Try to solve something by evaluation.
-pBin :: (Nat' -> Nat' -> Bool) -> Type -> Type -> Match Solved
+pBin :: (Nat -> Nat -> Bool) -> Type -> Type -> Match Solved
 pBin p t1 t2
   | Just _ <- tIsError t1 = pure Unsolvable
   | Just _ <- tIsError t2 = pure Unsolvable
@@ -107,7 +107,7 @@ pBin p t1 t2
 -- GEQ
 
 -- | Try to solve @K >= t@
-tryGeqKThan :: Ctxt -> Type -> Nat' -> Match Solved
+tryGeqKThan :: Ctxt -> Type -> Nat -> Match Solved
 tryGeqKThan _ ty (Nat n) =
 
   -- K1 >= K2 * t
@@ -119,7 +119,7 @@ tryGeqKThan _ ty (Nat n) =
                 Nat k -> [ tNum (div n k) >== b ]
 
 -- | Try to solve @t >= K@
-tryGeqThanK :: Ctxt -> Type -> Nat' -> Match Solved
+tryGeqThanK :: Ctxt -> Type -> Nat -> Match Solved
 tryGeqThanK _ t (Nat k) =
 
   -- K1 + t >= K2
@@ -294,7 +294,7 @@ tryEqVar ty x =
 
 
 -- e.g., 10 = t
-tryEqK :: Ctxt -> Type -> Nat' -> Match Solved
+tryEqK :: Ctxt -> Type -> Nat -> Match Solved
 tryEqK _ctxt ty lk =
 
   -- (K1 + t = K2, K2 >= K1) ~~~> t = (K2 - K1)
@@ -304,12 +304,12 @@ tryEqK _ctxt ty lk =
          -- NOTE: (Inf - Inf) shouldn't be possible
          Nothing -> Unsolvable
 
-         Just r -> SolvedIf [ b =#= tNat' r ]
+         Just r -> SolvedIf [ b =#= tNat r ]
   <|>
 
   -- (lk = t - rk) ~~> t = lk + rk
   do (t,rk) <- matches ty ((|-|) , __, aNat')
-     return (SolvedIf [ t =#= tNat' (nAdd lk rk) ])
+     return (SolvedIf [ t =#= tNat (nAdd lk rk) ])
 
   <|>
   do (rk, b) <- matches ty (aMul, aNat', __)
@@ -317,7 +317,7 @@ tryEqK _ctxt ty lk =
        case (lk,rk) of
          (Nat lk', Nat rk')
            -- 0 * t = K2 ~~> K2 = 0
-           | rk' == 0 -> SolvedIf [ tNat' lk =#= tZero ]
+           | rk' == 0 -> SolvedIf [ tNat lk =#= tZero ]
               -- shouldn't happen, as `0 * t = t` should have been simplified
 
            -- K1 * t = K2 ~~> t = K2/K1

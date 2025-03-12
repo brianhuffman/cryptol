@@ -37,7 +37,7 @@ import Cryptol.Eval.Type (TValue(..))
 import Cryptol.Eval.Generic
 import Cryptol.Eval.Prims
 import Cryptol.Eval.Value
-import Cryptol.TypeCheck.Solver.InfNat (Nat'(..))
+import Cryptol.TypeCheck.Solver.Nat (Nat(..))
 import Cryptol.Utils.Ident
 
 -- Values ----------------------------------------------------------------------
@@ -63,7 +63,7 @@ primTable sym getEOpts =
 
 indexFront ::
   SBV ->
-  Nat' ->
+  Nat ->
   TValue ->
   SeqMap SBV (GenValue SBV) ->
   TValue ->
@@ -108,7 +108,7 @@ indexFront sym mblen a xs _ix idx
 
 indexFront_segs ::
   SBV ->
-  Nat' ->
+  Nat ->
   TValue ->
   SeqMap SBV (GenValue SBV) ->
   TValue ->
@@ -127,7 +127,7 @@ indexFront_segs sym mblen _a xs _ix idx_bits segs =
 
 updateFrontSym ::
   SBV ->
-  Nat' ->
+  Nat ->
   TValue ->
   SeqMap SBV (GenValue SBV) ->
   Either (SInteger SBV) (WordValue SBV) ->
@@ -150,7 +150,7 @@ updateFrontSym sym _len _eltTy vs (Right wv) val =
 
 updateFrontSym_word ::
   SBV ->
-  Nat' ->
+  Nat ->
   TValue ->
   WordValue SBV ->
   Either (SInteger SBV) (WordValue SBV) ->
@@ -166,7 +166,7 @@ updateFrontSym_word sym (Nat _n) _eltTy w (Right idx) val =
 
 updateBackSym ::
   SBV ->
-  Nat' ->
+  Nat ->
   TValue ->
   SeqMap SBV (GenValue SBV) ->
   Either (SInteger SBV) (WordValue SBV) ->
@@ -190,7 +190,7 @@ updateBackSym sym (Nat n) _eltTy vs (Right wv) val =
 
 updateBackSym_word ::
   SBV ->
-  Nat' ->
+  Nat ->
   TValue ->
   WordValue SBV ->
   Either (SInteger SBV) (WordValue SBV) ->

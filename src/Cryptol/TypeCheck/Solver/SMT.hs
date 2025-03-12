@@ -53,7 +53,7 @@ import           System.Directory(doesFileExist)
 import Cryptol.Prelude(cryptolTcContents)
 import Cryptol.TypeCheck.Type
 import Cryptol.TypeCheck.InferTypes
-import Cryptol.TypeCheck.Solver.InfNat(Nat'(..))
+import Cryptol.TypeCheck.Solver.Nat(Nat(..))
 import Cryptol.TypeCheck.TypePat hiding ((~>),(~~>))
 import Cryptol.TypeCheck.Subst(Subst)
 import Cryptol.Utils.Panic
@@ -221,7 +221,7 @@ checkUnsolvable sol gs0 =
      pop sol
      return ans
 
-tryGetModel :: Solver -> [TVar] -> [Prop] -> IO (Maybe [(TVar,Nat')])
+tryGetModel :: Solver -> [TVar] -> [Prop] -> IO (Maybe [(TVar,Nat)])
 tryGetModel sol as ps =
   debugBlock sol "TRY GET MODEL" $
   do push sol
@@ -253,7 +253,7 @@ tryGetModel sol as ps =
 
   parseNum _ = Nothing
 
-shrinkModel :: Solver -> [TVar] -> [Prop] -> [(TVar,Nat')] -> IO [(TVar,Nat')]
+shrinkModel :: Solver -> [TVar] -> [Prop] -> [(TVar,Nat)] -> IO [(TVar,Nat)]
 shrinkModel sol as ps0 mdl = go [] ps0 mdl
   where
   go done ps ((x,Nat k) : more) =

@@ -54,7 +54,7 @@ import Cryptol.Eval(evalEnumCon)
 import Cryptol.Eval.Type      ( TValue(..), TNominalTypeValue(..), ConInfo(..)
                               , isNullaryCon )
 import Cryptol.Eval.Value     ( GenValue(..), ppValue, defaultPPOpts, fromVFun)
-import Cryptol.TypeCheck.Solver.InfNat (widthInteger)
+import Cryptol.TypeCheck.Solver.Nat (widthInteger)
 import Cryptol.Utils.Ident    (Ident)
 import Cryptol.Utils.Panic    (panic)
 import Cryptol.Utils.RecordMap

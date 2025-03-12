@@ -41,7 +41,7 @@ import Cryptol.Backend.Monad
   ( EvalError(..), Unsupported(..), CallStack, pushCallFrame )
 import Cryptol.ModuleSystem.Name(Name)
 import Cryptol.Parser.Position
-import Cryptol.TypeCheck.Solver.InfNat(Nat'(..),widthInteger)
+import Cryptol.TypeCheck.Solver.Nat(Nat(..),widthInteger)
 
 data IndexDirection
   = IndexForward
@@ -219,7 +219,7 @@ enumerateIntBits' sym n idx =
 --   provide an upper bound for the integer.
 enumerateIntBits :: Backend sym =>
   sym ->
-  Nat' ->
+  Nat ->
   SInteger sym ->
   SEval sym (Integer, [SBit sym])
 enumerateIntBits sym (Nat n) idx = enumerateIntBits' sym n idx

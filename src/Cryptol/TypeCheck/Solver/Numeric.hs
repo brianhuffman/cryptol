@@ -301,9 +301,7 @@ tryEqK _ctxt ty lk =
   do (rk, b) <- matches ty (anAdd, aNat', __)
      return $
        case nSub lk rk of
-         -- NOTE: (Inf - Inf) shouldn't be possible
          Nothing -> Unsolvable
-
          Just r -> SolvedIf [ b =#= tNat r ]
   <|>
 
@@ -311,6 +309,13 @@ tryEqK _ctxt ty lk =
   do (t,rk) <- matches ty ((|-|) , __, aNat')
      return (SolvedIf [ t =#= tNat (nAdd lk rk) ])
 
+  <|>
+  -- (lk = rk - t) ~~> t = rk - lk
+  do (rk, t) <- matches ty ((|-|) , aNat', __)
+     return $
+       case nSub rk lk of
+         Nothing -> Unsolvable
+         Just r -> SolvedIf [ t =#= tNat r ]
   <|>
   do (rk, b) <- matches ty (aMul, aNat', __)
      return $

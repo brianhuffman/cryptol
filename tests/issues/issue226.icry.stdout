@@ -44,8 +44,6 @@ Primitive Types
     Bit : *
     Cmp : * -> Prop
     Eq : * -> Prop
-    FLiteral : # -> # -> # -> * -> Prop
-    Field : * -> Prop
     fin : # -> Prop
     Integer : *
     Integral : * -> Prop
@@ -57,12 +55,9 @@ Primitive Types
     max : # -> # -> #
     min : # -> # -> #
     prime : # -> Prop
-    Rational : *
     Ring : * -> Prop
-    Round : * -> Prop
     SignedCmp : * -> Prop
     width : # -> #
-    Z : # -> *
     Zero : * -> Prop
      
 Nominal Types
@@ -80,7 +75,6 @@ Symbols
   From Cryptol
   ------------
        
-    (/.) : {a} (Field a) => a -> a -> a
     (==>) : Bit -> Bit -> Bit
     (\/) : Bit -> Bit -> Bit
     (/\) : Bit -> Bit -> Bit
@@ -123,7 +117,6 @@ Symbols
     any : {n, a} (fin n) => (a -> Bit) -> [n]a -> Bit
     assert : {a, n} (fin n) => Bit -> String n -> a -> a
     carry : {n} (fin n) => [n] -> [n] -> Bit
-    ceiling : {a} (Round a) => a -> Integer
     complement : {a} (Logic a) => a -> a
     curry : {a, b, c} ((a, b) -> c) -> a -> b -> c
     deepseq : {a, b} (Eq a) => a -> b -> b
@@ -132,12 +125,10 @@ Symbols
     elem : {n, a} (fin n, Eq a) => a -> [n]a -> Bit
     error : {a, n} (fin n) => String n -> a
     False : Bit
-    floor : {a} (Round a) => a -> Integer
     foldl : {n, a, b} (fin n) => (a -> b -> a) -> a -> [n]b -> a
     foldl' : {n, a, b} (fin n, Eq a) => (a -> b -> a) -> a -> [n]b -> a
     foldr : {n, a, b} (fin n) => (a -> b -> b) -> b -> [n]a -> b
     foldr' : {n, a, b} (fin n, Eq b) => (a -> b -> b) -> b -> [n]a -> b
-    fraction : {m, n, r, a} (FLiteral m n r a) => a
     fromInteger : {a} (Ring a) => Integer -> a
     fromThenTo :
       {first, next, last, a, len}
@@ -170,7 +161,6 @@ Symbols
       {first, bound, a}
         (fin first, bound >= first, LiteralLessThan bound a) =>
         [bound - first]a
-    fromZ : {n} (fin n, n >= 1) => Z n -> Integer
     generate :
       {n, a, ix} (Integral ix, LiteralLessThan n ix) => (ix -> a) -> [n]a
     groupBy : {each, parts, a} (fin each) => [each * parts]a -> [parts][each]a
@@ -194,13 +184,9 @@ Symbols
     pmult : {u, v} (fin u, fin v) => [1 + u] -> [1 + v] -> [1 + (u + v)]
     product : {n, a} (fin n, Eq a, Ring a) => [n]a -> a
     random : {a} [256] -> a
-    ratio : Integer -> Integer -> Rational
-    recip : {a} (Field a) => a -> a
     repeat : {n, a} a -> [n]a
     reverse : {n, a} (fin n) => [n]a -> [n]a
     rnf : {a} (Eq a) => a -> a
-    roundAway : {a} (Round a) => a -> Integer
-    roundToEven : {a} (Round a) => a -> Integer
     sborrow : {n} (fin n, n >= 1) => [n] -> [n] -> Bit
     scanl : {n, a, b} (a -> b -> a) -> a -> [n]b -> [1 + n]a
     scanr : {n, a, b} (fin n) => (a -> b -> b) -> b -> [n]a -> [1 + n]b
@@ -220,7 +206,6 @@ Symbols
     trace : {n, a, b} (fin n) => String n -> a -> b -> b
     traceVal : {n, a} (fin n) => String n -> a -> a
     transpose : {rows, cols, a} [rows][cols]a -> [cols][rows]a
-    trunc : {a} (Round a) => a -> Integer
     uncurry : {a, b, c} (a -> b -> c) -> (a, b) -> c
     undefined : {a} a
     update : {n, a, ix} (Integral ix) => [n]a -> ix -> a -> [n]a

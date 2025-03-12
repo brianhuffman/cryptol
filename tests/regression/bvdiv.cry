@@ -3,11 +3,6 @@
 bvdiv_euc : {n} (fin n) => [n] -> [n] -> Bit
 bvdiv_euc x y = y != 0 ==> (x/y)*y + x%y == x
 
-bvdiv_char : {n} (fin n) => [n] -> [n] -> Bit
-bvdiv_char x y = y != 0 ==> floor r == toInteger (x / y)
-  where
-    r = ratio (toInteger x) (toInteger y)
-
 bvdiv_mod : {n} (fin n) => [n] -> [n] -> Bit
 bvdiv_mod x y = y != 0 ==> (0 <= m /\ m < y)
   where
@@ -34,12 +29,6 @@ maxint = ~minint
 bvsdiv_euc : {n} (fin n, n>=1) => [n] -> [n] -> Bit
 bvsdiv_euc x y = y != 0 ==> (x/$y)*y + x%$y == x
 
-bvsdiv_char : {n} (fin n, n>=1) => [n] -> [n] -> Bit
-bvsdiv_char x y = y != 0 ==> overflow \/ trunc r == toSignedInteger (x /$ y)
-  where
-    overflow = x == minint /\ y == (-1)
-    r = ratio (toSignedInteger x) (toSignedInteger y)
-
 bvsdiv_mod : {n} (fin n, n>=1) => [n] -> [n] -> Bit
 bvsdiv_mod x y = y != 0 ==> (0 <= m /\ m < sabs y)
   where
@@ -60,11 +49,9 @@ bvsdiv_doc_properties x y =
 // property instances to check
 
 property d1 = bvdiv_euc`{8}
-property c1 = bvdiv_char`{8}
 property m1 = bvdiv_mod`{8}
 
 property d2 = bvsdiv_euc`{8}
-property c2 = bvsdiv_char`{8}
 property m2 = bvsdiv_mod`{8}
 property m3 = bvsdiv_mod_sign`{8}
 property sdiv = bvsdiv_doc_properties`{8}

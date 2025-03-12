@@ -1240,6 +1240,7 @@ rotateRightReindex sz i shft =
 logicShift :: Backend sym =>
   sym ->
   String ->
+  Bool ->
   (sym -> Nat -> TValue -> SInteger sym -> SEval sym (SInteger sym))
      {- ^ operation for range reduction on integers -} ->
   (SWord sym -> SWord sym -> SEval sym (SWord sym))
@@ -1251,9 +1252,10 @@ logicShift :: Backend sym =>
   (Nat -> Integer -> Integer -> Maybe Integer)
      {- ^ reindexing operation for negative indices (sequence size, starting index, shift amount -} ->
   Prim sym
-logicShift sym nm shrinkRange wopPos wopNeg reindexPos reindexNeg =
+logicShift sym nm generic shrinkRange wopPos wopNeg reindexPos reindexNeg =
   PNumPoly \m ->
   PTyPoly  \ix ->
+  mPoly    \a ->
   PFun     \xs ->
   PFun     \y ->
   PPrim
@@ -1263,12 +1265,14 @@ logicShift sym nm shrinkRange wopPos wopNeg reindexPos reindexNeg =
          Left int_idx ->
            do pneg <- intLessThan sym int_idx =<< integerLit sym 0
               iteValue sym pneg
-                (intShifter sym nm wopNeg reindexNeg m xs' =<< shrinkRange sym m ix =<< intNegate sym int_idx)
-                (intShifter sym nm wopPos reindexPos m xs' =<< shrinkRange sym m ix int_idx)
+                (intShifter sym nm wopNeg reindexNeg m a xs' =<< shrinkRange sym m ix =<< intNegate sym int_idx)
+                (intShifter sym nm wopPos reindexPos m a xs' =<< shrinkRange sym m ix int_idx)
          Right idx ->
-           wordShifter sym nm wopPos reindexPos m xs' idx
-
-
+           wordShifter sym nm wopPos reindexPos m a xs' idx
+  where
+    mPoly k
+      | generic = PTyPoly k
+      | otherwise = k TVBit
 
 {-# INLINE intShifter #-}
 intShifter :: Backend sym =>
@@ -1277,13 +1281,14 @@ intShifter :: Backend sym =>
    (SWord sym -> SWord sym -> SEval sym (SWord sym)) ->
    (Nat -> Integer -> Integer -> Maybe Integer) ->
    Nat ->
+   TValue ->
    GenValue sym ->
    SInteger sym ->
    SEval sym (GenValue sym)
-intShifter sym nm wop reindex m xs idx =
+intShifter sym nm wop reindex m a xs idx =
   case xs of
     VWord w x  -> VWord w <$> shiftWordByInteger sym wop (reindex m) x idx
-    VSeq w vs  -> VSeq w  <$> shiftSeqByInteger sym (mergeValue sym) (reindex m) (zeroV sym TVBit) m vs idx
+    VSeq w vs  -> VSeq w  <$> shiftSeqByInteger sym (mergeValue sym) (reindex m) (zeroV sym a) m vs idx
     _ -> evalPanic "expected sequence value in shift operation" [nm]
 
 
@@ -1294,13 +1299,14 @@ wordShifter :: Backend sym =>
    (SWord sym -> SWord sym -> SEval sym (SWord sym)) ->
    (Nat -> Integer -> Integer -> Maybe Integer) ->
    Nat ->
+   TValue ->
    GenValue sym ->
    WordValue sym ->
    SEval sym (GenValue sym)
-wordShifter sym nm wop reindex m xs idx =
+wordShifter sym nm wop reindex m a xs idx =
   case xs of
     VWord w x  -> VWord w <$> shiftWordByWord sym wop (reindex m) x idx
-    VSeq w vs  -> VSeq w  <$> shiftSeqByWord sym (mergeValue sym) (reindex m) (zeroV sym TVBit) (Nat w) vs idx
+    VSeq w vs  -> VSeq w  <$> shiftSeqByWord sym (mergeValue sym) (reindex m) (zeroV sym a) (Nat w) vs idx
     _ -> evalPanic "expected sequence value in shift operation" [nm]
 
 
@@ -1685,19 +1691,19 @@ genericPrimTable sym getEOpts =
 
     -- Shifts and rotates
   , ("<<"         , {-# SCC "Prelude::(<<)" #-}
-                    logicShift sym "<<" shiftShrink
+                    logicShift sym "<<" False shiftShrink
                       (wordShiftLeft sym) (wordShiftRight sym)
                       shiftLeftReindex shiftRightReindex)
   , (">>"         , {-# SCC "Prelude::(>>)" #-}
-                    logicShift sym ">>"  shiftShrink
+                    logicShift sym ">>" False shiftShrink
                       (wordShiftRight sym) (wordShiftLeft sym)
                       shiftRightReindex shiftLeftReindex)
   , ("<<<"        , {-# SCC "Prelude::(<<<)" #-}
-                    logicShift sym "<<<" rotateShrink
+                    logicShift sym "<<<" True rotateShrink
                       (wordRotateLeft sym) (wordRotateRight sym)
                       rotateLeftReindex rotateRightReindex)
   , (">>>"        , {-# SCC "Prelude::(>>>)" #-}
-                    logicShift sym ">>>" rotateShrink
+                    logicShift sym ">>>" True rotateShrink
                       (wordRotateRight sym) (wordRotateLeft sym)
                       rotateRightReindex rotateLeftReindex)
 

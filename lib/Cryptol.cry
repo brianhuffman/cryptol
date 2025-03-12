@@ -710,13 +710,13 @@ primitive (>>) : {n, ix} (Integral ix) => [n] -> ix -> [n]
  * Left rotate.  The first argument is the sequence to rotate, the second is the
  * number of positions to rotate by.
  */
-primitive (<<<) : {n, ix} (Integral ix) => [n] -> ix -> [n]
+primitive (<<<) : {n, ix, a} (Integral ix) => [n]a -> ix -> [n]a
 
 /**
  * Right rotate.  The first argument is the sequence to rotate, the second is
  * the number of positions to rotate by.
  */
-primitive (>>>) : {n, ix} (Integral ix) => [n] -> ix -> [n]
+primitive (>>>) : {n, ix, a} (Integral ix) => [n]a -> ix -> [n]a
 
 /**
  * Index operator.  The first argument is a sequence.  The second argument is

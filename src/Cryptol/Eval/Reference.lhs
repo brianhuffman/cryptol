@@ -1290,6 +1290,7 @@ amount, but as lazy as possible in the list values.
 > rotateV op =
 >   vFinPoly $ \n -> pure $
 >   VPoly $ \ix -> pure $
+>   VPoly $ \_a -> pure $
 >   VFun $ \v -> pure $
 >   VFun $ \x ->
 >   do i <- cryToInteger ix x

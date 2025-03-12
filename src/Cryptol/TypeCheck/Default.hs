@@ -6,7 +6,7 @@ import qualified Data.Set as Set
 import           Data.Map (Map)
 import qualified Data.Map as Map
 import Data.Maybe(mapMaybe, isJust)
-import Data.List((\\),nub)
+import Data.List((\\))
 import Control.Monad(guard,mzero)
 
 import Cryptol.TypeCheck.Type
@@ -114,14 +114,13 @@ improveByDefaultingWithPure :: [TVar] -> [Goal] ->
     , [Error]   -- width defaulting errors
     )
 improveByDefaultingWithPure as ps =
-  classify (Map.fromList [ (a,([],Set.empty)) | a <- as ]) [] [] ps
+  classify (Map.fromList [ (a,([],Set.empty)) | a <- as ]) [] ps
 
   where
   -- leq: candidate definitions (i.e. of the form x >= t, x `notElem` fvs t)
   --      for each of these, we keep the list of `t`, and the free vars in them.
-  -- fins: all `fin` constraints
   -- others: any other constraints
-  classify leqs fins others [] =
+  classify leqs others [] =
     let -- First, we use the `leqs` to choose some definitions.
         (defs, newOthers)  = select [] [] (fvs others) (Map.toList leqs)
         su                 = listSubst defs
@@ -136,24 +135,24 @@ improveByDefaultingWithPure as ps =
                  ]
 
     in ( [ a | a <- as, not (a `Set.member` names) ]
-       , newOthers ++ others ++ nub (apSubst su fins)
+       , newOthers ++ others
        , su
        , map mkErr defs
        )
 
 
-  classify leqs fins others (prop : more) =
+  classify leqs others (prop : more) =
       case tNoUser (goal prop) of
 
         -- Things of the form: x >= T(x) are not defaulted.
         TCon (PC PGeq) [ TVar x, t ]
           | x `elem` as && x `Set.notMember` freeRHS ->
-           classify leqs' fins others more
+           classify leqs' others more
            where freeRHS = fvs t
                  add (xs1,vs1) (xs2,vs2) = (xs1 ++ xs2, Set.union vs1 vs2)
                  leqs' = Map.insertWith add x ([(t,prop)],freeRHS) leqs
 
-        _ -> classify leqs fins (prop : others) more
+        _ -> classify leqs (prop : others) more
 
 
   -- Pickout which variables may be defaulted and how.

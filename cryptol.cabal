@@ -189,7 +189,6 @@ library
 
                        Cryptol.TypeCheck.Solver.Numeric,
                        Cryptol.TypeCheck.Solver.Improve,
-                       Cryptol.TypeCheck.Solver.Numeric.Fin,
                        Cryptol.TypeCheck.Solver.Numeric.Interval,
 
                        Cryptol.Transform.MonoValues,

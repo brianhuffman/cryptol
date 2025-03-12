@@ -1,9 +1,0 @@
-:l rational_properties.cry
-
-:check
-
-:set prover=w4-cvc4
-:prove
-
-:set prover=w4-z3
-:prove QordTrans

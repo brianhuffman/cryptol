@@ -1,2 +1,0 @@
-:m Float
-:t number`{1, Float _ _}

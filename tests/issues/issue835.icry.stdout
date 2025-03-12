@@ -1,5 +1,0 @@
-Loading module Cryptol
-Loading module Cryptol
-Loading module Float
-number`{1, Float _ _} :
-  {n, m} (ValidFloat n m, Literal 1 (Float n m)) => Float n m

@@ -1,3 +1,0 @@
-module issue485b where
-
-import issue485a

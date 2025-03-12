@@ -89,7 +89,6 @@ flitDefaultCandidates gs =
        (i.e., it is not on the RHS of =>)
     4. It (say, the variable 'a') appears only in constraints like this:
         3.1 `a >= t` with (`a` not in `fvs t`)
-        3.2 in the `s` of `fin s`
 
   Then we replace `a` with `max(t1 .. tn)` where the `ts`
   are from the constraints `a >= t`.

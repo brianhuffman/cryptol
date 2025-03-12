@@ -205,7 +205,7 @@ suiteBPrims sym = Map.fromList $ [ (suiteBPrim n, v) | (n,v) <- prims ]
          do addUninterpWarning sym "AES key expansion"
             applyAESStateFunc sym "AESInvMixColumns" =<< st
 
-    -- {k} (fin k, k >= 4, 8 >= k) => [k][32] -> [4*(k+7)][32]
+    -- {k} (k >= 4, 8 >= k) => [k][32] -> [4*(k+7)][32]
   , "AESKeyExpand" ~>
        PFinPoly \k ->
        PFun     \st ->
@@ -228,7 +228,7 @@ suiteBPrims sym = Map.fromList $ [ (suiteBPrim n, v) | (n,v) <- prims ]
                    fromWord32 =<< liftIO (W4.structField (w4 sym) z idx)
                  _ -> evalPanic "AESKeyExpand" ["Index out of range", show k, show i]
 
-    -- {n} (fin n) => [n][16][32] -> [7][32]
+    -- {n} [n][16][32] -> [7][32]
   , "processSHA2_224" ~>
     PFinPoly \n ->
     PFun     \xs ->
@@ -246,7 +246,7 @@ suiteBPrims sym = Map.fromList $ [ (suiteBPrim n, v) | (n,v) <- prims ]
                      Nothing -> evalPanic "processSHA2_224" ["Index out of range", show i]
               Nothing -> evalPanic "processSHA2_224" ["Index out of range", show i]
 
-    -- {n} (fin n) => [n][16][32] -> [8][32]
+    -- {n} [n][16][32] -> [8][32]
   , "processSHA2_256" ~>
     PFinPoly \n ->
     PFun     \xs ->
@@ -264,7 +264,7 @@ suiteBPrims sym = Map.fromList $ [ (suiteBPrim n, v) | (n,v) <- prims ]
                      Nothing -> evalPanic "processSHA2_256" ["Index out of range", show i]
               Nothing -> evalPanic "processSHA2_256" ["Index out of range", show i]
 
-    -- {n} (fin n) => [n][16][64] -> [6][64]
+    -- {n} [n][16][64] -> [6][64]
   , "processSHA2_384" ~>
     PFinPoly \n ->
     PFun     \xs ->
@@ -282,7 +282,7 @@ suiteBPrims sym = Map.fromList $ [ (suiteBPrim n, v) | (n,v) <- prims ]
                      Nothing -> evalPanic "processSHA2_384" ["Index out of range", show i]
               Nothing -> evalPanic "processSHA2_384" ["Index out of range", show i]
 
-    -- {n} (fin n) => [n][16][64] -> [8][64]
+    -- {n} [n][16][64] -> [8][64]
   , "processSHA2_512" ~>
     PFinPoly \n ->
     PFun     \xs ->

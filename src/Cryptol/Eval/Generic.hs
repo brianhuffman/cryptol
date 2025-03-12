@@ -2079,7 +2079,7 @@ genericPrimTable sym getEOpts =
 
     -- Misc
 
-    -- {at,len} (fin len) => [len][8] -> at
+    -- {at,len} [len][8] -> at
   , ("error"      , {-# SCC "Prelude::error" #-}
                      PTyPoly  \a ->
                      PFinPoly \_ ->

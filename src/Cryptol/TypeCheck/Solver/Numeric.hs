@@ -170,8 +170,8 @@ tryMinIsGeq t1 t2 =
 --------------------------------------------------------------------------------
 
 -- | Cancel finite positive variables from both sides.
--- @(fin a, a >= 1) =>  a * t1 == a * t2 ~~~> t1 == t2@
--- @(fin a, a >= 1) =>  a * t1 >= a * t2 ~~~> t1 >= t2@
+-- @(a >= 1) =>  a * t1 == a * t2 ~~~> t1 == t2@
+-- @(a >= 1) =>  a * t1 >= a * t2 ~~~> t1 >= t2@
 tryCancelVar :: Ctxt -> (Type -> Type -> Prop) -> Type -> Type -> Match Solved
 tryCancelVar ctxt p t1 t2 =
   let lhs = preproc t1

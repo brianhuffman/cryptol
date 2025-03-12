@@ -231,7 +231,7 @@ nbCommandList  =
       , " * Functions (e.g. :help join)"
       , " * Infix operators (e.g. :help +)"
       , " * Type constructors (e.g. :help Z)"
-      , " * Type constraints (e.g. :help fin)"
+      , " * Type constraints (e.g. :help Cmp)"
       , " * :set-able options (e.g. :help :set base)" ])
   , CommandDescr [ ":s", ":set" ] ["[ OPTION [ = VALUE ] ]"] (OptionArg setOptionCmd)
     "Set an environmental option (:set on its own displays current values)."
@@ -317,10 +317,10 @@ commandList  =
     "Load a module by its name."
     ""
   , CommandDescr [ ":w", ":writeByteArray" ] ["FILE", "EXPR"] (FileExprArg writeFileCmd)
-    "Write data of type 'fin n => [n][8]' to a file."
+    "Write data of type '[n][8]' to a file."
     ""
   , CommandDescr [ ":readByteArray" ] ["FILE"] (FilenameArg readFileCmd)
-    "Read data from a file as type 'fin n => [n][8]', binding\nthe value to variable 'it'."
+    "Read data from a file as type '[n][8]', binding\nthe value to variable 'it'."
     ""
   , CommandDescr [ ":dumptests" ] ["FILE", "EXPR"] (FileExprArg dumpTestsCmd)
     (unlines [ "Dump a tab-separated collection of tests for the given"

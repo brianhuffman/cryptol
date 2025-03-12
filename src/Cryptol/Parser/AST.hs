@@ -277,7 +277,7 @@ data ParamDecl name =
   | DParameterDecl (SigDecl name)       -- ^ A delcaration in an interface
 
   | DParameterConstraint [Located (Prop name)]
-    -- ^ @parameter type constraint (fin T)@
+    -- ^ @parameter type constraint (T >= 1)@
 
     deriving (Show, Generic, NFData)
 

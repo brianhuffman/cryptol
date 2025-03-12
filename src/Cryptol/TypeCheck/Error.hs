@@ -704,7 +704,7 @@ instance PP (WithNames Error) where
                   _         -> ppWithNames names p
         in
         vcat [ backticks d <+> "may not be used in a constraint guard."
-             , "Constraint guards support only numeric comparisons and `fin`."
+             , "Constraint guards support only numeric comparisons."
              ]
 
       TemporaryError doc -> doc

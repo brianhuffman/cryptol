@@ -174,11 +174,6 @@ allFin ints ty = iIsFin (typeInterval ints ty)
 -- will be moved to the RHS, with rewriting continuing in `B`. However, in the
 -- case of subtraction, the `B` side is moved to the RHS, and rewriting
 -- continues on the RHS instead.
---
--- In both cases, if the operation is addition, rewriting will only continue if
--- the operand being moved to the RHS is known to be finite. If this check was
--- not done, we would end up violating the well-definedness condition for
--- subtraction (for a, b: well defined (a - b) iff fin b).
 rewriteLHS :: Map TVar Interval -> TVar -> Type -> Type -> Maybe Type
 rewriteLHS fins uvar = go
   where

@@ -191,7 +191,7 @@ solveRingInst ty = case tNoUser ty of
 solveRingSeq :: Type -> Type -> Solved
 solveRingSeq n ty = case tNoUser ty of
 
-  -- fin n => Ring [n]Bit
+  -- Ring [n]Bit
   TCon (TC TCBit) [] -> SolvedIf []
 
   -- variables are not solvable.
@@ -400,13 +400,13 @@ solveCmpInst ty = case tNoUser ty of
 solveSignedCmpSeq :: Type -> Type -> Solved
 solveSignedCmpSeq n ty = case tNoUser ty of
 
-  -- (fin n, n >=1 ) => SignedCmp [n]Bit
+  -- (n >=1) => SignedCmp [n]Bit
   TCon (TC TCBit) [] -> SolvedIf [ n >== tNum (1 :: Integer) ]
 
   -- variables are not solvable.
   TVar {} -> Unsolved
 
-  -- (fin n, SignedCmp ty) => SignedCmp [n]ty, when ty != Bit
+  -- (SignedCmp ty) => SignedCmp [n]ty, when ty != Bit
   _ -> SolvedIf [ pSignedCmp ty ]
 
 
@@ -497,10 +497,10 @@ solveLiteralInst val ty
       -- (1 >= val) => Literal val Bit
       TCon (TC TCBit) [] -> SolvedIf [ tOne >== val ]
 
-      -- (fin val) => Literal val Integer
+      -- Literal val Integer
       TCon (TC TCInteger) [] -> SolvedIf []
 
-      -- (fin val) => Literal val Rational
+      -- Literal val Rational
       TCon (TC TCRational) [] -> SolvedIf []
 
       -- ValidFloat e p => Literal val (Float e p)   if `val` is representable
@@ -515,11 +515,11 @@ solveLiteralInst val ty
         | otherwise -> Unsolved
 
 
-      -- (fin val, fin m, m >= val + 1) => Literal val (Z m)
+      -- (m >= val + 1) => Literal val (Z m)
       TCon (TC TCIntMod) [modulus] ->
         SolvedIf [ modulus >== tAdd val tOne ]
 
-      -- (fin bits, bits >= width n) => Literal n [bits]
+      -- (bits >= width n) => Literal n [bits]
       TCon (TC TCSeq) [bits, elTy]
         | TCon (TC TCBit) [] <- ety ->
             SolvedIf [ bits >== tWidth val ]
@@ -563,11 +563,11 @@ solveLiteralLessThanInst val ty
 
         | otherwise -> Unsolved
 
-      -- (fin val, fin m, m >= val) => LiteralLessThan val (Z m)
+      -- (m >= val) => LiteralLessThan val (Z m)
       TCon (TC TCIntMod) [modulus] ->
         SolvedIf [ modulus >== val ]
 
-      -- (fin bits, bits >= lg2 n) => LiteralLessThan n [bits]
+      -- (bits >= lg2 n) => LiteralLessThan n [bits]
       TCon (TC TCSeq) [bits, elTy]
         | TCon (TC TCBit) [] <- ety ->
             SolvedIf [ bits >== tWidth val' ]

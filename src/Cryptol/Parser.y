@@ -597,17 +597,6 @@ longApp                        :: { Expr PName }
   : longExpr                      { $1 }
   | simpleApp                     { $1 }
 
-varexpr                        :: { Expr PName }
-  : qname                         { at $1 $ EVar (thing $1)                }
-
-tyapp                          :: { Expr PName }
-  : varexpr                       { $1                                    }
-  | varexpr tyargs                { at $2 $ EAppT $1 (reverse (thing $2)) }
-
-funapp                         :: { Expr PName }
-  : tyapp                         { $1 }
-  | tyapp funargs                 { foldr (flip EApp) $1 $2 }
-
 tyargs                         :: { Located [TypeInst PName] } -- reverse order
   : '{' '}'                       { at ($1,$2) (Located emptyRange [])                 }
   | '{' field_ty_vals '}'         { at ($1,$3) (Located emptyRange (map NamedInst $2)) }
@@ -622,11 +611,13 @@ funargs                        :: { [Expr PName] } -- reverse order
 -- Expression atom (needs no parens)
 aexpr                          :: { Expr PName }
   : no_sel_aexpr                  { $1 }
-  | aexpr selector                { at ($1,$2) $ ESel $1 (thing $2)   }
-  | aexpr '[' expr ']'            { at ($1,$4) $ EIndex $1 $3         }
+  | aexpr selector                { at ($1,$2) $ ESel $1 (thing $2)        }
+  | aexpr '[' expr ']'            { at ($1,$4) $ EIndex $1 $3              }
+  | aexpr tyargs                  { at $2 $ EAppT $1 (reverse (thing $2))  }
+  | aexpr funargs                 { foldr (flip EApp) $1 $2                }
 
 no_sel_aexpr                   :: { Expr PName                             }
-  : funapp                        { $1                                     }
+  : qname                         { at $1 $ EVar (thing $1)                }
 
   | NUM                           { at $1 $ numLit (thing $1)              }
   | STRLIT                        { at $1 $ ELit $ ECString $ getStr $1    }

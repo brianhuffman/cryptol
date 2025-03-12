@@ -1,2 +1,0 @@
-rfrac : {m, n} Rational
-rfrac = fraction`{m, n, 0, Rational}

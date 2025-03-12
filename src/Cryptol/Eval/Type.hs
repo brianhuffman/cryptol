@@ -19,7 +19,7 @@ import Cryptol.Backend.Monad (evalPanic)
 import Cryptol.ModuleSystem.Name(nameIdent)
 import Cryptol.TypeCheck.AST
 import Cryptol.TypeCheck.PP(pp)
-import Cryptol.TypeCheck.Solver.InfNat
+import Cryptol.TypeCheck.Solver.Nat
 import Cryptol.Utils.Panic (panic)
 import Cryptol.Utils.Ident (Ident)
 import Cryptol.Utils.RecordMap
@@ -39,7 +39,7 @@ data TValue
   | TVRec (RecordMap Ident TValue) -- ^ @ { x : a, y : b, z : c } @
   | TVFun TValue TValue       -- ^ @ a -> b @
   | TVNominal NominalType
-              [Either Nat' TValue]
+              [Either Nat TValue]
               TNominalTypeValue    -- ^ a named newtype
     deriving (Generic, NFData, Eq)
 
@@ -79,10 +79,10 @@ tValTy tv =
     TVFun t1 t2 -> tFun (tValTy t1) (tValTy t2)
     TVNominal nt vs _ -> tNominal nt (map tNumValTy vs)
 
-tNumTy :: Nat' -> Type
+tNumTy :: Nat -> Type
 tNumTy (Nat n) = tNum n
 
-tNumValTy :: Either Nat' TValue -> Type
+tNumValTy :: Either Nat TValue -> Type
 tNumValTy = either tNumTy tValTy
 
 
@@ -98,14 +98,13 @@ isTBit TVBit = True
 isTBit _ = False
 
 -- | Produce a sequence type value
-tvSeq :: Nat' -> TValue -> TValue
+tvSeq :: Nat -> TValue -> TValue
 tvSeq (Nat n) t = TVSeq n t
 
--- | Coerce an extended natural into an integer,
---   for values known to be finite
-finNat' :: Nat' -> Integer
-finNat' n' =
-  case n' of
+-- | Coerce an extended natural into an integer
+finNat :: Nat -> Integer
+finNat n =
+  case n of
     Nat x -> x
 
 
@@ -113,7 +112,7 @@ finNat' n' =
 
 newtype TypeEnv =
   TypeEnv
-  { envTypeMap  :: IntMap.IntMap (Either Nat' TValue) }
+  { envTypeMap  :: IntMap.IntMap (Either Nat TValue) }
   deriving (Show)
 
 instance Monoid TypeEnv where
@@ -123,14 +122,14 @@ instance Semigroup TypeEnv where
   l <> r = TypeEnv
     { envTypeMap  = IntMap.union (envTypeMap l) (envTypeMap r) }
 
-lookupTypeVar :: TVar -> TypeEnv -> Maybe (Either Nat' TValue)
+lookupTypeVar :: TVar -> TypeEnv -> Maybe (Either Nat TValue)
 lookupTypeVar tv env = IntMap.lookup (tvUnique tv) (envTypeMap env)
 
-bindTypeVar :: TVar -> Either Nat' TValue -> TypeEnv -> TypeEnv
+bindTypeVar :: TVar -> Either Nat TValue -> TypeEnv -> TypeEnv
 bindTypeVar tv ty env = env{ envTypeMap = IntMap.insert (tvUnique tv) ty (envTypeMap env) }
 
 -- | Evaluation for types (kind * or #).
-evalType :: TypeEnv -> Type -> Either Nat' TValue
+evalType :: TypeEnv -> Type -> Either Nat TValue
 evalType env ty =
   case ty of
     TVar tv ->
@@ -163,7 +162,7 @@ evalType env ty =
 
 -- | Evaluate the body of a newtype, given evaluated arguments
 evalNominalTypeBody ::
-  TypeEnv -> NominalType -> [Either Nat' TValue] -> TNominalTypeValue
+  TypeEnv -> NominalType -> [Either Nat TValue] -> TNominalTypeValue
 evalNominalTypeBody env0 nt args =
   case ntDef nt of
     Struct c -> TVStruct (fmap (evalValType env') (ntFields c))
@@ -187,7 +186,7 @@ evalValType env ty =
     Right t -> t
 
 -- | Evaluation for number types (kind #).
-evalNumType :: TypeEnv -> Type -> Nat'
+evalNumType :: TypeEnv -> Type -> Nat
 evalNumType env ty =
   case evalType env ty of
     Left n -> n
@@ -195,7 +194,7 @@ evalNumType env ty =
 
 
 -- | Reduce type functions, raising an exception for undefined values.
-evalTF :: TFun -> [Nat'] -> Nat'
+evalTF :: TFun -> [Nat] -> Nat
 evalTF f vs
   | TCAdd           <- f, [x,y]   <- vs  =      nAdd x y
   | TCSub           <- f, [x,y]   <- vs  = mb $ nSub x y
@@ -213,4 +212,4 @@ evalTF f vs
                         ["Unexpected type function:", show ty]
 
   where mb = fromMaybe (evalPanic "evalTF" ["type cannot be demoted", show (pp ty)])
-        ty = TCon (TF f) (map tNat' vs)
+        ty = TCon (TF f) (map tNat vs)

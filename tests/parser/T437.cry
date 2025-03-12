@@ -1,4 +1,4 @@
-mk_buggy_fib_no_init : {a} (fin a, a >= 1) => [a] ->
+mk_buggy_fib_no_init : {a} (a >= 1) => [a] ->
   ([1], ([8], [8], [a])) -> ([8], ([8], [8], [a]))
 mk_buggy_fib_no_init magic (_, (fn, fn1, k)) = (fn', (fn1, fn2, k+1))
   where
@@ -6,7 +6,7 @@ mk_buggy_fib_no_init magic (_, (fn, fn1, k)) = (fn', (fn1, fn2, k+1))
   // Change output when state has magic value.
   fn' = fn + if k == magic then 1 else 0
 
-generate : {n, ix, a} (fin ix, fin n, n >= 1, ix >= width (n - 1)) => ([ix] -> a) -> [n]a
+generate : {n, ix, a} (n >= 1, ix >= width (n - 1)) => ([ix] -> a) -> [n]a
 generate f = [ f i | i <- [0 .. n-1] ]
 
 infixl 1 $

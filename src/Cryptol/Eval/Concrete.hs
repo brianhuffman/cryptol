@@ -30,7 +30,7 @@ import Data.Map(Map)
 import qualified Data.Vector as Vector
 import qualified Data.IntMap.Strict as IMap
 
-import Cryptol.TypeCheck.Solver.InfNat (Nat'(..))
+import Cryptol.TypeCheck.Solver.Nat (Nat(..))
 
 import Cryptol.Backend
 import Cryptol.Backend.Concrete
@@ -190,10 +190,10 @@ primTable getEOpts = let sym = Concrete in
 
 -- Sequence Primitives ---------------------------------------------------------
 
-indexFront_int :: Nat' -> TValue -> SeqMap Concrete (GenValue Concrete) -> TValue -> Integer -> Eval Value
+indexFront_int :: Nat -> TValue -> SeqMap Concrete (GenValue Concrete) -> TValue -> Integer -> Eval Value
 indexFront_int _mblen _a vs _ix idx = lookupSeqMap vs idx
 
-indexFront_segs :: Nat' -> TValue -> SeqMap Concrete (GenValue Concrete) -> TValue -> Integer -> [IndexSegment Concrete] -> Eval Value
+indexFront_segs :: Nat -> TValue -> SeqMap Concrete (GenValue Concrete) -> TValue -> Integer -> [IndexSegment Concrete] -> Eval Value
 indexFront_segs _mblen _a vs _ix idx_bits segs = lookupSeqMap vs $! packSegments idx_bits segs
 
 packSegments :: Integer -> [IndexSegment Concrete] -> Integer
@@ -214,7 +214,7 @@ packSegments = loop 0
          in loop val n' bs
 
 updateFront ::
-  Nat'               {- ^ length of the sequence -} ->
+  Nat                {- ^ length of the sequence -} ->
   TValue             {- ^ type of values in the sequence -} ->
   SeqMap Concrete (GenValue Concrete) {- ^ sequence to update -} ->
   Either Integer (WordValue Concrete) {- ^ index -} ->
@@ -228,7 +228,7 @@ updateFront _len _eltTy vs (Right w) val = do
   return $ updateSeqMap vs idx val
 
 updateFront_word ::
-  Nat'               {- ^ length of the sequence -} ->
+  Nat                {- ^ length of the sequence -} ->
   TValue             {- ^ type of values in the sequence -} ->
   WordValue Concrete {- ^ bit sequence to update -} ->
   Either Integer (WordValue Concrete) {- ^ index -} ->
@@ -242,7 +242,7 @@ updateFront_word _len _eltTy bs (Right w) val = do
   updateWordValue Concrete bs idx (fromVBit <$> val)
 
 updateBack ::
-  Nat'               {- ^ length of the sequence -} ->
+  Nat                {- ^ length of the sequence -} ->
   TValue             {- ^ type of values in the sequence -} ->
   SeqMap Concrete (GenValue Concrete) {- ^ sequence to update -} ->
   Either Integer (WordValue Concrete) {- ^ index -} ->
@@ -255,7 +255,7 @@ updateBack (Nat n) _eltTy vs (Right w) val = do
   return $ updateSeqMap vs (n - idx - 1) val
 
 updateBack_word ::
-  Nat'               {- ^ length of the sequence -} ->
+  Nat                {- ^ length of the sequence -} ->
   TValue             {- ^ type of values in the sequence -} ->
   WordValue Concrete {- ^ bit sequence to update -} ->
   Either Integer (WordValue Concrete) {- ^ index -} ->

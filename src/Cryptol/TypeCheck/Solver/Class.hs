@@ -125,7 +125,7 @@ solveRingInst ty = case tNoUser ty of
 solveRingSeq :: Type -> Solved
 solveRingSeq ty = case tNoUser ty of
 
-  -- fin n => Ring [n]Bit
+  -- Ring [n]Bit
   TCon (TC TCBit) [] -> SolvedIf []
 
   -- variables are not solvable.
@@ -235,10 +235,10 @@ solveLiteralInst val ty
       -- (1 >= val) => Literal val Bit
       TCon (TC TCBit) [] -> SolvedIf [ tOne >== val ]
 
-      -- (fin val) => Literal val Integer
+      -- Literal val Integer
       TCon (TC TCInteger) [] -> SolvedIf []
 
-      -- (fin bits, bits >= width n) => Literal n [bits]
+      -- (bits >= width n) => Literal n [bits]
       TCon (TC TCSeq) [bits, elTy]
         | TCon (TC TCBit) [] <- ety ->
             SolvedIf [ bits >== tWidth val ]
@@ -266,7 +266,7 @@ solveLiteralLessThanInst val ty
       -- LiteralLessThan val Integer
       TCon (TC TCInteger) [] -> SolvedIf [ ]
 
-      -- (fin bits, bits >= lg2 n) => LiteralLessThan n [bits]
+      -- (bits >= lg2 n) => LiteralLessThan n [bits]
       TCon (TC TCSeq) [bits, elTy]
         | TCon (TC TCBit) [] <- ety ->
             SolvedIf [ bits >== tWidth val' ]

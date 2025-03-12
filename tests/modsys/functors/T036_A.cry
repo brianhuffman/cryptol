@@ -1,7 +1,7 @@
 module T036_A where
   parameter
     type n : #
-    type constraint (fin n)
+    type constraint (n >= 0)
 
   newtype T = { x : [n] }
 

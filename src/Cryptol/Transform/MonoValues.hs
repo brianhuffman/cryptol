@@ -14,7 +14,7 @@
 --
 -- The type of @fibs@ is:
 --
--- >    {a} (a >= 1, fin a) => [inf][a]
+-- >    {a, n} (a >= 1) => [n][a]
 --
 -- Here @a@ is the number of bits to be used in the values computed by @fibs@.
 -- When we evaluate @fibs@, @a@ becomes a parameter to @fibs@, which works
@@ -32,9 +32,9 @@
 -- recursive call to @fibs@ is instantiated with exactly the same
 -- type parameter (i.e., @a@).  The rewrite we do is as follows:
 --
--- >    fibs : {a} (a >= 1, fin a) => [inf][a]
--- >    fibs = \{a} (a >= 1, fin a) -> fibs'
--- >      where fibs' : [inf][a]
+-- >    fibs : {a, n} (a >= 1) => [n][a]
+-- >    fibs = \{a, n} (a >= 1) -> fibs'
+-- >      where fibs' : [n][a]
 -- >            fibs' = [0,1] # [ x + y | x <- fibs', y <- drop`{1} fibs' ]
 --
 -- After the rewrite, the recursion is monomorphic (i.e., we are always using
@@ -44,28 +44,28 @@
 -- The rewrite is a bit more complex, when there are multiple mutually
 -- recursive functions.  Here is an example:
 --
--- >    zig : {a} (a >= 2, fin a) => [inf][a]
--- >    zig = [1] # zag
+-- >    zig : {a, n} (a >= 2, n >= 1) => [n][a]
+-- >    zig = [1] # take zag
 -- >
--- >    zag : {a} (a >= 2, fin a) => [inf][a]
--- >    zag = [2] # zig
+-- >    zag : {a, n} (a >= 2, n >= 1) => [n][a]
+-- >    zag = [2] # take zig
 --
 -- This gets rewritten to:
 --
--- >    newName : {a} (a >= 2, fin a) => ([inf][a], [inf][a])
--- >    newName = \{a} (a >= 2, fin a) -> (zig', zag')
+-- >    newName : {a, n} (a >= 2, n >= 1) => ([n][a], [n][a])
+-- >    newName = \{a, n} (a >= 2, n >= 1) -> (zig', zag')
 -- >      where
--- >      zig' : [inf][a]
--- >      zig' = [1] # zag'
+-- >      zig' : [n][a]
+-- >      zig' = [1] # take zag'
 -- >
--- >      zag' : [inf][a]
--- >      zag' = [2] # zig'
+-- >      zag' : [n][a]
+-- >      zag' = [2] # take zig'
 -- >
--- >    zig : {a} (a >= 2, fin a) => [inf][a]
--- >    zig = \{a} (a >= 2, fin a) -> (newName a <> <> ).1
+-- >    zig : {a, n} (a >= 2, n >= 1) => [n][a]
+-- >    zig = \{a, n} (a >= 2, n >= 1) -> (newName a <> <> ).1
 -- >
--- >    zag : {a} (a >= 2, fin a) => [inf][a]
--- >    zag = \{a} (a >= 2, fin a) -> (newName a <> <> ).2
+-- >    zag : {a, n} (a >= 2, n >= 1) => [n][a]
+-- >    zag = \{a, n} (a >= 2, n >= 1) -> (newName a <> <> ).2
 --
 -- NOTE:  We are assuming that no capture would occur with binders.
 -- For values, this is because we replaces things with freshly chosen variables.

@@ -6,7 +6,7 @@ import Cryptol.Backend
 import Cryptol.Eval.Type
 import Cryptol.Eval.Value
 import Cryptol.ModuleSystem.Name
-import Cryptol.TypeCheck.Solver.InfNat(Nat'(..))
+import Cryptol.TypeCheck.Solver.Nat(Nat(..))
 
 -- | This type provides a lightweight syntactic framework for defining
 --   Cryptol primitives.  The main purpose of this type is to provide
@@ -17,7 +17,7 @@ data Prim sym
   | PStrict (GenValue sym -> Prim sym)
   | PWordFun (SWord sym -> Prim sym)
   | PTyPoly (TValue -> Prim sym)
-  | PNumPoly (Nat' -> Prim sym)
+  | PNumPoly (Nat -> Prim sym)
   | PFinPoly (Integer -> Prim sym)
   | PPrim (SEval sym (GenValue sym))
   | PVal (GenValue sym)

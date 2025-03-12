@@ -36,7 +36,7 @@ import qualified Data.Map.Strict as Map
 import Data.Map(Map)
 
 import Cryptol.TypeCheck.AST
-import Cryptol.TypeCheck.Solver.InfNat (Nat'(..),nMul,nAdd)
+import Cryptol.TypeCheck.Solver.Nat (Nat(..),nMul,nAdd)
 import Cryptol.Backend
 import Cryptol.Backend.Concrete (Concrete(..))
 import Cryptol.Backend.Monad( Eval, evalPanic, EvalError(..), Unsupported(..) )
@@ -672,7 +672,7 @@ zeroV sym ty = case ty of
 
 {-# SPECIALIZE joinSeq ::
   Concrete ->
-  Nat' ->
+  Nat ->
   Integer ->
   TValue ->
   SEval Concrete (SeqMap Concrete (GenValue Concrete)) ->
@@ -681,7 +681,7 @@ zeroV sym ty = case ty of
 joinSeq ::
   Backend sym =>
   sym ->
-  Nat' ->
+  Nat ->
   Integer ->
   TValue ->
   SEval sym (SeqMap sym (GenValue sym)) ->
@@ -716,7 +716,7 @@ joinSeq _sym parts each _a val
 joinV ::
   Backend sym =>
   sym ->
-  Nat' ->
+  Nat ->
   Integer ->
   TValue ->
   SEval sym (GenValue sym) ->
@@ -729,8 +729,8 @@ joinV sym parts each a val =
 takeV ::
   Backend sym =>
   sym ->
-  Nat' ->
-  Nat' ->
+  Nat ->
+  Nat ->
   TValue ->
   SEval sym (GenValue sym) ->
   SEval sym (GenValue sym)
@@ -751,7 +751,7 @@ dropV ::
   Backend sym =>
   sym ->
   Integer ->
-  Nat' ->
+  Nat ->
   TValue ->
   SEval sym (GenValue sym) ->
   SEval sym (GenValue sym)
@@ -771,7 +771,7 @@ dropV sym front back a val =
 -- | Split implementation.
 splitV :: Backend sym =>
   sym ->
-  Nat' ->
+  Nat ->
   Integer ->
   TValue ->
   SEval sym (GenValue sym) ->
@@ -814,8 +814,8 @@ reverseV sym n _a val =
 transposeV ::
   Backend sym =>
   sym ->
-  Nat' ->
-  Nat' ->
+  Nat ->
+  Nat ->
   TValue ->
   GenValue sym ->
   SEval sym (GenValue sym)
@@ -852,7 +852,7 @@ ccatV ::
   Backend sym =>
   sym ->
   Integer ->
-  Nat' ->
+  Nat ->
   TValue ->
   SEval sym (GenValue sym) ->
   SEval sym (GenValue sym) ->
@@ -1000,7 +1000,7 @@ logicUnary sym opb opw = loop
 assertIndexInBounds ::
   Backend sym =>
   sym ->
-  Nat' {- ^ Sequence size bounds -} ->
+  Nat {- ^ Sequence size bounds -} ->
   Either (SInteger sym) (WordValue sym) {- ^ Index value -} ->
   SEval sym ()
 
@@ -1025,8 +1025,8 @@ indexPrim ::
   Backend sym =>
   sym ->
   IndexDirection ->
-  (Nat' -> TValue -> SeqMap sym (GenValue sym) -> TValue -> SInteger sym -> SEval sym (GenValue sym)) ->
-  (Nat' -> TValue -> SeqMap sym (GenValue sym) -> TValue -> Integer -> [IndexSegment sym] -> SEval sym (GenValue sym)) ->
+  (Nat -> TValue -> SeqMap sym (GenValue sym) -> TValue -> SInteger sym -> SEval sym (GenValue sym)) ->
+  (Nat -> TValue -> SeqMap sym (GenValue sym) -> TValue -> Integer -> [IndexSegment sym] -> SEval sym (GenValue sym)) ->
   Prim sym
 indexPrim sym dir int_op word_op =
   PNumPoly \len ->
@@ -1053,8 +1053,8 @@ indexPrim sym dir int_op word_op =
 updatePrim ::
   Backend sym =>
   sym ->
-  (Nat' -> TValue -> WordValue sym -> Either (SInteger sym) (WordValue sym) -> SEval sym (GenValue sym) -> SEval sym (WordValue sym)) ->
-  (Nat' -> TValue -> SeqMap sym (GenValue sym) -> Either (SInteger sym) (WordValue sym) -> SEval sym (GenValue sym) -> SEval sym (SeqMap sym (GenValue sym))) ->
+  (Nat -> TValue -> WordValue sym -> Either (SInteger sym) (WordValue sym) -> SEval sym (GenValue sym) -> SEval sym (WordValue sym)) ->
+  (Nat -> TValue -> SeqMap sym (GenValue sym) -> Either (SInteger sym) (WordValue sym) -> SEval sym (GenValue sym) -> SEval sym (SeqMap sym (GenValue sym))) ->
   Prim sym
 updatePrim sym updateWord updateSeq =
   PNumPoly \len ->
@@ -1204,25 +1204,25 @@ infFromThenV sym =
 
 
 {-# INLINE shiftLeftReindex #-}
-shiftLeftReindex :: Nat' -> Integer -> Integer -> Maybe Integer
+shiftLeftReindex :: Nat -> Integer -> Integer -> Maybe Integer
 shiftLeftReindex sz i shft =
    case sz of
      Nat n | i+shft >= n -> Nothing
      _                   -> Just (i+shft)
 
 {-# INLINE shiftRightReindex #-}
-shiftRightReindex :: Nat' -> Integer -> Integer -> Maybe Integer
+shiftRightReindex :: Nat -> Integer -> Integer -> Maybe Integer
 shiftRightReindex _sz i shft =
    if i-shft < 0 then Nothing else Just (i-shft)
 
 {-# INLINE rotateLeftReindex #-}
-rotateLeftReindex :: Nat' -> Integer -> Integer -> Maybe Integer
+rotateLeftReindex :: Nat -> Integer -> Integer -> Maybe Integer
 rotateLeftReindex sz i shft =
    case sz of
      Nat n -> Just ((i+shft) `mod` n)
 
 {-# INLINE rotateRightReindex #-}
-rotateRightReindex :: Nat' -> Integer -> Integer -> Maybe Integer
+rotateRightReindex :: Nat -> Integer -> Integer -> Maybe Integer
 rotateRightReindex sz i shft =
    case sz of
      Nat n -> Just ((i+n-shft) `mod` n)
@@ -1240,15 +1240,15 @@ rotateRightReindex sz i shft =
 logicShift :: Backend sym =>
   sym ->
   String ->
-  (sym -> Nat' -> TValue -> SInteger sym -> SEval sym (SInteger sym))
+  (sym -> Nat -> TValue -> SInteger sym -> SEval sym (SInteger sym))
      {- ^ operation for range reduction on integers -} ->
   (SWord sym -> SWord sym -> SEval sym (SWord sym))
      {- ^ word shift operation for positive indices -} ->
   (SWord sym -> SWord sym -> SEval sym (SWord sym))
      {- ^ word shift operation for negative indices -} ->
-  (Nat' -> Integer -> Integer -> Maybe Integer)
+  (Nat -> Integer -> Integer -> Maybe Integer)
      {- ^ reindexing operation for positive indices (sequence size, starting index, shift amount -} ->
-  (Nat' -> Integer -> Integer -> Maybe Integer)
+  (Nat -> Integer -> Integer -> Maybe Integer)
      {- ^ reindexing operation for negative indices (sequence size, starting index, shift amount -} ->
   Prim sym
 logicShift sym nm shrinkRange wopPos wopNeg reindexPos reindexNeg =
@@ -1275,8 +1275,8 @@ intShifter :: Backend sym =>
    sym ->
    String ->
    (SWord sym -> SWord sym -> SEval sym (SWord sym)) ->
-   (Nat' -> Integer -> Integer -> Maybe Integer) ->
-   Nat' ->
+   (Nat -> Integer -> Integer -> Maybe Integer) ->
+   Nat ->
    GenValue sym ->
    SInteger sym ->
    SEval sym (GenValue sym)
@@ -1292,8 +1292,8 @@ wordShifter :: Backend sym =>
    sym ->
    String ->
    (SWord sym -> SWord sym -> SEval sym (SWord sym)) ->
-   (Nat' -> Integer -> Integer -> Maybe Integer) ->
-   Nat' ->
+   (Nat -> Integer -> Integer -> Maybe Integer) ->
+   Nat ->
    GenValue sym ->
    WordValue sym ->
    SEval sym (GenValue sym)
@@ -1306,14 +1306,14 @@ wordShifter sym nm wop reindex m xs idx =
 
 
 {-# INLINE shiftShrink #-}
-shiftShrink :: Backend sym => sym -> Nat' -> TValue -> SInteger sym -> SEval sym (SInteger sym)
+shiftShrink :: Backend sym => sym -> Nat -> TValue -> SInteger sym -> SEval sym (SInteger sym)
 shiftShrink sym (Nat w) _ x =
   do w' <- integerLit sym w
      p  <- intLessThan sym w' x
      iteInteger sym p w' x
 
 {-# INLINE rotateShrink #-}
-rotateShrink :: Backend sym => sym -> Nat' -> TValue -> SInteger sym -> SEval sym (SInteger sym)
+rotateShrink :: Backend sym => sym -> Nat -> TValue -> SInteger sym -> SEval sym (SInteger sym)
 rotateShrink sym (Nat 0) _ _ = integerLit sym 0
 rotateShrink sym (Nat w) _ x =
   do w' <- integerLit sym w
@@ -1449,7 +1449,7 @@ scanlV sym =
        mkSeq sym (nAdd (Nat 1) n) a sm
 
  where
-  scan :: Nat' ->
+  scan :: Nat ->
           SEval sym (GenValue sym) ->
           SEval sym (GenValue sym) ->
           (SeqMap sym (GenValue sym)) ->
@@ -1706,7 +1706,7 @@ genericPrimTable sym getEOpts =
 
     -- Misc
 
-    -- {at,len} (fin len) => [len][8] -> at
+    -- {at,len} [len][8] -> at
   , ("error"      , {-# SCC "Prelude::error" #-}
                      PTyPoly  \a ->
                      PFinPoly \_ ->

@@ -3,6 +3,6 @@ module T010_S where
 interface submodule A where
   type n : #
   x : [n]
-  type constraint (fin n, n >= 8)
+  type constraint (n >= 8)
 
 

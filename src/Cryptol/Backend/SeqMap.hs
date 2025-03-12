@@ -59,7 +59,7 @@ import Cryptol.Backend
 import Cryptol.Backend.Concrete (Concrete)
 import Cryptol.Backend.Monad (Unsupported(..))
 
-import Cryptol.TypeCheck.Solver.InfNat(Nat'(..))
+import Cryptol.TypeCheck.Solver.Nat(Nat(..))
 import Cryptol.Utils.Panic
 
 -- | A sequence map represents a mapping from nonnegative integer indices
@@ -69,7 +69,7 @@ data SeqMap sym a
   | UpdateSeqMap !(Map Integer (SEval sym a))
                  !(SeqMap sym a)
   | MemoSeqMap
-     !Nat'
+     !Nat
      !(IORef (Map Integer a, Integer -> SEval sym a))
      !(Integer -> SEval sym a)
       -- Use this to overwrite the evaluation function when the cache is full
@@ -161,7 +161,7 @@ delaySeqMap sym xs =
 
 -- | Given a sequence map, return a new sequence map that is memoized using
 --   a finite map memo table.
-memoMap :: Backend sym => sym -> Nat' -> SeqMap sym a -> SEval sym (SeqMap sym a)
+memoMap :: Backend sym => sym -> Nat -> SeqMap sym a -> SEval sym (SeqMap sym a)
 
 -- Sequence is alreay memoized, just return it
 memoMap _sym _sz x@(MemoSeqMap{}) = pure x
@@ -190,7 +190,7 @@ zipSeqMap ::
   Backend sym =>
   sym ->
   (a -> a -> SEval sym a) ->
-  Nat' ->
+  Nat ->
   SeqMap sym a ->
   SeqMap sym a ->
   SEval sym (SeqMap sym a)
@@ -202,7 +202,7 @@ mapSeqMap ::
   Backend sym =>
   sym ->
   (a -> SEval sym a) ->
-  Nat' ->
+  Nat ->
   SeqMap sym a ->
   SEval sym (SeqMap sym a)
 mapSeqMap sym f sz x =
@@ -229,7 +229,7 @@ shiftSeqByInteger :: Backend sym =>
   (Integer -> Integer -> Maybe Integer)
      {- ^ reindexing operation -} ->
   SEval sym a {- ^ zero value -} ->
-  Nat' {- ^ size of the sequence -} ->
+  Nat {- ^ size of the sequence -} ->
   SeqMap sym a {- ^ sequence to shift -} ->
   SInteger sym {- ^ shift amount, assumed to be in range [0,len] -} ->
   SEval sym (SeqMap sym a)
@@ -255,7 +255,7 @@ data IndexSegment sym
   Concrete ->
   (SBit Concrete -> a -> a -> SEval Concrete a) ->
   (SeqMap Concrete a -> Integer -> SEval Concrete (SeqMap Concrete a)) ->
-  Nat' ->
+  Nat ->
   SeqMap Concrete a ->
   Integer ->
   [IndexSegment Concrete] ->
@@ -267,7 +267,7 @@ barrelShifter :: Backend sym =>
      {- ^ if/then/else operation of values -} ->
   (SeqMap sym a -> Integer -> SEval sym (SeqMap sym a))
      {- ^ concrete shifting operation -} ->
-  Nat' {- ^ Size of the map being shifted -} ->
+  Nat {- ^ Size of the map being shifted -} ->
   SeqMap sym a {- ^ initial value -} ->
   Integer {- Number of bits in shift amount -} ->
   [IndexSegment sym]  {- ^ segments of the shift amount, in big-endian order -} ->

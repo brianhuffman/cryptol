@@ -31,7 +31,7 @@ import Cryptol.ModuleSystem.Name
 import Cryptol.Utils.Ident (Ident, isInfixIdent, exprModName, ogModule, ModName)
 import Cryptol.TypeCheck.TCon
 import Cryptol.TypeCheck.PP
-import Cryptol.TypeCheck.Solver.InfNat
+import Cryptol.TypeCheck.Solver.Nat
 import Cryptol.Utils.Fixity
 import Cryptol.Utils.Panic(panic)
 import Cryptol.Utils.RecordMap
@@ -527,14 +527,14 @@ tHasErrors ty =
     TRec mp             -> any tHasErrors mp
     _                   -> False
 
-tIsNat' :: Type -> Maybe Nat'
-tIsNat' ty =
+tIsNat :: Type -> Maybe Nat
+tIsNat ty =
   case tNoUser ty of
     TCon (TC (TCNum x)) [] -> Just (Nat x)
     _                      -> Nothing
 
 tIsNum :: Type -> Maybe Integer
-tIsNum ty = do Nat x <- tIsNat' ty
+tIsNum ty = do Nat x <- tIsNat ty
                return x
 
 tIsVar :: Type -> Maybe TVar
@@ -661,8 +661,8 @@ tOne      = tNum (1 :: Int)
 tTwo     :: Type
 tTwo      = tNum (2 :: Int)
 
-tNat'    :: Nat' -> Type
-tNat' n'  = case n' of
+tNat     :: Nat -> Type
+tNat n'   = case n' of
               Nat n -> tNum n
 
 tNominal :: NominalType -> [Type] -> Type

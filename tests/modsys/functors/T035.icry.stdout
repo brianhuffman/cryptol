@@ -8,8 +8,9 @@ Loading module Main
 [error] at T035.cry:22:11--22:15:
   Type mismatch:
     Expected type: Main::M::X ?m
-    Inferred type: Main::N::X 0
+    Inferred type: Main::N::X ?n
     Context: _ -> ERROR
     When checking function call
   where
   ?m is type argument 'n' of 'Main::M::f' at T035.cry:22:5--22:9
+  ?n is type argument 'n' of 'Main::N::X' at T035.cry:22:11--22:15

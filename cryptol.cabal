@@ -182,14 +182,13 @@ library
 
                        Cryptol.TypeCheck.Solver.Types,
                        Cryptol.TypeCheck.Solver.SMT,
-                       Cryptol.TypeCheck.Solver.InfNat,
+                       Cryptol.TypeCheck.Solver.Nat,
                        Cryptol.TypeCheck.Solver.Class,
                        Cryptol.TypeCheck.Solver.Selector,
                        Cryptol.TypeCheck.Solver.Utils,
 
                        Cryptol.TypeCheck.Solver.Numeric,
                        Cryptol.TypeCheck.Solver.Improve,
-                       Cryptol.TypeCheck.Solver.Numeric.Fin,
                        Cryptol.TypeCheck.Solver.Numeric.Interval,
 
                        Cryptol.Transform.MonoValues,

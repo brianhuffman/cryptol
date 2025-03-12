@@ -40,7 +40,7 @@ import Numeric (showIntAtBase)
 import qualified Cryptol.Backend.Arch as Arch
 import Cryptol.Backend
 import Cryptol.Backend.Monad
-import Cryptol.TypeCheck.Solver.InfNat (genLog)
+import Cryptol.TypeCheck.Solver.Nat (genLog)
 import Cryptol.Utils.Panic (panic)
 import Cryptol.Utils.PP
 

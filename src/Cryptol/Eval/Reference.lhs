@@ -33,7 +33,7 @@
 > import qualified Data.List as List
 >
 > import Cryptol.ModuleSystem.Name (asPrim,nameIdent)
-> import Cryptol.TypeCheck.Solver.InfNat (Nat'(..), nAdd, nMin, nMul)
+> import Cryptol.TypeCheck.Solver.Nat (Nat(..), nAdd, nMin, nMul)
 > import Cryptol.TypeCheck.AST
 > import Cryptol.Backend.Monad (EvalError(..))
 > import Cryptol.Eval.Type
@@ -65,9 +65,8 @@ Cryptol types come in two kinds: numeric types (kind `#`) and value
 types (kind `*`). While value types are inhabited by well-typed
 Cryptol expressions, numeric types are only used as parameters to
 other types; they have no inhabitants. In this implementation we
-represent numeric types as values of the Haskell type `Nat'` of
-natural numbers with infinity; value types are represented as values
-of type `TValue`.
+represent numeric types as values of the Haskell type `Nat` of natural
+numbers; value types are represented as values of type `TValue`.
 
 The value types of Cryptol, along with their Haskell representations,
 are as follows:
@@ -158,13 +157,13 @@ terms by providing an evaluator to an appropriate `Value` type.
 > data Value
 >   = VBit !Bool                 -- ^ @ Bit    @ booleans
 >   | VInteger !Integer          -- ^ @ Integer @  or @Z n@ integers
->   | VList Nat' [E Value]       -- ^ @ [n]a   @ finite or infinite lists
+>   | VList Nat [E Value]        -- ^ @ [n]a   @ finite or infinite lists
 >   | VTuple [E Value]           -- ^ @ ( .. ) @ tuples
 >   | VRecord [(Ident, E Value)] -- ^ @ { .. } @ records
 >   | VEnum Ident [E Value]      -- ^ @ Just x @, sum types
 >   | VFun (E Value -> E Value)  -- ^ functions
 >   | VPoly (TValue -> E Value)  -- ^ polymorphic values (kind *)
->   | VNumPoly (Nat' -> E Value) -- ^ polymorphic values (kind #)
+>   | VNumPoly (Nat -> E Value)  -- ^ polymorphic values (kind #)
 
 Operations on Values
 --------------------
@@ -247,7 +246,7 @@ and type variables that are in scope at any point.
 > bindVar (n, val) env = env { envVars = Map.insert n val (envVars env) }
 >
 > -- | Bind a type variable of kind # or *.
-> bindType :: TVar -> Either Nat' TValue -> Env -> Env
+> bindType :: TVar -> Either Nat TValue -> Env -> Env
 > bindType p ty env = env { envTypes = bindTypeVar p ty (envTypes env) }
 
 
@@ -449,7 +448,7 @@ variable to a different element of the match's list.
 >         case evalNumType (envTypes env) len of
 >         Nat n -> [0 .. n-1]
 
-> lenMatch :: Env -> Match -> Nat'
+> lenMatch :: Env -> Match -> Nat
 > lenMatch env m =
 >   case m of
 >     Let _          -> Nat 1
@@ -466,7 +465,7 @@ is equal to the product of the lengths of the lists in the matches.
 >   [ env'' | env' <- evalMatch env match
 >           , env'' <- evalBranch env' matches ]
 
-> lenBranch :: Env -> [Match] -> Nat'
+> lenBranch :: Env -> [Match] -> Nat
 > lenBranch _env [] = Nat 1
 > lenBranch env (match : matches) =
 >   nMul (lenMatch env match) (lenBranch env matches)
@@ -496,7 +495,7 @@ list is equal to the minimum length over all parallel branches.
 >     envs :: [Env]
 >     envs = foldr1 (zipWith mappend) benvs
 >
->     len :: Nat'
+>     len :: Nat
 >     len = foldr1 nMin (map (lenBranch env) branches)
 
 
@@ -1246,7 +1245,7 @@ bits to the *left* of that position are equal.
 Sequences
 ---------
 
-> generateV :: Nat' -> (Integer -> E Value) -> Value
+> generateV :: Nat -> (Integer -> E Value) -> Value
 > generateV len f = VList len [ f i | i <- idxs ]
 >   where
 >    idxs = case len of
@@ -1259,7 +1258,7 @@ Shifting
 Shift and rotate operations are strict in all bits of the shift/rotate
 amount, but as lazy as possible in the list values.
 
-> shiftV :: (Nat' -> E Value -> Integer -> Value) -> Value
+> shiftV :: (Nat -> E Value -> Integer -> Value) -> Value
 > shiftV op =
 >   VNumPoly $ \n -> pure $
 >   VPoly $ \ix -> pure $
@@ -1268,7 +1267,7 @@ amount, but as lazy as possible in the list values.
 >   do i <- cryToInteger ix x
 >      pure $ op n v i
 >
-> shiftLV :: Nat' -> E Value -> Integer -> Value
+> shiftLV :: Nat -> E Value -> Integer -> Value
 > shiftLV w v amt =
 >   case w of
 >     Nat n -> generateV (Nat n) $ \i ->
@@ -1278,7 +1277,7 @@ amount, but as lazy as possible in the list values.
 >                else
 >                  pure (VBit False)
 >
-> shiftRV :: Nat' -> E Value -> Integer -> Value
+> shiftRV :: Nat -> E Value -> Integer -> Value
 > shiftRV w v amt =
 >   generateV w $ \i ->
 >     if i < amt then
@@ -1332,7 +1331,7 @@ possible in the list values. An index greater than or equal to the
 length of the list produces a run-time error.
 
 > -- | Indexing operations that return one element.
-> indexPrimOne :: (Nat' -> [E Value] -> Integer -> E Value) -> Value
+> indexPrimOne :: (Nat -> [E Value] -> Integer -> E Value) -> Value
 > indexPrimOne op =
 >   VNumPoly $ \n -> pure $
 >   VPoly $ \_a -> pure $
@@ -1343,19 +1342,19 @@ length of the list produces a run-time error.
 >      i <- cryToInteger ix r
 >      op n vs i
 >
-> indexFront :: Nat' -> [E Value] -> Integer -> E Value
+> indexFront :: Nat -> [E Value] -> Integer -> E Value
 > indexFront w vs ix =
 >   case w of
 >     Nat n | 0 <= ix && ix < n -> genericIndex vs ix
 >     _ -> cryError (InvalidIndex (Just ix))
 >
-> indexBack :: Nat' -> [E Value] -> Integer -> E Value
+> indexBack :: Nat -> [E Value] -> Integer -> E Value
 > indexBack w vs ix =
 >   case w of
 >     Nat n | 0 <= ix && ix < n -> genericIndex vs (n - ix - 1)
 >           | otherwise -> cryError (InvalidIndex (Just ix))
 >
-> updatePrim :: (Nat' -> Integer -> Integer) -> Value
+> updatePrim :: (Nat -> Integer -> Integer) -> Value
 > updatePrim op =
 >   VNumPoly $ \len -> pure $
 >   VPoly $ \_eltTy -> pure $
@@ -1374,10 +1373,10 @@ length of the list produces a run-time error.
 >      else
 >        cryError (InvalidIndex (Just j))
 >
-> updateFront :: Nat' -> Integer -> Integer
+> updateFront :: Nat -> Integer -> Integer
 > updateFront _ j = j
 >
-> updateBack :: Nat' -> Integer -> Integer
+> updateBack :: Nat -> Integer -> Integer
 > updateBack (Nat n) j = n - j - 1
 
 Error Handling

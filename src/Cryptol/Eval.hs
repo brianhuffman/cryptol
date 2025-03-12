@@ -53,7 +53,7 @@ import Cryptol.ModuleSystem.Name
 import Cryptol.Parser.Position
 import Cryptol.Parser.Selector(ppSelector)
 import Cryptol.TypeCheck.AST
-import Cryptol.TypeCheck.Solver.InfNat(Nat'(..),nMul)
+import Cryptol.TypeCheck.Solver.Nat(Nat(..),nMul)
 import Cryptol.Utils.Ident
 import Cryptol.Utils.Panic (panic)
 import Cryptol.Utils.PP
@@ -253,7 +253,7 @@ evalExpr sym env expr = case expr of
 checkProp :: Prop -> Bool
 checkProp = \case
   TCon tcon ts ->
-    let ns = toNat' <$> ts in
+    let ns = toNat <$> ts in
     case tcon of
       PC PEqual | [n1, n2] <- ns -> n1 == n2
       PC PNeq | [n1, n2] <- ns -> n1 /= n2
@@ -263,8 +263,8 @@ checkProp = \case
       _ -> evalPanic "evalProp" ["cannot use this as a guarding constraint: ", show . pp $ TCon tcon ts ]
   prop -> evalPanic "evalProp" ["cannot use this as a guarding constraint: ", show . pp $ prop ]
   where
-    toNat' :: Type -> Nat'
-    toNat' = \case
+    toNat :: Type -> Nat
+    toNat = \case
       TCon (TC (TCNum n)) [] -> Nat n
       prop -> panic "checkProp" ["Expected `" ++ pretty prop ++ "` to be an evaluated numeric type"]
 
@@ -709,7 +709,7 @@ bindVarList n vs lenv = lenv { leVars = IntMap.insert (nameUnique n) vs (leVars 
   (?range :: Range, ConcPrims) =>
   Concrete ->
   GenEvalEnv Concrete ->
-  Nat'           ->
+  Nat           ->
   TValue         ->
   Expr           ->
   [[Match]]      ->
@@ -720,7 +720,7 @@ evalComp ::
   (?range :: Range, EvalPrims sym) =>
   sym ->
   GenEvalEnv sym {- ^ Starting evaluation environment -} ->
-  Nat'           {- ^ Length of the comprehension -} ->
+  Nat            {- ^ Length of the comprehension -} ->
   TValue         {- ^ Type of the comprehension elements -} ->
   Expr           {- ^ Head expression of the comprehension -} ->
   [[Match]]      {- ^ List of parallel comprehension branches -} ->
@@ -750,18 +750,18 @@ branchEnvs sym env matches = snd <$> foldM (evalMatch sym) (Nat 1, env) matches
 {-# SPECIALIZE evalMatch ::
   (?range :: Range, ConcPrims) =>
   Concrete ->
-  (Nat', ListEnv Concrete) ->
+  (Nat, ListEnv Concrete) ->
   Match ->
-  SEval Concrete (Nat', ListEnv Concrete)
+  SEval Concrete (Nat, ListEnv Concrete)
   #-}
 
 -- | Turn a match into the list of environments it represents.
 evalMatch ::
   (?range :: Range, EvalPrims sym) =>
   sym ->
-  (Nat', ListEnv sym) ->
+  (Nat, ListEnv sym) ->
   Match ->
-  SEval sym (Nat', ListEnv sym)
+  SEval sym (Nat, ListEnv sym)
 evalMatch sym (lsz, lenv) m = seq lsz $ case m of
 
   -- many envs

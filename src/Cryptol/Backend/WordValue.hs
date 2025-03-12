@@ -66,7 +66,7 @@ import Cryptol.Backend.Concrete (Concrete(..))
 import Cryptol.Backend.Monad (EvalError(..))
 import Cryptol.Backend.SeqMap
 
-import Cryptol.TypeCheck.Solver.InfNat(widthInteger, Nat'(..))
+import Cryptol.TypeCheck.Solver.Nat(widthInteger, Nat(..))
 
 -- | Force the evaluation of a word value
 forceWordValue :: Backend sym => WordValue sym -> SEval sym ()
@@ -638,7 +638,7 @@ shiftSeqByWord  ::
   (Integer -> Integer -> Maybe Integer)
      {- ^ reindexing operation -} ->
   SEval sym a  {- ^ zero value -} ->
-  Nat' {- ^ size of the sequence -} ->
+  Nat {- ^ size of the sequence -} ->
   SeqMap sym a {- ^ sequence to shift -} ->
   WordValue sym {- ^ shift amount -} ->
   SEval sym (SeqMap sym a)

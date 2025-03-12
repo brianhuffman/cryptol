@@ -59,7 +59,7 @@ import           Cryptol.Backend.WordValue (wordVal)
 import qualified Cryptol.Eval.Concrete as Concrete
 import           Cryptol.Eval.Value
 import           Cryptol.TypeCheck.AST
-import           Cryptol.TypeCheck.Solver.InfNat
+import           Cryptol.TypeCheck.Solver.Nat
 import           Cryptol.Eval.Type
   (TValue(..), TNominalTypeValue(..), evalType,tValTy,tNumValTy,ConInfo(..))
 import           Cryptol.Utils.Ident (Ident,prelPrim)
@@ -146,7 +146,7 @@ data FinType
     | FTSeq Integer FinType
     | FTTuple [FinType]
     | FTRecord (RecordMap Ident FinType)
-    | FTNominal NominalType [Either Nat' TValue] FinNominalType
+    | FTNominal NominalType [Either Nat TValue] FinNominalType
 
 data FinNominalType =
     FStruct (RecordMap Ident FinType)

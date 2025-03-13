@@ -1,5 +1,5 @@
 x : [64]
-x = random 123
+x = random(123)
 
 x_val : [64]
 x_val = 0xe4f7c1740def67df

@@ -4,6 +4,6 @@ WStep:
     ([128] -> [128]) -> [n][64] -> [64] -> [n][64]
 WStep CIPHk ([A] # Rs) t = [A'] # Rs'
   where
-    [MSB, LSB] = split (CIPHk (A # head Rs))
+    [MSB, LSB] = split(CIPHk(A # head(Rs)))
     A'         = MSB ^ t
-    Rs'        = tail Rs # [LSB]
+    Rs'        = tail(Rs) # [LSB]

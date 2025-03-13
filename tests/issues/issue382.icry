@@ -8,4 +8,4 @@ True : [2]
 0b010 + {}
 0b010 + (True, False)
 (\(x:Bit) -> x) : [2]
-True True : Bit
+True(True) : Bit

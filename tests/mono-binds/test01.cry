@@ -1,5 +1,5 @@
 module test01 where
 
-a x = f x
+a x = f(x)
   where
   f y = x # y

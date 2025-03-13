@@ -1,4 +1,4 @@
 :l issue138.cry
 dwn
 dwn'
-take_some`{4,3} "abcd"
+take_some{4,3}("abcd")

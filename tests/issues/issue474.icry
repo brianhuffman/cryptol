@@ -1,3 +1,3 @@
-let mapping = ['A' .. 'Z'] <<< 13
+let mapping = ['N' .. 'Z'] # ['A' .. 'M']
 let mapped c = if (('A' <= c) && (c <= 'Z')) then (mapping @ (c - 'A')) else c
-:sat \x -> mapped x == 'N'
+:sat \x -> mapped(x) == 'N'

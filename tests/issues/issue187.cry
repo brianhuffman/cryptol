@@ -7,7 +7,7 @@ enigmaLoop = undefined
 
 // Encryption/Decryption
 enigma : {n, m} ([n], [m]) -> [m]
-enigma (m, pt) = tail [ True | _ <- rcs ]
+enigma (m, pt) = tail([ True | _ <- rcs ])
   where rcs = [ (m, True)] #
               [ (enigmaLoop, True)
               | _     <- pt

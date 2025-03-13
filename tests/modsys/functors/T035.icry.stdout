@@ -5,7 +5,7 @@ Loading module Main
     This binding for `x` shadows the existing binding at
     T035.cry:22:1--22:2
 
-[error] at T035.cry:22:11--22:15:
+[error] at T035.cry:22:10--22:14:
   Type mismatch:
     Expected type: Main::M::X ?m
     Inferred type: Main::N::X ?n
@@ -13,4 +13,4 @@ Loading module Main
     When checking function call
   where
   ?m is type argument 'n' of 'Main::M::f' at T035.cry:22:5--22:9
-  ?n is type argument 'n' of 'Main::N::X' at T035.cry:22:11--22:15
+  ?n is type argument 'n' of 'Main::N::X' at T035.cry:22:10--22:14

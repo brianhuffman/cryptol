@@ -1,5 +1,5 @@
 dwn: [16][4]
-dwn = [ 1+d | d <- tail dwn ] # [0]
+dwn = [ 1+d | d <- tail(dwn) ] # [0]
 
 dwn': [16][4]
 dwn' = [ 1+(dwn' @ i) | i <- [1 .. 15] ] # [0]

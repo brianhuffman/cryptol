@@ -3,9 +3,9 @@ Counterexample
 (\x -> assert x "asdf" "asdf") False ~> ERROR
 Run-time error: asdf
 -- Backtrace --
-Cryptol::error called at Cryptol:1059:41--1059:46
+Cryptol::error called at Cryptol:898:41--898:46
 Cryptol::assert called at safety.icry:3:14--3:20
-<interactive>::it called at safety.icry:3:7--3:37
+<interactive>::it called at safety.icry:3:7--3:40
 Counterexample
 (\(x : [4]) -> [0 .. 14] @ x == x) 0xf ~> ERROR
 invalid sequence index: 15

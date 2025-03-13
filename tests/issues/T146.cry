@@ -1,8 +1,8 @@
 mk_curve_ops f = undefined
   where
     c = { field = f
-        , v1    = ec_v1 f
-        , v2    = ec_v2 c
+        , v1    = ec_v1(f)
+        , v2    = ec_v2(c)
         }
 
 ec_v1 : {fv} { v0: fv } -> fv

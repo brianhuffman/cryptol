@@ -1,5 +1,5 @@
 Loading module Cryptol
-(join (zero : [1000][0])) : [0]
+join (zero : [1000][0]) : [0]
 0x0
 True
 0x0

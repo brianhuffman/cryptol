@@ -1,47 +1,29 @@
 Loading module Cryptol
 Loading module Cryptol
-Loading module Float
 Loading module instance
 zero`{Bit} : Bit
 zero`{Integer} : Integer
-zero`{Rational} : Rational
-zero`{Z _} : {n} (n >= 1) => Z n
 zero`{[_]_} : {n, a} (Zero a) => [n]a
 zero`{_ -> _} : {a, b} (Zero b) => a -> b
 zero`{()} : ()
 zero`{(_, _)} : {a, b} (Zero b, Zero a) => (a, b)
 zero`{{}} : {}
 zero`{{x : _, y : _}} : {a, b} (Zero b, Zero a) => {x : a, y : b}
-zero`{Float _ _} : {n, m} (ValidFloat n m) => Float n m
 
-[error] at instance.icry:14:4--14:8:
+[error] at instance.icry:11:4--11:8:
   • Type `Box ?a` does not have `zero`
       arising from
       use of expression zero
-      at instance.icry:14:4--14:8
+      at instance.icry:11:4--11:8
   where
-  ?a is type wildcard (_) at instance.icry:14:14--14:15
+  ?a is type wildcard (_) at instance.icry:11:13--11:14
 complement`{Bit} : Bit -> Bit
 
-[error] at instance.icry:17:4--17:14:
+[error] at instance.icry:14:4--14:14:
   • Type `Integer` does not support logical operations.
       arising from
       use of expression complement
-      at instance.icry:17:4--17:14
-
-[error] at instance.icry:18:4--18:14:
-  • Type `Rational` does not support logical operations.
-      arising from
-      use of expression complement
-      at instance.icry:18:4--18:14
-
-[error] at instance.icry:19:4--19:14:
-  • Type `Z ?m` does not support logical operations.
-      arising from
-      use of expression complement
-      at instance.icry:19:4--19:14
-  where
-  ?m is type wildcard (_) at instance.icry:19:18--19:19
+      at instance.icry:14:4--14:14
 complement`{[_]_} : {n, a} (Logic a) => [n]a -> [n]a
 complement`{(_ -> _)} : {a, b} (Logic b) => (a -> b) -> a -> b
 complement`{()} : () -> ()
@@ -50,523 +32,316 @@ complement`{{}} : {} -> {}
 complement`{{x : _, y : _}} :
   {a, b} (Logic b, Logic a) => {x : a, y : b} -> {x : a, y : b}
 
-[error] at instance.icry:26:4--26:14:
-  • Type `Float ?m ?n` does not support logical operations.
-      arising from
-      use of expression complement
-      at instance.icry:26:4--26:14
-  where
-  ?m is type wildcard (_) at instance.icry:26:22--26:23
-  ?n is type wildcard (_) at instance.icry:26:24--26:25
-
-[error] at instance.icry:27:4--27:14:
+[error] at instance.icry:21:4--21:14:
   • Type `Box ?a` does not support logical operations.
       arising from
       use of expression complement
-      at instance.icry:27:4--27:14
+      at instance.icry:21:4--21:14
   where
-  ?a is type wildcard (_) at instance.icry:27:20--27:21
+  ?a is type wildcard (_) at instance.icry:21:19--21:20
 
-[error] at instance.icry:29:4--29:10:
+[error] at instance.icry:23:4--23:10:
   • Type `Bit` does not support ring operations.
       arising from
       use of expression negate
-      at instance.icry:29:4--29:10
+      at instance.icry:23:4--23:10
 negate`{Integer} : Integer -> Integer
-negate`{Rational} : Rational -> Rational
-negate`{Z _} : {n} (n >= 1) => Z n -> Z n
 negate`{[_]} : {n} [n] -> [n]
-negate`{[_]_} : {n, a} (Ring ([n]a)) => [n]a -> [n]a
-negate`{(_ -> _)} : {a, b} (Ring b) => (a -> b) -> a -> b
-negate`{()} : () -> ()
-negate`{(_, _)} : {a, b} (Ring b, Ring a) => (a, b) -> (a, b)
-negate`{{}} : {} -> {}
-negate`{{x : _, y : _}} :
-  {a, b} (Ring b, Ring a) => {x : a, y : b} -> {x : a, y : b}
-negate`{Float _ _} : {n, m} (ValidFloat n m) => Float n m -> Float n m
+negate`{[_]_} : {n} [n] -> [n]
 
-[error] at instance.icry:41:4--41:10:
+[error] at instance.icry:27:4--27:10:
+  • Type `?a -> ?b` does not support ring operations.
+      arising from
+      use of expression negate
+      at instance.icry:27:4--27:10
+  where
+  ?a is type wildcard (_) at instance.icry:27:12--27:13
+  ?b is type wildcard (_) at instance.icry:27:17--27:18
+
+[error] at instance.icry:28:4--28:10:
+  • Type `()` does not support ring operations.
+      arising from
+      use of expression negate
+      at instance.icry:28:4--28:10
+
+[error] at instance.icry:29:4--29:10:
+  • Type `(?a, ?b)` does not support ring operations.
+      arising from
+      use of expression negate
+      at instance.icry:29:4--29:10
+  where
+  ?a is type wildcard (_) at instance.icry:29:12--29:13
+  ?b is type wildcard (_) at instance.icry:29:15--29:16
+
+[error] at instance.icry:30:4--30:10:
+  • Type `{}` does not support ring operations.
+      arising from
+      use of expression negate
+      at instance.icry:30:4--30:10
+
+[error] at instance.icry:31:4--31:10:
+  • Type `{x : ?a, y : ?b}` does not support ring operations.
+      arising from
+      use of expression negate
+      at instance.icry:31:4--31:10
+  where
+  ?a is type wildcard (_) at instance.icry:31:16--31:17
+  ?b is type wildcard (_) at instance.icry:31:23--31:24
+
+[error] at instance.icry:32:4--32:10:
   • Type `Box ?a` does not support ring operations.
       arising from
       use of expression negate
-      at instance.icry:41:4--41:10
+      at instance.icry:32:4--32:10
   where
-  ?a is type wildcard (_) at instance.icry:41:16--41:17
+  ?a is type wildcard (_) at instance.icry:32:15--32:16
 
-[error] at instance.icry:43:4--43:7:
+[error] at instance.icry:34:4--34:7:
   • `Bit` is not an integral type.
       arising from
       use of expression (%)
-      at instance.icry:43:4--43:7
+      at instance.icry:34:4--34:7
 (%)`{Integer} : Integer -> Integer -> Integer
-
-[error] at instance.icry:45:4--45:7:
-  • `Rational` is not an integral type.
-      arising from
-      use of expression (%)
-      at instance.icry:45:4--45:7
-
-[error] at instance.icry:46:4--46:7:
-  • `Z ?m` is not an integral type.
-      arising from
-      use of expression (%)
-      at instance.icry:46:4--46:7
-  where
-  ?m is type wildcard (_) at instance.icry:46:11--46:12
 (%)`{[_]_} : {n, a} (Integral ([n]a)) => [n]a -> [n]a -> [n]a
 
-[error] at instance.icry:48:4--48:7:
+[error] at instance.icry:37:4--37:7:
   • `?a -> ?b` is not an integral type.
       arising from
       use of expression (%)
-      at instance.icry:48:4--48:7
+      at instance.icry:37:4--37:7
   where
-  ?a is type wildcard (_) at instance.icry:48:10--48:11
-  ?b is type wildcard (_) at instance.icry:48:15--48:16
+  ?a is type wildcard (_) at instance.icry:37:9--37:10
+  ?b is type wildcard (_) at instance.icry:37:14--37:15
 
-[error] at instance.icry:49:4--49:7:
+[error] at instance.icry:38:4--38:7:
   • `()` is not an integral type.
       arising from
       use of expression (%)
-      at instance.icry:49:4--49:7
+      at instance.icry:38:4--38:7
 
-[error] at instance.icry:50:4--50:7:
+[error] at instance.icry:39:4--39:7:
   • `(?a, ?b)` is not an integral type.
       arising from
       use of expression (%)
-      at instance.icry:50:4--50:7
+      at instance.icry:39:4--39:7
   where
-  ?a is type wildcard (_) at instance.icry:50:10--50:11
-  ?b is type wildcard (_) at instance.icry:50:13--50:14
+  ?a is type wildcard (_) at instance.icry:39:9--39:10
+  ?b is type wildcard (_) at instance.icry:39:12--39:13
 
-[error] at instance.icry:51:4--51:7:
+[error] at instance.icry:40:4--40:7:
   • `{}` is not an integral type.
       arising from
       use of expression (%)
-      at instance.icry:51:4--51:7
+      at instance.icry:40:4--40:7
 
-[error] at instance.icry:52:4--52:7:
+[error] at instance.icry:41:4--41:7:
   • `{x : ?a, y : ?b}` is not an integral type.
       arising from
       use of expression (%)
-      at instance.icry:52:4--52:7
+      at instance.icry:41:4--41:7
   where
-  ?a is type wildcard (_) at instance.icry:52:14--52:15
-  ?b is type wildcard (_) at instance.icry:52:21--52:22
+  ?a is type wildcard (_) at instance.icry:41:13--41:14
+  ?b is type wildcard (_) at instance.icry:41:20--41:21
 
-[error] at instance.icry:53:4--53:7:
-  • `Float ?m ?n` is not an integral type.
-      arising from
-      use of expression (%)
-      at instance.icry:53:4--53:7
-  where
-  ?m is type wildcard (_) at instance.icry:53:15--53:16
-  ?n is type wildcard (_) at instance.icry:53:17--53:18
-
-[error] at instance.icry:54:4--54:7:
+[error] at instance.icry:42:4--42:7:
   • `Box ?a` is not an integral type.
       arising from
       use of expression (%)
-      at instance.icry:54:4--54:7
+      at instance.icry:42:4--42:7
   where
-  ?a is type wildcard (_) at instance.icry:54:13--54:14
-
-[error] at instance.icry:56:4--56:9:
-  • Type `Bit` does not support field operations.
-      arising from
-      use of expression recip
-      at instance.icry:56:4--56:9
-
-[error] at instance.icry:57:4--57:9:
-  • Type `Integer` does not support field operations.
-      arising from
-      use of expression recip
-      at instance.icry:57:4--57:9
-recip`{Rational} : Rational -> Rational
-recip`{Z _} : {n} (prime n, n >= 1) => Z n -> Z n
-
-[error] at instance.icry:60:4--60:9:
-  • Type `[?m]?a` does not support field operations.
-      arising from
-      use of expression recip
-      at instance.icry:60:4--60:9
-  where
-  ?m is type wildcard (_) at instance.icry:60:12--60:13
-  ?a is type wildcard (_) at instance.icry:60:14--60:15
-
-[error] at instance.icry:61:4--61:9:
-  • Type `?a -> ?b` does not support field operations.
-      arising from
-      use of expression recip
-      at instance.icry:61:4--61:9
-  where
-  ?a is type wildcard (_) at instance.icry:61:12--61:13
-  ?b is type wildcard (_) at instance.icry:61:17--61:18
-
-[error] at instance.icry:62:4--62:9:
-  • Type `()` does not support field operations.
-      arising from
-      use of expression recip
-      at instance.icry:62:4--62:9
-
-[error] at instance.icry:63:4--63:9:
-  • Type `(?a, ?b)` does not support field operations.
-      arising from
-      use of expression recip
-      at instance.icry:63:4--63:9
-  where
-  ?a is type wildcard (_) at instance.icry:63:12--63:13
-  ?b is type wildcard (_) at instance.icry:63:15--63:16
-
-[error] at instance.icry:64:4--64:9:
-  • Type `{}` does not support field operations.
-      arising from
-      use of expression recip
-      at instance.icry:64:4--64:9
-
-[error] at instance.icry:65:4--65:9:
-  • Type `{x : ?a, y : ?b}` does not support field operations.
-      arising from
-      use of expression recip
-      at instance.icry:65:4--65:9
-  where
-  ?a is type wildcard (_) at instance.icry:65:16--65:17
-  ?b is type wildcard (_) at instance.icry:65:23--65:24
-recip`{Float _ _} : {n, m} (ValidFloat n m) => Float n m -> Float n m
-
-[error] at instance.icry:67:4--67:9:
-  • Type `Box ?a` does not support field operations.
-      arising from
-      use of expression recip
-      at instance.icry:67:4--67:9
-  where
-  ?a is type wildcard (_) at instance.icry:67:15--67:16
-
-[error] at instance.icry:69:4--69:9:
-  • Type `Bit` does not support rounding operations.
-      arising from
-      use of expression floor
-      at instance.icry:69:4--69:9
-
-[error] at instance.icry:70:4--70:9:
-  • Type `Integer` does not support rounding operations.
-      arising from
-      use of expression floor
-      at instance.icry:70:4--70:9
-floor`{Rational} : Rational -> Integer
-
-[error] at instance.icry:72:4--72:9:
-  • Type `Z ?m` does not support rounding operations.
-      arising from
-      use of expression floor
-      at instance.icry:72:4--72:9
-  where
-  ?m is type wildcard (_) at instance.icry:72:13--72:14
-
-[error] at instance.icry:73:4--73:9:
-  • Type `[?m]?a` does not support rounding operations.
-      arising from
-      use of expression floor
-      at instance.icry:73:4--73:9
-  where
-  ?m is type wildcard (_) at instance.icry:73:12--73:13
-  ?a is type wildcard (_) at instance.icry:73:14--73:15
-
-[error] at instance.icry:74:4--74:9:
-  • Type `?a -> ?b` does not support rounding operations.
-      arising from
-      use of expression floor
-      at instance.icry:74:4--74:9
-  where
-  ?a is type wildcard (_) at instance.icry:74:12--74:13
-  ?b is type wildcard (_) at instance.icry:74:17--74:18
-
-[error] at instance.icry:75:4--75:9:
-  • Type `()` does not support rounding operations.
-      arising from
-      use of expression floor
-      at instance.icry:75:4--75:9
-
-[error] at instance.icry:76:4--76:9:
-  • Type `(?a, ?b)` does not support rounding operations.
-      arising from
-      use of expression floor
-      at instance.icry:76:4--76:9
-  where
-  ?a is type wildcard (_) at instance.icry:76:12--76:13
-  ?b is type wildcard (_) at instance.icry:76:15--76:16
-
-[error] at instance.icry:77:4--77:9:
-  • Type `{}` does not support rounding operations.
-      arising from
-      use of expression floor
-      at instance.icry:77:4--77:9
-
-[error] at instance.icry:78:4--78:9:
-  • Type `{x : ?a, y : ?b}` does not support rounding operations.
-      arising from
-      use of expression floor
-      at instance.icry:78:4--78:9
-  where
-  ?a is type wildcard (_) at instance.icry:78:16--78:17
-  ?b is type wildcard (_) at instance.icry:78:23--78:24
-floor`{Float _ _} : {n, m} (ValidFloat n m) => Float n m -> Integer
-
-[error] at instance.icry:80:4--80:9:
-  • Type `Box ?a` does not support rounding operations.
-      arising from
-      use of expression floor
-      at instance.icry:80:4--80:9
-  where
-  ?a is type wildcard (_) at instance.icry:80:15--80:16
+  ?a is type wildcard (_) at instance.icry:42:12--42:13
 (==)`{Bit} : Bit -> Bit -> Bit
 (==)`{Integer} : Integer -> Integer -> Bit
-(==)`{Rational} : Rational -> Rational -> Bit
-(==)`{Z _} : {n} (n >= 1) => Z n -> Z n -> Bit
 (==)`{[_]_} : {n, a} (Eq a) => [n]a -> [n]a -> Bit
 
-[error] at instance.icry:87:4--87:8:
+[error] at instance.icry:47:4--47:8:
   • Type `?a -> ?b` does not support equality.
       arising from
       use of expression (==)
-      at instance.icry:87:4--87:8
+      at instance.icry:47:4--47:8
   where
-  ?a is type wildcard (_) at instance.icry:87:11--87:12
-  ?b is type wildcard (_) at instance.icry:87:16--87:17
+  ?a is type wildcard (_) at instance.icry:47:10--47:11
+  ?b is type wildcard (_) at instance.icry:47:15--47:16
 (==)`{()} : () -> () -> Bit
 (==)`{(_, _)} : {a, b} (Eq b, Eq a) => (a, b) -> (a, b) -> Bit
 (==)`{{}} : {} -> {} -> Bit
 (==)`{{x : _, y : _}} :
   {a, b} (Eq b, Eq a) => {x : a, y : b} -> {x : a, y : b} -> Bit
-(==)`{Float _ _} : {n, m} (ValidFloat n m) => Float n m -> Float n m -> Bit
 
-[error] at instance.icry:93:4--93:8:
+[error] at instance.icry:52:4--52:8:
   • Type `Box ?a` does not support equality.
       arising from
       use of expression (==)
-      at instance.icry:93:4--93:8
+      at instance.icry:52:4--52:8
   where
-  ?a is type wildcard (_) at instance.icry:93:14--93:15
+  ?a is type wildcard (_) at instance.icry:52:13--52:14
 (<)`{Bit} : Bit -> Bit -> Bit
 (<)`{Integer} : Integer -> Integer -> Bit
-(<)`{Rational} : Rational -> Rational -> Bit
+(<)`{[_]_} : {n} [n] -> [n] -> Bit
 
-[error] at instance.icry:98:4--98:7:
-  • Type `Z ?m` does not support comparisons.
-      arising from
-      use of expression (<)
-      at instance.icry:98:4--98:7
-  where
-  ?m is type wildcard (_) at instance.icry:98:11--98:12
-(<)`{[_]_} : {n, a} (Cmp a) => [n]a -> [n]a -> Bit
-
-[error] at instance.icry:100:4--100:7:
+[error] at instance.icry:57:4--57:7:
   • Type `?a -> ?b` does not support comparisons.
       arising from
       use of expression (<)
-      at instance.icry:100:4--100:7
+      at instance.icry:57:4--57:7
   where
-  ?a is type wildcard (_) at instance.icry:100:10--100:11
-  ?b is type wildcard (_) at instance.icry:100:15--100:16
-(<)`{()} : () -> () -> Bit
-(<)`{(_, _)} : {a, b} (Cmp b, Cmp a) => (a, b) -> (a, b) -> Bit
-(<)`{{}} : {} -> {} -> Bit
-(<)`{{x : _, y : _}} :
-  {a, b} (Cmp b, Cmp a) => {x : a, y : b} -> {x : a, y : b} -> Bit
-(<)`{Float _ _} : {n, m} (ValidFloat n m) => Float n m -> Float n m -> Bit
+  ?a is type wildcard (_) at instance.icry:57:9--57:10
+  ?b is type wildcard (_) at instance.icry:57:14--57:15
 
-[error] at instance.icry:106:4--106:7:
+[error] at instance.icry:58:4--58:7:
+  • Type `()` does not support comparisons.
+      arising from
+      use of expression (<)
+      at instance.icry:58:4--58:7
+
+[error] at instance.icry:59:4--59:7:
+  • Type `(?a, ?b)` does not support comparisons.
+      arising from
+      use of expression (<)
+      at instance.icry:59:4--59:7
+  where
+  ?a is type wildcard (_) at instance.icry:59:9--59:10
+  ?b is type wildcard (_) at instance.icry:59:12--59:13
+
+[error] at instance.icry:60:4--60:7:
+  • Type `{}` does not support comparisons.
+      arising from
+      use of expression (<)
+      at instance.icry:60:4--60:7
+
+[error] at instance.icry:61:4--61:7:
+  • Type `{x : ?a, y : ?b}` does not support comparisons.
+      arising from
+      use of expression (<)
+      at instance.icry:61:4--61:7
+  where
+  ?a is type wildcard (_) at instance.icry:61:13--61:14
+  ?b is type wildcard (_) at instance.icry:61:20--61:21
+
+[error] at instance.icry:62:4--62:7:
   • Type `Box ?a` does not support comparisons.
       arising from
       use of expression (<)
-      at instance.icry:106:4--106:7
+      at instance.icry:62:4--62:7
   where
-  ?a is type wildcard (_) at instance.icry:106:13--106:14
-
-[error] at instance.icry:108:4--108:8:
-  • Type `Bit` does not support signed comparisons.
-      arising from
-      use of expression (<$)
-      at instance.icry:108:4--108:8
-
-[error] at instance.icry:109:4--109:8:
-  • Type `Integer` does not support signed comparisons.
-      arising from
-      use of expression (<$)
-      at instance.icry:109:4--109:8
-
-[error] at instance.icry:110:4--110:8:
-  • Type `Rational` does not support signed comparisons.
-      arising from
-      use of expression (<$)
-      at instance.icry:110:4--110:8
-
-[error] at instance.icry:111:4--111:8:
-  • Type `Z ?m` does not support signed comparisons.
-      arising from
-      use of expression (<$)
-      at instance.icry:111:4--111:8
-  where
-  ?m is type wildcard (_) at instance.icry:111:12--111:13
-(<$)`{[_]_} : {n, a} (SignedCmp ([n]a)) => [n]a -> [n]a -> Bit
-
-[error] at instance.icry:113:4--113:8:
-  • Type `?a -> ?b` does not support signed comparisons.
-      arising from
-      use of expression (<$)
-      at instance.icry:113:4--113:8
-  where
-  ?a is type wildcard (_) at instance.icry:113:11--113:12
-  ?b is type wildcard (_) at instance.icry:113:16--113:17
-(<$)`{()} : () -> () -> Bit
-(<$)`{(_, _)} : {a, b} (SignedCmp b, SignedCmp a) => (a, b) -> (a, b) -> Bit
-(<$)`{{}} : {} -> {} -> Bit
-(<$)`{{x : _, y : _}} :
-  {a, b} (SignedCmp b, SignedCmp a) => {x : a, y : b} -> {x : a, y : b} -> Bit
-
-[error] at instance.icry:118:4--118:8:
-  • Type `Float ?m ?n` does not support signed comparisons.
-      arising from
-      use of expression (<$)
-      at instance.icry:118:4--118:8
-  where
-  ?m is type wildcard (_) at instance.icry:118:16--118:17
-  ?n is type wildcard (_) at instance.icry:118:18--118:19
-
-[error] at instance.icry:119:4--119:8:
-  • Type `Box ?a` does not support signed comparisons.
-      arising from
-      use of expression (<$)
-      at instance.icry:119:4--119:8
-  where
-  ?a is type wildcard (_) at instance.icry:119:14--119:15
+  ?a is type wildcard (_) at instance.icry:62:12--62:13
 number`{rep = Bit} : {n} (1 >= n) => Bit
 number`{rep = Integer} : Integer
-number`{rep = Rational} : Rational
-number`{rep = Z _} : {n, m} (m >= 1 + n, m >= 1) => Z m
 number`{rep = [_]_} : {n, m} (m >= width n) => [m]
 
-[error] at instance.icry:126:4--126:10:
+[error] at instance.icry:67:4--67:10:
   • `?m` is not a valid literal of type `?a -> ?b`
       arising from
       use of literal or demoted expression
-      at instance.icry:126:4--126:10
+      at instance.icry:67:4--67:10
   where
-  ?m is type argument 'val' of 'number' at instance.icry:126:4--126:10
-  ?a is type wildcard (_) at instance.icry:126:18--126:19
-  ?b is type wildcard (_) at instance.icry:126:23--126:24
+  ?m is type argument 'val' of 'number' at instance.icry:67:4--67:10
+  ?a is type wildcard (_) at instance.icry:67:17--67:18
+  ?b is type wildcard (_) at instance.icry:67:22--67:23
 
-[error] at instance.icry:127:4--127:10:
+[error] at instance.icry:68:4--68:10:
   • `?m` is not a valid literal of type `()`
       arising from
       use of literal or demoted expression
-      at instance.icry:127:4--127:10
+      at instance.icry:68:4--68:10
   where
-  ?m is type argument 'val' of 'number' at instance.icry:127:4--127:10
+  ?m is type argument 'val' of 'number' at instance.icry:68:4--68:10
 
-[error] at instance.icry:128:4--128:10:
+[error] at instance.icry:69:4--69:10:
   • `?m` is not a valid literal of type `(?a, ?b)`
       arising from
       use of literal or demoted expression
-      at instance.icry:128:4--128:10
+      at instance.icry:69:4--69:10
   where
-  ?m is type argument 'val' of 'number' at instance.icry:128:4--128:10
-  ?a is type wildcard (_) at instance.icry:128:19--128:20
-  ?b is type wildcard (_) at instance.icry:128:22--128:23
+  ?m is type argument 'val' of 'number' at instance.icry:69:4--69:10
+  ?a is type wildcard (_) at instance.icry:69:18--69:19
+  ?b is type wildcard (_) at instance.icry:69:21--69:22
 
-[error] at instance.icry:129:4--129:10:
+[error] at instance.icry:70:4--70:10:
   • `?m` is not a valid literal of type `{}`
       arising from
       use of literal or demoted expression
-      at instance.icry:129:4--129:10
+      at instance.icry:70:4--70:10
   where
-  ?m is type argument 'val' of 'number' at instance.icry:129:4--129:10
+  ?m is type argument 'val' of 'number' at instance.icry:70:4--70:10
 
-[error] at instance.icry:130:4--130:10:
+[error] at instance.icry:71:4--71:10:
   • `?m` is not a valid literal of type `{x : ?a, y : ?b}`
       arising from
       use of literal or demoted expression
-      at instance.icry:130:4--130:10
+      at instance.icry:71:4--71:10
   where
-  ?m is type argument 'val' of 'number' at instance.icry:130:4--130:10
-  ?a is type wildcard (_) at instance.icry:130:23--130:24
-  ?b is type wildcard (_) at instance.icry:130:30--130:31
-number`{rep = Float _ _} :
-  {n, m, i} (ValidFloat m i, Literal n (Float m i)) => Float m i
+  ?m is type argument 'val' of 'number' at instance.icry:71:4--71:10
+  ?a is type wildcard (_) at instance.icry:71:22--71:23
+  ?b is type wildcard (_) at instance.icry:71:29--71:30
 
-[error] at instance.icry:132:4--132:10:
+[error] at instance.icry:72:4--72:10:
   • `?m` is not a valid literal of type `Box ?a`
       arising from
       use of literal or demoted expression
-      at instance.icry:132:4--132:10
+      at instance.icry:72:4--72:10
   where
-  ?m is type argument 'val' of 'number' at instance.icry:132:4--132:10
-  ?a is type wildcard (_) at instance.icry:132:22--132:23
+  ?m is type argument 'val' of 'number' at instance.icry:72:4--72:10
+  ?a is type wildcard (_) at instance.icry:72:21--72:22
 fromToLessThan`{a = Bit} : {n, m} (2 >= m, m >= n) => [m - n]
 fromToLessThan`{a = Integer} : {n, m} (m >= n) => [m - n]Integer
-fromToLessThan`{a = Rational} : {n, m} (m >= n) => [m - n]Rational
 fromToLessThan`{a = [_]} :
   {n, m, i} (i >= width (max 1 m - 1), m >= n) => [m - n][i]
-fromToLessThan`{a = Z _} : {n, m, i} (i >= 1, i >= m, m >= n) => [m - n](Z i)
 fromToLessThan`{a = [_]_} :
   {n, m, i, a} (LiteralLessThan m ([i]a), m >= n) => [m - n][i]a
 
-[error] at instance.icry:140:4--140:18:
+[error] at instance.icry:78:4--78:18:
   • Type `?a -> ?b` does not contain all literals below `?m`.
       arising from
       use of expression fromToLessThan
-      at instance.icry:140:4--140:18
+      at instance.icry:78:4--78:18
   where
-  ?m is type argument 'bound' of 'fromToLessThan' at instance.icry:140:4--140:18
-  ?a is type wildcard (_) at instance.icry:140:22--140:23
-  ?b is type wildcard (_) at instance.icry:140:27--140:28
+  ?m is type argument 'bound' of 'fromToLessThan' at instance.icry:78:4--78:18
+  ?a is type wildcard (_) at instance.icry:78:21--78:22
+  ?b is type wildcard (_) at instance.icry:78:26--78:27
 
-[error] at instance.icry:141:4--141:18:
+[error] at instance.icry:79:4--79:18:
   • Type `()` does not contain all literals below `?m`.
       arising from
       use of expression fromToLessThan
-      at instance.icry:141:4--141:18
+      at instance.icry:79:4--79:18
   where
-  ?m is type argument 'bound' of 'fromToLessThan' at instance.icry:141:4--141:18
+  ?m is type argument 'bound' of 'fromToLessThan' at instance.icry:79:4--79:18
 
-[error] at instance.icry:142:4--142:18:
+[error] at instance.icry:80:4--80:18:
   • Type `(?a, ?b)` does not contain all literals below `?m`.
       arising from
       use of expression fromToLessThan
-      at instance.icry:142:4--142:18
+      at instance.icry:80:4--80:18
   where
-  ?m is type argument 'bound' of 'fromToLessThan' at instance.icry:142:4--142:18
-  ?a is type wildcard (_) at instance.icry:142:23--142:24
-  ?b is type wildcard (_) at instance.icry:142:26--142:27
+  ?m is type argument 'bound' of 'fromToLessThan' at instance.icry:80:4--80:18
+  ?a is type wildcard (_) at instance.icry:80:22--80:23
+  ?b is type wildcard (_) at instance.icry:80:25--80:26
 
-[error] at instance.icry:143:4--143:18:
+[error] at instance.icry:81:4--81:18:
   • Type `{}` does not contain all literals below `?m`.
       arising from
       use of expression fromToLessThan
-      at instance.icry:143:4--143:18
+      at instance.icry:81:4--81:18
   where
-  ?m is type argument 'bound' of 'fromToLessThan' at instance.icry:143:4--143:18
+  ?m is type argument 'bound' of 'fromToLessThan' at instance.icry:81:4--81:18
 
-[error] at instance.icry:144:4--144:18:
+[error] at instance.icry:82:4--82:18:
   • Type `{x : ?a, y : ?b}`
       does not contain all literals below `?m`.
       arising from
       use of expression fromToLessThan
-      at instance.icry:144:4--144:18
+      at instance.icry:82:4--82:18
   where
-  ?m is type argument 'bound' of 'fromToLessThan' at instance.icry:144:4--144:18
-  ?a is type wildcard (_) at instance.icry:144:27--144:28
-  ?b is type wildcard (_) at instance.icry:144:34--144:35
-fromToLessThan`{a = Float _ _} :
-  {n, m, i, j}
-    (ValidFloat i j, LiteralLessThan m (Float i j), m >= n) =>
-    [m - n](Float i j)
+  ?m is type argument 'bound' of 'fromToLessThan' at instance.icry:82:4--82:18
+  ?a is type wildcard (_) at instance.icry:82:26--82:27
+  ?b is type wildcard (_) at instance.icry:82:33--82:34
 
-[error] at instance.icry:146:4--146:18:
+[error] at instance.icry:83:4--83:18:
   • Type `Box ?a` does not contain all literals below `?m`.
       arising from
       use of expression fromToLessThan
-      at instance.icry:146:4--146:18
+      at instance.icry:83:4--83:18
   where
-  ?m is type argument 'bound' of 'fromToLessThan' at instance.icry:146:4--146:18
-  ?a is type wildcard (_) at instance.icry:146:26--146:27
+  ?m is type argument 'bound' of 'fromToLessThan' at instance.icry:83:4--83:18
+  ?a is type wildcard (_) at instance.icry:83:25--83:26

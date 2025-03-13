@@ -4,8 +4,8 @@ f x = out
 
 g : [1] -> [2]
 g x = out
-  where out = x # (take out)
+  where out = x # (take(out))
 
 h : [1] [8] -> [2] [8]
 h x = out
-  where out = x # take out
+  where out = x # take(out)

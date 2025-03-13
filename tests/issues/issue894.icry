@@ -1,2 +1,2 @@
 :l issue894.cry
-:t foo 0x1
+:t foo(0x1)

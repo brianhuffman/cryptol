@@ -1,11 +1,11 @@
-:t (join (zero : [1000][0]))
+:t join (zero : [1000][0])
 join (zero : [1000][0])
 join (zero : [1000][0]) == []
 :eval join (zero : [1000][0])
-:pro (\(x:[1000][0]) -> join x == [])
+:pro (\(x:[1000][0]) -> join(x) == [])
 
 :t (join (zero : [1000][0][32]))
 join (zero : [1000][0][32])
 join (zero : [1000][0][32]) == []
 :eval join (zero : [1000][0][32])
-:pro (\(x:[1000][0][32]) -> join x == [])
+:pro (\(x:[1000][0][32]) -> join(x) == [])

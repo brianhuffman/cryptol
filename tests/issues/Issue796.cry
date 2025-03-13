@@ -13,7 +13,7 @@ aux RK P = zero
 // key_schedule : Key -> RoundKey
 key_schedule K = zero
   where
-    _ = [ groupBy`{4} K ]
+    _ = [ groupBy{4}(K) ]
 
 // encrypt_block : Key -> Block -> Block
-encrypt_block key pt = aux (key_schedule key) pt
+encrypt_block key pt = aux(key_schedule(key), pt)

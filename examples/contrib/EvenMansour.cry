@@ -7,14 +7,14 @@
 */
 
 /** Pick some permutation F (here we select one at random) */
-F = (generate_random_permutation 1942611697)
+F = generate_random_permutation(1942611697)
 
-property is_a_permutation a = (unique a) /\ (leq a (length(a)-1))
+property is_a_permutation a = unique(a) /\ leq(a, length(a)-1)
 // Main> is_a_permutation (F:[10][4])
 // True
 
 /** Calculate F inverse */
-F' = inverse_permutation F
+F' = inverse_permutation(F)
 
 property is_inverse_permutation x a a' = ((x@@a)@@a') == x
 // Main> is_inverse_permutation ([0..9]:[_][4]) (F:[10]_) (F':[10]_)
@@ -38,29 +38,29 @@ D (K1, K2) C =  (C^K2)@@F' ^ K1
  * the following identity holds D_K(E_K(M)) = M, i.e. D_K decrypts
  * messages that were encrypted using E_K.
  */
-property E_and_D_are_inverses K M = (D K (E K M)) == M
+property E_and_D_are_inverses K M = D(K, E(K, M)) == M
 
 
 /******* Utilities *******/
 
 swap : {a, b} (a >= 1) => [a]b -> [width(a-1)] -> [width(a-1)] -> [a]b
-swap xs a b = [ if(i == a) then xs@b
-                 |(i == b) then xs@a
+swap xs a b = [ if(i == a) then xs@b else
+                if(i == b) then xs@a
                 else xs@i
               | i <- [0 .. a-1] ]
 
 generate_random_permutation : {a} (a >= 1, width a >= width(a-1)) => [256] -> [a][width(a-1)]
 generate_random_permutation seed = pss!0
   where
-    indices = [ take `{width(a-1)} (b % `a) | b <- (random seed) : [a][width a] ]
-    pss = [ [0 .. a-1] ] # [ swap ps a b | ps <- pss | a <- [0 .. a-1] | b <- indices ]
+    indices = [ take{width(a-1)}(b % `a) | b <- random(seed) : [a][width a] ]
+    pss = [ [0 .. a-1] ] # [ swap(ps, a, b) | ps <- pss | a <- [0 .. a-1] | b <- indices ]
 
 unique : {a, b} (a>=1) => [a][b] -> Bit
-unique xs = [ exist x (i+1) | x <- xs | i <- [0...] ] == 0
+unique xs = [ exist(x, i+1) | x <- xs | i <- [0...] ] == 0
   where exist : [b] -> [width a] -> Bit
         exist x i = if(i>=`a) then False
                     else if(x==(xs@i)) then True
-                    else exist x (i+1)
+                    else exist(x, i+1)
 
 leq xs a = [ x <= a | x <- xs ] == ~0
 
@@ -71,4 +71,4 @@ index_of xs a = (ret!0).1
                              | r <- ret ]
 
 inverse_permutation : {a} (a >= 1) => [a][width(a-1)] -> [a][width(a-1)]
-inverse_permutation perm = [ index_of perm i | i <- [0 .. a-1 ] ]
+inverse_permutation perm = [ index_of(perm, i) | i <- [0 .. a-1 ] ]

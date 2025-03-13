@@ -1,5 +1,0 @@
-Loading module Cryptol
-Showing a specific instance of polymorphic result:
-  * Using 'Integer' for type argument 'a' of 'Cryptol::fromThenTo'
-[11, 11, 11, 11, 11, 11, 11, 11, 11, 11]
-True

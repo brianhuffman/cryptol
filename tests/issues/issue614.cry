@@ -3,4 +3,4 @@ f x = zero
 
 
 g : {n, k} (0 < n <= k) => [n] -> [k]
-g x = sext x
+g x = sext(x)

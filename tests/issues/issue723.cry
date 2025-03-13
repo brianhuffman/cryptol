@@ -1,5 +1,5 @@
 f : {n} [n] -> [n]
-f x = g x
+f x = g(x)
   where
     m1 = x
 

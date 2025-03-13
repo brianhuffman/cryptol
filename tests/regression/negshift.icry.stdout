@@ -5,17 +5,9 @@ property nls1 Using random testing.
 Testing... Passed 1000 tests.
 property nls2 Using random testing.
 Testing... Passed 1000 tests.
-property nls3 Using random testing.
-Testing... Passed 1000 tests.
-property nls4 Using random testing.
-Testing... Passed 1000 tests.
 property nrs1 Using random testing.
 Testing... Passed 1000 tests.
 property nrs2 Using random testing.
-Testing... Passed 1000 tests.
-property nrs3 Using random testing.
-Testing... Passed 1000 tests.
-property nrs4 Using random testing.
 Testing... Passed 1000 tests.
 property nlr1 Using random testing.
 Testing... Passed 1000 tests.
@@ -41,17 +33,9 @@ Testing... Passed 1000 tests.
 	Q.E.D.
 :prove nls2
 	Q.E.D.
-:prove nls3
-	Q.E.D.
-:prove nls4
-	Q.E.D.
 :prove nrs1
 	Q.E.D.
 :prove nrs2
-	Q.E.D.
-:prove nrs3
-	Q.E.D.
-:prove nrs4
 	Q.E.D.
 :prove nlr1
 	Q.E.D.

@@ -6,9 +6,6 @@ module instance where
 // implicit class instance rules hard-wired into the Cryptol type
 // checker.
 
-import Float
-
-
 // we use this to test that newtypes do not inhabit any instances
 newtype Box a = { contents : a }
 
@@ -23,14 +20,6 @@ zeroBit = zero
 zeroInteger : Integer
 zeroInteger = zero
 
-/** instance Zero Rational */
-zeroRational : Rational
-zeroRational = zero
-
-/** instance (n >= 1) => Zero (Z n) */
-zeroZ : {n} (n >= 1) => Z n
-zeroZ = zero
-
 /** instance Zero [n] */
 zeroWord : {n} [n]
 zeroWord = zero
@@ -38,10 +27,6 @@ zeroWord = zero
 /** instance (Zero a) => Zero [n]a */
 zeroSeq : {n, a} (Zero a) => [n]a
 zeroSeq = zero
-
-/** instance (ValidFloat e p) => Zero (Float e p) */
-zeroFloat : {e, p} (ValidFloat e p) => Float e p
-zeroFloat = zero
 
 /** instance (Zero b) => Zero (a -> b) */
 zeroFun : {a, b} (Zero b) => a -> b
@@ -105,80 +90,9 @@ logicRecord = complement
 ringInteger : Integer -> Integer
 ringInteger = negate
 
-/** instance Ring Rational */
-ringRational : Rational -> Rational
-ringRational = negate
-
-/** instance (n >= 1) => Ring (Z n) */
-ringZ : {n} (n >= 1) => Z n -> Z n
-ringZ = negate
-
 /** instance Ring [n] */
 ringWord : {n} [n] -> [n]
 ringWord = negate
-
-// NOTE: 'instance Ring a => Ring [n]a' holds for any type 'a'
-// distinct from 'Bit'.
-
-/** instance Ring [n]Integer */
-ringSeqInteger : {n} [n]Integer -> [n]Integer
-ringSeqInteger = negate
-
-/** instance Ring [n]Rational */
-ringSeqRational : {n} [n]Rational -> [n]Rational
-ringSeqRational = negate
-
-/** instance (k >= 1) => Ring [n](Z k) */
-ringSeqZ : {n, k} (k >= 1) => [n](Z k) -> [n](Z k)
-ringSeqZ = negate
-
-/** instance (Ring [k]a) => Ring [n][k]a */
-ringSeqSeq : {n, k, a} (Ring ([k]a)) => [n][k]a -> [n][k]a
-ringSeqSeq = negate
-
-/** instance (Ring b) => Ring [n](a -> b) */
-ringSeqFun : {n, a, b} (Ring b) => [n](a -> b) -> [n](a -> b)
-ringSeqFun = negate
-
-/** instance Ring [n]() */
-ringSeqUnit : {n} [n]() -> [n]()
-ringSeqUnit = negate
-
-/** instance (Ring a, Ring b) => Ring [n](a, b) */
-ringSeqTuple : {n, a, b} (Ring a, Ring b) => [n](a, b) -> [n](a, b)
-ringSeqTuple = negate
-
-/** instance Ring [n]{} */
-ringSeqEmpty : {n} [n]{} -> [n]{}
-ringSeqEmpty = negate
-
-/** instance (Ring a, Ring b) => Ring [n]{x : a, y : b} */
-ringSeqRecord : {n, a, b} (Ring a, Ring b) => [n]{x : a, y : b} -> [n]{x : a, y : b}
-ringSeqRecord = negate
-
-/** instance (ValidFloat e p) => Ring (Float e p) */
-ringFloat : {e, p} (ValidFloat e p) => Float e p -> Float e p
-ringFloat = negate
-
-/** instance (Ring b) => Ring (a -> b) */
-ringFun : {a, b} (Ring b) => (a -> b) -> (a -> b)
-ringFun = negate
-
-/** instance Ring () */
-ringUnit : () -> ()
-ringUnit = negate
-
-/** instance (Ring a, Ring b, ...) => Ring (a, b, ...) */
-ringTuple : {a, b} (Ring a, Ring b) => (a, b) -> (a, b)
-ringTuple = negate
-
-/** instance Ring {} */
-ringEmpty : {} -> {}
-ringEmpty = negate
-
-/** instance (Ring a, Ring b, ...) => Ring { x : a, y : b, ... } */
-ringRecord : {a, b} (Ring a, Ring b) => {x : a, y : b} -> {x : a, y : b}
-ringRecord = negate
 
 ////////////////////////////////////////////////////////////////////////////////
 // Integral
@@ -192,32 +106,6 @@ integralWord : {n} [n] -> [n] -> [n]
 integralWord = (%)
 
 ////////////////////////////////////////////////////////////////////////////////
-// Field
-
-/** instance Field Rational */
-fieldRational : Rational -> Rational
-fieldRational = recip
-
-/** instance (ValidFloat e p) => Field (Float e p) */
-fieldFloat : {e, p} (ValidFloat e p) => Float e p -> Float e p
-fieldFloat = recip
-
-/** instance (prime p) => Field (Z p) */
-fieldZ : {p} prime p => Z p -> Z p
-fieldZ = recip
-
-////////////////////////////////////////////////////////////////////////////////
-// Round
-
-/** instance Round Rational */
-roundRational : Rational -> Integer
-roundRational = floor
-
-/** instance (ValidFloat e p) => Round (Float e p) */
-roundFloat : {e, p} (ValidFloat e p) => Float e p -> Integer
-roundFloat = floor
-
-////////////////////////////////////////////////////////////////////////////////
 // Eq
 
 /** instance Eq Bit */
@@ -228,14 +116,6 @@ eqBit = (==)
 eqInteger : Integer -> Integer -> Bit
 eqInteger = (==)
 
-/** instance Eq Rational */
-eqRational : Rational -> Rational -> Bit
-eqRational = (==)
-
-/** instance (n >= 1) => Eq (Z n) */
-eqZ : {n} (n >= 1) => Z n -> Z n -> Bit
-eqZ = (==)
-
 /** instance Eq [n] */
 eqWord : {n} [n] -> [n] -> Bit
 eqWord = (==)
@@ -243,10 +123,6 @@ eqWord = (==)
 /** instance (Eq a) => Eq [n]a */
 eqSeq : {n, a} (Eq a) => [n]a -> [n]a -> Bit
 eqSeq = (==)
-
-/** instance (ValidFloat e p) => Eq (Float e p) */
-eqFloat : {e, p} (ValidFloat e p) => Float e p -> Float e p -> Bit
-eqFloat = (==)
 
 /** instance Eq () */
 eqUnit : () -> () -> Bit
@@ -275,83 +151,9 @@ cmpBit = (<)
 cmpInteger : Integer -> Integer -> Bit
 cmpInteger = (<)
 
-/** instance Cmp Rational */
-cmpRational : Rational -> Rational -> Bit
-cmpRational = (<)
-
 /** instance Cmp [n] */
 cmpWord : {n} [n] -> [n] -> Bit
 cmpWord = (<)
-
-/** instance (Cmp a) => Cmp [n]a */
-cmpSeq : {n, a} (Cmp a) => [n]a -> [n]a -> Bit
-cmpSeq = (<)
-
-/** instance (ValidFloat e p) => Cmp (Float e p) */
-cmpFloat : {e, p} (ValidFloat e p) => Float e p -> Float e p -> Bit
-cmpFloat = (<)
-
-/** instance Cmp () */
-cmpUnit : () -> () -> Bit
-cmpUnit = (<)
-
-/** instance (Cmp a, Cmp b, ...) => Cmp (a, b, ...) */
-cmpTuple : {a, b} (Cmp a, Cmp b) => (a, b) -> (a, b) -> Bit
-cmpTuple = (<)
-
-/** instance Cmp {} */
-cmpEmpty : {} -> {} -> Bit
-cmpEmpty = (<)
-
-/** instance (Cmp a, Cmp b, ...) => Cmp { x : a, y : b, ... } */
-cmpRecord : {a, b} (Cmp a, Cmp b) => {x : a, y : b} ->  {x : a, y : b} -> Bit
-cmpRecord = (<)
-
-////////////////////////////////////////////////////////////////////////////////
-// Cmp
-
-/** instance (n >= 1) => SignedCmp [n] */
-signedCmpWord : {n} (n >= 1) => [n] -> [n] -> Bit
-signedCmpWord = (<$)
-
-// NOTE: 'instance (SignedCmp a) => SignedCmp ([n]a)' holds for
-// any type 'a' distinct from 'Bit'.
-
-/** instance (SignedCmp [k]a) => SignedCmp [n][k]a */
-signedCmpSeqSeq : {n, k, a} (SignedCmp ([k]a)) => [n][k]a -> [n][k]a -> Bit
-signedCmpSeqSeq = (<$)
-
-/** instance SignedCmp [n]() */
-signedCmpSeqUnit : {n} [n]() -> [n]() -> Bit
-signedCmpSeqUnit = (<$)
-
-/** instance (SignedCmp a, SignedCmp b) => SignedCmp [n](a, b) */
-signedCmpSeqTuple : {n, a, b} (SignedCmp a, SignedCmp b) => [n](a, b) -> [n](a, b) -> Bit
-signedCmpSeqTuple = (<$)
-
-/** instance SignedCmp [n]{} */
-signedCmpSeqEmpty : {n} [n]{} -> [n]{} -> Bit
-signedCmpSeqEmpty = (<$)
-
-/** instance (SignedCmp a, SignedCmp b) => SignedCmp [n]{x : a, y : b} */
-signedCmpSeqRecord : {n, a, b} (SignedCmp a, SignedCmp b) => [n]{x : a, y : b} -> [n]{x : a, y : b} -> Bit
-signedCmpSeqRecord = (<$)
-
-/** instance SignedCmp () */
-signedCmpUnit : () -> () -> Bit
-signedCmpUnit = (<$)
-
-/** instance (SignedCmp a, SignedCmp b, ...) => SignedCmp (a, b, ...) */
-signedCmpTuple : {a, b} (SignedCmp a, SignedCmp b) => (a, b) -> (a, b) -> Bit
-signedCmpTuple = (<$)
-
-/** instance SignedCmp {} */
-signedCmpEmpty : {} -> {} -> Bit
-signedCmpEmpty = (<$)
-
-/** instance (SignedCmp a, SignedCmp b, ...) => SignedCmp { x : a, y : b, ... } */
-signedCmpRecord : {a, b} (SignedCmp a, SignedCmp b) => {x : a, y : b} ->  {x : a, y : b} -> Bit
-signedCmpRecord = (<$)
 
 ////////////////////////////////////////////////////////////////////////////////
 // Literal
@@ -363,14 +165,6 @@ literalBit = `val
 /** instance Literal val Integer */
 literalInteger : {val : #} Integer
 literalInteger = `val
-
-/** instance Literal val Rational */
-literalRational : {val : #} Rational
-literalRational = `val
-
-/** instance (n >= 1, n > val) => Literal val (Z n) */
-literalZ : {val, n} (n >= 1, n > val) => Z n
-literalZ = `val
 
 /** instance (n >= width val) => Literal val [n] */
 literalWord : {val, n} (n >= width val) => [n]
@@ -386,14 +180,6 @@ literalLessThanBit = [0..<val]
 /* instance LiteralLessThan val Integer */
 literalLessThanInteger : {val} [val]Integer
 literalLessThanInteger = [0..<val]
-
-/* instance LiteralLessThan val Rational */
-literalLessThanRational : {val} [val]Rational
-literalLessThanRational = [0..<val]
-
-/* instance (n >= 1, n >= val) => LiteralLessThan val (Z n) */
-literalLessThanZ : {val, n} (n >= 1, n >= val) => [val](Z n)
-literalLessThanZ = [0..<val]
 
 /* instance (n >= lg2 val) => LiteralLessThan val [n] */
 literalLessThanWord : {val, n} (n >= lg2 val) => [val][n]

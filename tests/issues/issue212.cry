@@ -21,4 +21,4 @@ can_not_width = zero # (`n : [width n])
 take_knows_no_bounds : {n} (n >= 4) => [n][8] -> [4 - (n%4)][8]
 take_knows_no_bounds ns = foo
  where
- foo = take `{4 - (n%4)} ns
+ foo = take{4 - (n%4)}(ns)

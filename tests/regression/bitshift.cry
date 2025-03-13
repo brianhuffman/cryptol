@@ -1,12 +1,12 @@
 shift : {d} (d >=1) => [d] -> Bit -> [d]
 shift fill bit = fills
 	where
-          fills = [bit]#(take fill)
+          fills = [bit] # take{d-1}(fill)
 
 shift_alt : {d} (d >=1) => [d] -> Bit -> [d]
 shift_alt fill bit = fills
 	where
-	  fills = [bit]#(drop`{1} (fill >> 1))
+	  fills = [bit] # drop{1}(fill >> 1)
 
-property shift_eq a b c d e = shift (take`{10} ([a,b,c,d]#zero`{[6]})) e
-                           == shift_alt (take`{10} ([a,b,c,d]#zero`{[6]})) e
+property shift_eq a b c d e = shift(take{10}([a,b,c,d] # zero{[6]}), e)
+                           == shift_alt(take{10}([a,b,c,d] # zero{[6]}), e)

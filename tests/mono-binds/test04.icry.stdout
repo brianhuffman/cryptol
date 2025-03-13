@@ -22,4 +22,4 @@ Loading module test04
   • `10` is not a valid literal of type `()`
       arising from
       use of literal or demoted expression
-      at test04.cry:3:19--3:21
+      at test04.cry:3:20--3:22

@@ -12,4 +12,4 @@ zeroFun = zero
 check27 = (zeroBit == False)
 	&& (zeroTuple == (0, 0)) && (zeroTuple3 == (0, 0, 0))
 	&& ((0, 0) == zeroTuple) && ((0, 0, 0) == zeroTuple3)
-	&& (zeroFun 13 == 0)
+	&& (zeroFun(13) == 0)

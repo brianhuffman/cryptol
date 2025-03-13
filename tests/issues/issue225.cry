@@ -11,12 +11,12 @@ scramble (_,_,_) = zero
 joinRotors : {n} ([n]Rotor, Char) -> ([n]Rotor, Char)
 joinRotors (rotors, inputChar) = (rotors', outputChar)
   where
-    initRotor = mkRotor (['A' .. 'Z'], [])
+    initRotor = mkRotor((['A' .. 'Z'], []))
     // ncrs : [n+1](Bit, [8], Rotor)
     ncrs = [(True, inputChar, initRotor)]
-               # [ scramble (notch, char, r)
+               # [ scramble((notch, char, r))
                  | r <- rotors
                  | (notch, char, rotor') <- ncrs
                  ]
-    rotors' = tail [ r | (_, _, r) <- ncrs ]
+    rotors' = tail([ r | (_, _, r) <- ncrs ])
     (_, outputChar, _) = ncrs ! 0

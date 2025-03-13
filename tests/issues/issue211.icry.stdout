@@ -8,8 +8,8 @@ Loading module Cryptol
 
 Run-time error: boom
 -- Backtrace --
-Cryptol::error called at issue211.icry:7:28--7:33
-Cryptol::splitAt called at issue211.icry:7:2--7:9
+Cryptol::error called at issue211.icry:7:26--7:31
+Cryptol::splitAt called at issue211.icry:7:1--7:8
 
 <<loop>> while evaluating x
 This usually occurs due to an improper recursive definition,
@@ -17,4 +17,4 @@ but may also result from retrying a previously interrupted
 computation (e.g., after CTRL^C). In that case, you may need to
 `:reload` the current module to reset to a good state.
 -- Backtrace --
-Cryptol::splitAt called at issue211.icry:8:2--8:9
+Cryptol::splitAt called at issue211.icry:8:1--8:8

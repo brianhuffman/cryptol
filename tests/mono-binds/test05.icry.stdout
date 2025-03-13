@@ -24,20 +24,18 @@ test05::test =
       foo = Cryptol::number 10 [10] <>
 
       /* Not recursive */
-      f : {m} (fin m) => [n + m]b
+      f : {m} [n + m]b
       f =
-        \{m} (fin m) ->
-          bar m <>
+        \{m} ->
+          bar m
           where
             /* Not recursive */
             foo : [n]b
             foo = a
 
             /* Not recursive */
-            bar : {i} (fin i) => [i + n]b
-            bar =
-              \{i} (fin i) ->
-                (Cryptol::#) i n b <> (Cryptol::zero ([i]b) <>) foo
+            bar : {i} [i + n]b
+            bar = \{i} -> (Cryptol::#) i n b (Cryptol::zero ([i]b) <>) foo
 
 
 
@@ -50,6 +48,35 @@ Loading module test05
 [warning] at test05.cry:13:5--13:8
     This binding for `foo` shadows the existing binding at
     test05.cry:9:3--9:6
+module test05
 
-[error] at test05.cry:14:11--14:21:
-  Ambiguous numeric type: type argument 'front' of '(#)'
+/* Not recursive */
+test05::foo : [10]
+test05::foo = Cryptol::number 10 [10] <>
+
+/* Not recursive */
+test05::test : {n, a, b} (Zero b, Literal 10 a) => [n]b -> a
+test05::test =
+  \{n, a, b} (Zero b, Literal 10 a) (a : [n]b) ->
+    Cryptol::number 10 a <>
+    where
+      /* Not recursive */
+      foo : [10]
+      foo = Cryptol::number 10 [10] <>
+
+      /* Not recursive */
+      f : [n]b
+      f =
+        bar
+        where
+          /* Not recursive */
+          foo : [n]b
+          foo = a
+
+          /* Not recursive */
+          bar : [n]b
+          bar = (Cryptol::#) 0 n b (Cryptol::zero ([0]b) <>) foo
+
+
+
+

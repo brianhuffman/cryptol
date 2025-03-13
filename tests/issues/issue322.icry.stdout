@@ -1,5 +1,4 @@
 Loading module Cryptol
 
-Parse error at issue322.icry:1:4--1:19
-  Explicit type applications can only be applied to named values.
-  Unexpected: (split`{a = [3]})
+[error] at issue322.icry:1:4--1:9:
+  Named and positional type applications may not be mixed.

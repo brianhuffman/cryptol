@@ -6,4 +6,4 @@ submodule A where
     | n > 0  => False
 
 x : {n} Bool
-x = A::f`{n}
+x = A::f{n}

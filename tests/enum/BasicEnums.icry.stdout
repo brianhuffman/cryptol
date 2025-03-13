@@ -16,7 +16,7 @@ Note that we allow a starting |
 
 c1 : E1 -> [8]
 e1 : {a} M a
-e2 : {n, a} (n - 2 >= 2, n >= 2, fin n) => N n a
+e2 : {n, a} (n - 2 >= 2, n >= 2) => N n a
 Showing a specific instance of polymorphic result:
   * Using 'Integer' for type argument 'a' of 'Main::N'
 N

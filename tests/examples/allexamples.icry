@@ -8,7 +8,6 @@
 :l Karatsuba.cry
 :l Test.cry
 :l append.cry
-:l builtin_lifting.cry
 :l builtins.cry
 :l comp.cry
 :l demote.cry

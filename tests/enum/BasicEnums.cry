@@ -26,5 +26,5 @@ c2 e =
 // Construction
 
 e1 = N
-e2 = Y 3
+e2 = Y(3)
 

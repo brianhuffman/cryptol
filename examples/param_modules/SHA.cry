@@ -10,15 +10,15 @@ property katsPass = ~zero == [test == kat | (test,kat) <- sha256tests ]
 
 
 sha256tests =
-  [ (go "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq"
+  [ (go("abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq")
     ,   0x248d6a61d20638b8e5c026930c3e6039a33ce45964ff2167f6ecedd419db06c1
     )
 
-  , (go ""
+  , (go("")
     ,   0xe3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
     )
 
-    , (go "abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmnhijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu"
+    , (go("abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmnhijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu")
       , 0xcf5b16a778af8380036ce59e7b0492370b249b11e8f07a51afac45037afee9d1
       )
 
@@ -26,7 +26,7 @@ sha256tests =
 
   where
   go : {n} (64 >= width (8 * n)) => [n][8] -> [256]
-  go x = sha256 (join x)
+  go x = sha256(join(x))
 
 
 

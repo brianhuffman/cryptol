@@ -31,7 +31,7 @@ encrypt :
   {n} (2^^39 - 256 >= n) =>
       { key : [K], iv : [IV], aad : [AAD], pt : [n] } -> { ct : [n], tag : [T] }
 encrypt input = { ct = C, tag = T }
-  where (C,T) = enc_dec input.key input.iv input.aad input.pt
+  where (C,T) = enc_dec(input.key, input.iv, input.aad, input.pt)
 
 decrypt :
   {n} (2^^39 - 256 >= n) =>
@@ -39,7 +39,7 @@ decrypt :
   { valid : Bool, pt : [n] }
 decrypt input = if input.tag == T then { valid = True, pt = P }
                                   else { valid = False, pt = 0 }
-  where (P,T) = enc_dec input.key input.iv input.aad input.ct
+  where (P,T) = enc_dec(input.key, input.iv, input.aad, input.ct)
 
 
 
@@ -51,31 +51,30 @@ enc_dec :
   {n} ((2^^39 - 256) >= n) => [K] -> [IV] -> [AAD] -> [n] -> ([n], [T])
 enc_dec K IV A P = (C,T)
   where
-  H  = E K 0
+  H  = E(K, 0)
 
-  Y0 = ifWidth`{96} IV (\IV96 -> IV96 # 1)
-                       (GHASH H [] IV)
+  Y0 = ifWidth{96}(IV, \IV96 -> IV96 # 1, GHASH(H, [], IV))
 
   Ys : [1 + n /^ 128][128]
-  Ys = [Y0] # [ y+1 | y <- take Ys ]
+  Ys = [Y0] # [ y+1 | y <- take(Ys) ]
 
   Cs : [n /^ 128][128]
-  Cs = [ p ^ E K y | p <- blockify P | y <- drop`{1} Ys ]
-  C  = unblockify Cs
+  Cs = [ p ^ E(K, y) | p <- blockify(P) | y <- drop{1}(Ys) ]
+  C  = unblockify(Cs)
 
-  T = take`{T} (GHASH H A C ^ E K Y0)
+  T = take{T}(GHASH(H, A, C) ^ E(K, Y0))
 
 
 /** Section 2.3, equation (2) */
 GHASH : {C,A} (64 >= width C, 64 >= width A) => [128] -> [A] -> [C] -> [128]
-GHASH H A C = step (XS ! 0) (wa # wc)
+GHASH H A C = step(XS ! 0, wa # wc)
   where
   wa = `A : [64]
   wc = `C : [64]
 
-  XS = [0] # [ step X' B | X' <- XS | B <- blockify A # blockify C ]
+  XS = [0] # [ step(X', B) | X' <- XS | B <- blockify(A) # blockify(C) ]
 
-  step x b = mult (x ^ b) H
+  step x b = mult(x ^ b, H)
 
 
 
@@ -87,8 +86,8 @@ the spec treats the most significant bit as the 0 power,
 which is the reason for the `reverse` operations.
 */
 mult : [128] -> [128] -> [128]
-mult X Y = reverse (pmod (pmult (reverse X) (reverse Y)) irred)
-  where irred = <| 1 + x + x^^2 + x^^7 + x^^128 |>
+mult X Y = reverse(pmod(pmult(reverse(X), reverse(Y)), irred))
+  where irred = 1 + (1<<1) + (1<<2) + (1<<7) + (1<<128)
 
 
 /** Create blocks as described in the spec, first paragraph of Section 2.3.
@@ -98,7 +97,7 @@ blockify msg = split (msg # 0)
 
 /** Join back the blocks, dropping any additional padding. */
 unblockify : {n} [n /^ 128][128] -> [n]
-unblockify ms = take (join ms)
+unblockify ms = take(join(ms))
 
 
 ifWidth : {w,n,a} [n] -> ([w] -> a) -> a -> a

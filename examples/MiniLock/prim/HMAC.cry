@@ -10,7 +10,7 @@ hmacSHA256 : {pwBytes, msgBytes}
              ( 32 >= width msgBytes
              , 64 >= width (8*pwBytes)
              ) => [pwBytes][8] -> [msgBytes][8] -> [256]
-hmacSHA256 = hmac `{blockLength=64} SHA256 SHA256 SHA256
+hmacSHA256 = hmac{blockLength=64}(SHA256, SHA256, SHA256)
 
 // Due to limitations of the type system we must accept two
 // separate arguments (both aledgedly the same) for two
@@ -26,15 +26,15 @@ hmac hash hash2 hash3 key message = hash2 (okey # internal)
  where
  ks : [blockLength][8]
  ks   = if `pwBytes > (`blockLength : [max (width pwBytes) (width blockLength)])
-            then take `{blockLength} (split (hash3 key) # (zero : [blockLength][8]))
-            else take `{blockLength} (key # (zero : [blockLength][8]))
+            then take{blockLength}(split(hash3(key)) # (zero : [blockLength][8]))
+            else take{blockLength}(key # (zero : [blockLength][8]))
  okey = [k ^ 0x5C | k <- ks]
  ikey = [k ^ 0x36 | k <- ks]
- internal = split (hash (ikey # message))
+ internal = split(hash(ikey # message))
 
 property pass =
     ~zero ==
-    [ hmacSHA256 [0x0b | _ <- [1..20] : [_][6]] "Hi There" == 0xb0344c61d8db38535ca8afceaf0bf12b881dc200c9833da726e9376c2e32cff7
-    , hmacSHA256 "Jefe" "what do ya want for nothing?" == 0x5bdcc146bf60754e6a042426089575c75a003f089d2739839dec58b964ec3843
+    [ hmacSHA256([0x0b | _ <- [1..20] : [_][6]], "Hi There") == 0xb0344c61d8db38535ca8afceaf0bf12b881dc200c9833da726e9376c2e32cff7
+    , hmacSHA256("Jefe", "what do ya want for nothing?") == 0x5bdcc146bf60754e6a042426089575c75a003f089d2739839dec58b964ec3843
     ]
 

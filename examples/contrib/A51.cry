@@ -7,10 +7,10 @@ Russian Academy of Sciences
 A51_stream : {n} (n >= 1) => [19] -> [22] -> [23] -> [n]
 A51_stream R1 R2 R3 = R1s ^ R2s ^ R3s
   where
-    (R1s, R1f) = lfsrki <| x^^19 + x^^18 + x^^17 + x^^14 + 1 |>  R1c R1
-    (R2s, R2f) = lfsrki <| x^^22 + x^^21 + 1 |>                  R2c R2
-    (R3s, R3f) = lfsrki <| x^^23 + x^^22 + x^^21 + x^^8 + 1 |>   R3c R3
-    majvs = [ majv (r1@8) (r2@10) (r3@10) | r1 <- R1f | r2 <- R2f | r3 <- R3f ]
+    (R1s, R1f) = lfsrki(0b11100100000000000001, R1c, R1)
+    (R2s, R2f) = lfsrki(0b11000000000000000000001, R2c, R2)
+    (R3s, R3f) = lfsrki(0b111000000000000100000001, R3c, R3)
+    majvs = [ majv(r1@8, r2@10, r3@10) | r1 <- R1f | r2 <- R2f | r3 <- R3f ]
     R1c = [ r1@8 == m | r1 <- R1f | m <- majvs ]
     R2c = [ r2@10 == m | r2 <- R2f | m <- majvs ]
     R3c = [ r3@10 == m | r3 <- R3f | m <- majvs ]
@@ -19,25 +19,25 @@ type N = 128
 A51 : ([19], [22], [23]) -> [N]Bit
 A51(reg1, reg2, reg3) = keystream
   where
-    keystream = take`{N} (A51_stream reg1 reg2 reg3)
+    keystream = take{N}(A51_stream(reg1, reg2, reg3))
 
 lfsrki_step : {d} (d >= 1) => [d+1] -> Bit -> [d] -> [d]
 lfsrki_step poly cond fill = fill'
  where
-   feedback_bit = if(poly@0) then prefix (^) (reverse([False]#fill) && poly)
-                             else error "polynomial does not have high-bit set."
-   fill' = if cond then [feedback_bit]#(take`{d-1} fill) else fill
+   feedback_bit = if(poly@0) then prefix((^), reverse([False]#fill) && poly)
+                             else error("polynomial does not have high-bit set.")
+   fill' = if cond then [feedback_bit] # take{d-1}(fill) else fill
 
 lfsrki : {d, n} (d >= 1, n >= 1) => [d+1] -> [n] -> [d] -> ([n], [n][d])
 lfsrki poly conds init = (stream, fills)
   where
-    lfsrki' = lfsrki_step poly
-    fills = [init] # [ lfsrki' c f | c <- conds | f <- take`{back=1} fills ]
+    lfsrki' = lfsrki_step(poly)
+    fills = [init] # [ lfsrki'(c, f) | c <- conds | f <- take{back=1}(fills) ]
     stream = [ f!0 | f <- fills ]
 
 
 prefix f xs = ys!0
-  where ys = [xs@0] # [ f y x | y <- ys | x <- tail xs ]
+  where ys = [xs@0] # [ f(y, x) | y <- ys | x <- tail(xs) ]
 
 majv a b c = (a && b) || (a && c) || (b && c)
 
@@ -49,5 +49,5 @@ iv3 = 0b10100000111100110011011
 
 test_keystream = 0b00100100111010001110101110101100010100110111110101000101110000011101000111110101010000010011001111110101110001011010100000010001
 
-property A51_correct = (A51(iv1, iv2, iv3)) == test_keystream
-property A51_search x y z = A51(x,y,z) == test_keystream
+property A51_correct = A51((iv1, iv2, iv3)) == test_keystream
+property A51_search x y z = A51((x,y,z)) == test_keystream

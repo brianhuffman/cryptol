@@ -8,122 +8,122 @@ import Cipher
 
 CAST128 : Cipher 128 64
 CAST128 =
-    { encrypt key pt = cast5_16 pt (expandKey key)
-    , decrypt key ct = cast5_16 ct (bireverse (expandKey key))
+    { encrypt = \key pt -> cast5_16(pt, expandKey(key))
+    , decrypt = \key ct -> cast5_16(ct, bireverse(expandKey(key)))
     }
 
 CAST5_80 : Cipher 80 64
 CAST5_80 =
-    { encrypt key pt = cast5_12 pt (expandKey key)
-    , decrypt key ct = cast5_12 ct (bireverse (expandKey key))
+    { encrypt = \key pt -> cast5_12(pt, expandKey(key))
+    , decrypt = \key ct -> cast5_12(ct, bireverse(expandKey(key)))
     }
 
 CAST5_64 : Cipher 64 64
 CAST5_64 =
-    { encrypt key pt = cast5_12 pt (expandKey key)
-    , decrypt key ct = cast5_12 ct (bireverse (expandKey key))
+    { encrypt = \key pt -> cast5_12(pt, expandKey(key))
+    , decrypt = \key ct -> cast5_12(ct, bireverse(expandKey(key)))
     }
 
 CAST5_40 : Cipher 40 64
 CAST5_40 =
-    { encrypt key pt = cast5_12 pt (expandKey key)
-    , decrypt key ct = cast5_12 ct (bireverse (expandKey key))
+    { encrypt = \key pt -> cast5_12(pt, expandKey(key))
+    , decrypt = \key ct -> cast5_12(ct, bireverse(expandKey(key)))
     }
 
-bireverse (x,y) = (reverse x, reverse y)
+bireverse (x,y) = (reverse(x), reverse(y))
 
 cast5_16 pt (km,kr) = result where
        result = R16#L16
-       [L0,R0] = split pt
+       [L0,R0] = split(pt)
        L1 = R0
-       R1 = L0 ^ f1 (R0, km@0, kr@0)
+       R1 = L0 ^ f1((R0, km@0, kr@0))
        L2 = R1
-       R2 = L1 ^ f2 (R1, km@1, kr@1)
+       R2 = L1 ^ f2((R1, km@1, kr@1))
        L3 = R2
-       R3 = L2 ^ f3 (R2, km@2, kr@2)
+       R3 = L2 ^ f3((R2, km@2, kr@2))
        L4 = R3
-       R4 = L3 ^ f1 (R3, km@3, kr@3)
+       R4 = L3 ^ f1((R3, km@3, kr@3))
        L5 = R4
-       R5 = L4 ^ f2 (R4, km@4, kr@4)
+       R5 = L4 ^ f2((R4, km@4, kr@4))
        L6 = R5
-       R6 = L5 ^ f3 (R5, km@5, kr@5)
+       R6 = L5 ^ f3((R5, km@5, kr@5))
        L7 = R6
-       R7 = L6 ^ f1 (R6, km@6, kr@6)
+       R7 = L6 ^ f1((R6, km@6, kr@6))
        L8 = R7
-       R8 = L7 ^ f2 (R7, km@7, kr@7)
+       R8 = L7 ^ f2((R7, km@7, kr@7))
        L9 = R8
-       R9 = L8 ^ f3 (R8, km@8, kr@8)
+       R9 = L8 ^ f3((R8, km@8, kr@8))
        L10 = R9
-       R10 = L9 ^ f1 (R9, km@9, kr@9)
+       R10 = L9 ^ f1((R9, km@9, kr@9))
        L11 = R10
-       R11 = L10 ^ f2 (R10, km@10, kr@10)
+       R11 = L10 ^ f2((R10, km@10, kr@10))
        L12 = R11
-       R12 = L11 ^ f3 (R11, km@11, kr@11)
+       R12 = L11 ^ f3((R11, km@11, kr@11))
        L13 = R12
-       R13 = L12 ^ f1 (R12, km@12, kr@12)
+       R13 = L12 ^ f1((R12, km@12, kr@12))
        L14 = R13
-       R14 = L13 ^ f2 (R13, km@13, kr@13)
+       R14 = L13 ^ f2((R13, km@13, kr@13))
        L15 = R14
-       R15 = L14 ^ f3 (R14, km@14, kr@14)
+       R15 = L14 ^ f3((R14, km@14, kr@14))
        L16 = R15
-       R16 = L15 ^ f1 (R15, km@15, kr@15)
+       R16 = L15 ^ f1((R15, km@15, kr@15))
 
 cast5_12 pt (km,kr) = result where
        result = R12#L12
-       [L0,R0] = split pt
+       [L0,R0] = split(pt)
        L1 = R0
-       R1 = L0 ^ f1 (R0, km@0, kr@0)
+       R1 = L0 ^ f1((R0, km@0, kr@0))
        L2 = R1
-       R2 = L1 ^ f2 (R1, km@1, kr@1)
+       R2 = L1 ^ f2((R1, km@1, kr@1))
        L3 = R2
-       R3 = L2 ^ f3 (R2, km@2, kr@2)
+       R3 = L2 ^ f3((R2, km@2, kr@2))
        L4 = R3
-       R4 = L3 ^ f1 (R3, km@3, kr@3)
+       R4 = L3 ^ f1((R3, km@3, kr@3))
        L5 = R4
-       R5 = L4 ^ f2 (R4, km@4, kr@4)
+       R5 = L4 ^ f2((R4, km@4, kr@4))
        L6 = R5
-       R6 = L5 ^ f3 (R5, km@5, kr@5)
+       R6 = L5 ^ f3((R5, km@5, kr@5))
        L7 = R6
-       R7 = L6 ^ f1 (R6, km@6, kr@6)
+       R7 = L6 ^ f1((R6, km@6, kr@6))
        L8 = R7
-       R8 = L7 ^ f2 (R7, km@7, kr@7)
+       R8 = L7 ^ f2((R7, km@7, kr@7))
        L9 = R8
-       R9 = L8 ^ f3 (R8, km@8, kr@8)
+       R9 = L8 ^ f3((R8, km@8, kr@8))
        L10 = R9
-       R10 = L9 ^ f1 (R9, km@9, kr@9)
+       R10 = L9 ^ f1((R9, km@9, kr@9))
        L11 = R10
-       R11 = L10 ^ f2 (R10, km@10, kr@10)
+       R11 = L10 ^ f2((R10, km@10, kr@10))
        L12 = R11
-       R12 = L11 ^ f3 (R11, km@11, kr@11)
+       R12 = L11 ^ f3((R11, km@11, kr@11))
 
 blockEncrypt : {k} (16 >= k, k >= 5) => ([k*8],[64]) -> [64]
-blockEncrypt (k,plaintext) = if wid k > 80 then cast5_16 plaintext key else cast5_12 plaintext key
+blockEncrypt (k,plaintext) = if wid(k) > 80 then cast5_16(plaintext, key) else cast5_12(plaintext, key)
     where wid (x:[w]_) = `w
-          key = expandKey k
+          key = expandKey(k)
 
 f1, f2, f3 : ([32],[32],[5]) -> [32]
 f1 (d, kmi, kri) = ((s1@ia ^ s2@ib) - s3@ic) + s4@id where
-    [ia,ib,ic,id] = split i
+    [ia,ib,ic,id] = split(i)
     i = (kmi + d) <<< kri
 
 f2 (d, kmi, kri) = ((s1@ia - s2@ib) + s3@ic) ^ s4@id where
-    [ia,ib,ic,id] = split i
+    [ia,ib,ic,id] = split(i)
     i = (kmi ^ d) <<< kri
 
 f3 (d, kmi, kri) = ((s1@ia + s2@ib) ^ s3@ic) - s4@id where
-    [ia,ib,ic,id] = split i
+    [ia,ib,ic,id] = split(i)
     i = (kmi - d) <<< kri
 
 expandKey : {k} (16 >= k, k >= 5) => [k*8] -> ([16][32],[16][5])
 expandKey key = (firstHalf, secondHalf) where
-    (firstHalf, newkey) = halfKeySchedule paddedKey
-    secondHalf = [x@@[27..31] | x <- fst (halfKeySchedule newkey)]
+    (firstHalf, newkey) = halfKeySchedule(paddedKey)
+    secondHalf = [x@@[27..31] | x <- fst(halfKeySchedule(newkey))]
     fst (x, y) = x
     paddedKey = key#zero
 
 halfKeySchedule : [128] -> ([16][32],[128])
 halfKeySchedule key = ([K1,K2,K3,K4,K5,K6,K7,K8,K9,K10,K11,K12,K13,K14,K15,K16],newkey) where
-    [x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,xA,xB,xC,xD,xE,xF] = split key
+    [x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,xA,xB,xC,xD,xE,xF] = split(key)
     [z0,z1,z2,z3] = split ((x0#x1#x2#x3) ^ s5@xD ^ s6@xF ^ s7@xC ^ s8@xE ^ s7@x8)
     [z4,z5,z6,z7] = split ((x8#x9#xA#xB) ^ s5@z0 ^ s6@z2 ^ s7@z1 ^ s8@z3 ^ s8@xA)
     [z8,z9,zA,zB] = split ((xC#xD#xE#xF) ^ s5@z7 ^ s6@z6 ^ s7@z5 ^ s8@z4 ^ s5@x9)
@@ -450,8 +450,8 @@ C1 = 0x238B4FE5847E44B2
 C2 = 0xEB6A711A2C02271B
 C3 = 0x7AC816D16E9B302E
 
-test_B1_1 = blockEncrypt (Key1, Plaintext) == C1
-test_B1_2 = blockEncrypt (Key2, Plaintext) == C2
-test_B1_3 = blockEncrypt (Key3, Plaintext) == C3
+test_B1_1 = blockEncrypt((Key1, Plaintext)) == C1
+test_B1_2 = blockEncrypt((Key2, Plaintext)) == C2
+test_B1_3 = blockEncrypt((Key3, Plaintext)) == C3
 
 property passesTests = [test_B1_1, test_B1_2, test_B1_3] == ~zero

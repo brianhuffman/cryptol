@@ -29,12 +29,12 @@ safe_product(x,y) = uext(x) * uext(y)
 
 /* Returns module reduction on input. */
 safe_mod : {a, b} ([b],[a+b]) -> [b]
-safe_mod(p,x) = drop `{a} (x % uext(p))
+safe_mod(p,x) = drop{a}(x % uext(p))
 
 /* Add two n-bit numbers and input carry to obtain a n bit number and output carry. */
 adc : {n} ([n],[n]) -> ([n],Bit)
 adc(x,y) = (drop(sm), sm@0)
-  where sm = safe_add(x,y)
+  where sm = safe_add((x,y))
 
 /* sbb(x,y) subtracts y from x, and returns result along with output borrow bit. */
 sbb : {n} ([n],[n]) -> ([n],Bit)

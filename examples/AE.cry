@@ -51,8 +51,8 @@ property
   // Property of decrypt
   Dec_prop : Tweak -> Node -> Bit
   Dec_prop t { message = m, state = x } =
-       Dec t { message = c, state = x } == { message = m, state = y }
-       where { message = c, state = y } = Enc t x m
+       Dec(t, { message = c, state = x }) == { message = m, state = y }
+       where { message = c, state = y } = Enc(t, x, m)
 */
 
 type Int = [64]
@@ -62,14 +62,14 @@ encrypt :
 encrypt key nonce state inputMsg = encMsg # tag
 
   where
-  encMsg = join rest.0.message
+  encMsg = join(rest.0.message)
 
-  tag = take`{tagAmount} (Tag key (tweak (1 - final.1)) final.0.state)
+  tag = take{tagAmount}(Tag(key, tweak(1 - final.1), final.0.state))
 
   final = steps ! 0
 
   steps = [ ({ message = undefined, state = zero }, 1) ] # rest
-  rest  = [ (Enc key (tweak v) { message = m, state = prev.state }, v + Cost)
+  rest  = [ (Enc(key, tweak(v), { message = m, state = prev.state }), v + Cost)
           | (prev,v) <- steps
           | m        <- chunks
           ]
@@ -77,7 +77,7 @@ encrypt key nonce state inputMsg = encMsg # tag
   // XXX: isn't v i  just 1 + i * Cost
 
   chunks : [m] [p * n]
-  chunks = split inputMsg
+  chunks = split(inputMsg)
 
   tweak : Int -> Tweak
   tweak v = { nonce = nonce, state = state, z = v }

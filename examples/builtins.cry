@@ -20,7 +20,7 @@ exp : [8]
 exp = 2^^7 //128
 
 lgtest : [8]
-lgtest = lg2 128 //7
+lgtest = lg2(128) //7
 
 p : [8]
 p = 3+2 //5

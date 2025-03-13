@@ -1,7 +1,7 @@
 module Common::SHA where
 
 sha : {L} (2 * w >= width L) => [L] -> [8 * w]
-sha M = join (SHA_2_Common' [ split x | x <- parse`{num_blocks L} (pad`{L} M) ])
+sha M = join(SHA_2_Common'([ split(x) | x <- parse{num_blocks L}(pad{L}(M)) ]))
 
 parameter
 
@@ -86,11 +86,11 @@ private
   messageSchedule_Common : [16][w] -> [j][w]
   messageSchedule_Common Mi = W
     where
-    W = Mi # [ w1 + sigma_0 w2 + w3 + sigma_1 w4
-             | w1 <- take`{j-16} W
-             | w2 <- take`{j-16} (drop`{1} W)
-             | w3 <- take`{j-16} (drop`{9} W)
-             | w4 <- take`{j-16} (drop`{14} W)
+    W = Mi # [ w1 + sigma_0(w2) + w3 + sigma_1(w4)
+             | w1 <- take{j-16}(W)
+             | w2 <- take{j-16}(drop{1}(W))
+             | w3 <- take{j-16}(drop{9}(W))
+             | w4 <- take{j-16}(drop{14}(W))
              ]
 
 
@@ -114,27 +114,27 @@ private
       (hs ! 0) + (H @ 7)
     ]
     where
-      T1 = [h + SIGMA_1 e + Ch e f g + k_t + w_t
+      T1 = [h + SIGMA_1(e) + Ch(e,f,g) + k_t + w_t
                 | h <- hs | e <- es | f <- fs | g <- gs | k_t <- K | w_t <- W]
-      T2 = [ SIGMA_0 a + Maj a b c | a <- as | b <- bs | c <- cs]
-      hs = take`{j + 1}([H @ 7] # gs)
-      gs = take`{j + 1}([H @ 6] # fs)
-      fs = take`{j + 1}([H @ 5] # es)
-      es = take`{j + 1}([H @ 4] # [d + t1 | d <- ds | t1 <- T1])
-      ds = take`{j + 1}([H @ 3] # cs)
-      cs = take`{j + 1}([H @ 2] # bs)
-      bs = take`{j + 1}([H @ 1] # as)
-      as = take`{j + 1}([H @ 0] # [t1 + t2 | t1 <- T1 | t2 <- T2])
+      T2 = [ SIGMA_0(a) + Maj(a,b,c) | a <- as | b <- bs | c <- cs]
+      hs = take{j + 1}([H @ 7] # gs)
+      gs = take{j + 1}([H @ 6] # fs)
+      fs = take{j + 1}([H @ 5] # es)
+      es = take{j + 1}([H @ 4] # [d + t1 | d <- ds | t1 <- T1])
+      ds = take{j + 1}([H @ 3] # cs)
+      cs = take{j + 1}([H @ 2] # bs)
+      bs = take{j + 1}([H @ 1] # as)
+      as = take{j + 1}([H @ 0] # [t1 + t2 | t1 <- T1 | t2 <- T2])
 
 
   processBlock_Common : [8][w] -> [16][w] -> [8][w]
-  processBlock_Common H Mi = compress_Common H (messageSchedule_Common Mi)
+  processBlock_Common H Mi = compress_Common(H, messageSchedule_Common(Mi))
 
 
   SHA_2_Common' : {L} [L][16][w] -> [8][w]
   SHA_2_Common' blocks = hash ! 0
     where
-    hash = [H0] # [ processBlock_Common h b | h <- hash | b <- blocks]
+    hash = [H0] # [ processBlock_Common(h, b) | h <- hash | b <- blocks]
 
 
 

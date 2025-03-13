@@ -44,9 +44,9 @@ R4 = 07
 
 // Section 3.1: Mixing function 'G'
 G : [4] -> [4] -> LocalState -> [4][6] -> Block -> [16][32]
-G r i vec abcd ms = foldl updateVector vec (zip abcd new)
+G r i vec abcd ms = foldl(updateVector, vec, zip(abcd, new))
   where
-  new  = G' r i (vec @@ abcd) ms
+  new  = G'(r, i, vec @@ abcd, ms)
 
 G' : [4] -> [4] -> [4][32] -> Block -> [4][32]
 G' r i vals ms = [a2, b2, c2, d2]
@@ -68,15 +68,15 @@ F : State -> Block -> BCounter -> Bit -> State
 F h ms t f =  h ^ (take (vs!0)) ^ (drop (vs!0))
  where
   v   = h # IV ^ (zero # [t0,t1,f0,zero])
-  [t1,t0] = split t      : [2][32]
+  [t1,t0] = split(t)     : [2][32]
   f0 = [f | _ <- [0..31] : [_][6]]
-  vs = [v] # [ round i ms v' | v' <- vs | i <- [0..9] ]
+  vs = [v] # [ round(i, ms, v') | v' <- vs | i <- [0..9] ]
 
 // Sub-function of F (first for loop)
 round : [4] -> Block -> LocalState -> LocalState
 round r ms v = vs ! 0
   where
-  vs = [v] # [ G r i v' ix ms
+  vs = [v] # [ G(r, i, v', ix, ms)
                 | v'   <- vs
                 | i    <- [0..7]
                 | ix   <- [ [0,4,8,12],  [1,5,9,13]
@@ -94,60 +94,60 @@ round r ms v = vs ! 0
 
 blake2s : {ll,nn} (32 >= nn, 64 >= width ll)
       => [ll][8] -> [nn*8]
-blake2s m = blake2s' `{ll=ll,nn=nn} m
+blake2s m = blake2s'{ll=ll,nn=nn}(m)
 
 blake2s' : {ll,dd,nn}
          ( 32  >= nn
-         , dd  == (max 1 ((ll+63)/64)) - 1
+         , dd  == max 1 ((ll+63)/64) - 1
          , 64 >= width ll
          )
           => [ll][8]
           -> [nn*8]
-blake2s' m = take `{nn*8} (blake2sFinish ({ state = (hs!0).state, counter = `ll}) lastBlock)
+blake2s' m = take{nn*8}(blake2sFinish({ state = (hs!0).state, counter = `ll}, lastBlock))
  where
 
  fullBlocks : [dd]Block
- fullBlocks = [mkBlock b | b <- split (join (take  `{front=64*dd,back=ll-64*dd} m))]
+ fullBlocks = [mkBlock(b) | b <- split(join(take{front=64*dd,back=ll-64*dd}(m)))]
 
- partialBlock = drop `{front=64*dd,back=ll-64*dd} m
+ partialBlock = drop{front=64*dd,back=ll-64*dd}(m)
 
  lastBlock : Block
  lastBlock  =
     if (`ll == (zero:[64]))
         then zero // Special case full zero block for empty messages
-        else mkBlock ((split`{parts=ll/^64 - dd} (join (partialBlock # (zero : [ll%^64][8]))))@0)
+        else mkBlock((split{parts=ll/^64 - dd}(join(partialBlock # (zero : [ll%^64][8]))))@0)
 
  h : Context
- h  = { state = [IV@0 ^ `0x01010000 ^ `nn] # drop `{1} IV, counter = 0 }
+ h  = { state = [IV@0 ^ `0x01010000 ^ `nn] # drop{1}(IV), counter = 0 }
 
  hs : [dd+1]Context
- hs = [h] # [blake2Update h' dX |  h' <- hs | dX <- fullBlocks]
+ hs = [h] # [blake2Update(h', dX) |  h' <- hs | dX <- fullBlocks]
 
 blake2Update : Context -> Block -> Context
 blake2Update ctx d = { state = newState, counter = newCount }
-  where newState = F ctx.state d newCount False
+  where newState = F(ctx.state, d, newCount, False)
         newCount = ctx.counter + (64 : [64])
 
 postprocess : {ll} (64 >= ll, 64 >= width ll) => BCounter -> [ll][8] -> Block
 postprocess c m =
     if c == 0 /\ `ll == (zero:[64])
         then zero
-        else split (join m # zero)
+        else split(join(m) # zero)
 
 // The final round of blake
 blake2sFinish : Context -> Block -> [256]
-blake2sFinish ctx b = join [ reverseBytes w | w <- F ctx.state b ctx.counter True ]
+blake2sFinish ctx b = join([ reverseBytes(w) | w <- F(ctx.state, b, ctx.counter, True) ])
 
 
 ////////////////////////////////////////////////////////////////////////////////
 //  Utilities
 ////////////////////////////////////////////////////////////////////////////////
 
-mkBlock x = reverse (split (reverseBytes x))
+mkBlock x = reverse(split(reverseBytes(x)))
 
-reverseBytes x = join (reverse (bytes x))
+reverseBytes x = join(reverse(bytes(x)))
 
-bytes x = split x : [_] [8]
+bytes x = split(x) : [_] [8]
 
 
 // XXX can probably do a cleaner merge-sort style update.
@@ -160,267 +160,267 @@ updateVector orig idxNew = vs
 
 
 property katsPass = ~zero ==
-                        [ nthKat `{0}
-                        , nthKat `{1}
-                        , nthKat `{2}
-                        , nthKat `{3}
-                        , nthKat `{4}
-                        , nthKat `{5}
-                        , nthKat `{6}
-                        , nthKat `{7}
-                        , nthKat `{8}
-                        , nthKat `{9}
-                        , nthKat `{10}
-                        , nthKat `{11}
-                        , nthKat `{12}
-                        , nthKat `{13}
-                        , nthKat `{14}
-                        , nthKat `{15}
-                        , nthKat `{16}
-                        , nthKat `{17}
-                        , nthKat `{18}
-                        , nthKat `{19}
-                        , nthKat `{20}
-                        , nthKat `{21}
-                        , nthKat `{22}
-                        , nthKat `{23}
-                        , nthKat `{24}
-                        , nthKat `{25}
-                        , nthKat `{26}
-                        , nthKat `{27}
-                        , nthKat `{28}
-                        , nthKat `{29}
-                        , nthKat `{30}
-                        , nthKat `{31}
-                        , nthKat `{32}
-                        , nthKat `{33}
-                        , nthKat `{34}
-                        , nthKat `{35}
-                        , nthKat `{36}
-                        , nthKat `{37}
-                        , nthKat `{38}
-                        , nthKat `{39}
-                        , nthKat `{40}
-                        , nthKat `{41}
-                        , nthKat `{42}
-                        , nthKat `{43}
-                        , nthKat `{44}
-                        , nthKat `{45}
-                        , nthKat `{46}
-                        , nthKat `{47}
-                        , nthKat `{48}
-                        , nthKat `{49}
-                        , nthKat `{50}
-                        , nthKat `{51}
-                        , nthKat `{52}
-                        , nthKat `{53}
-                        , nthKat `{54}
-                        , nthKat `{55}
-                        , nthKat `{56}
-                        , nthKat `{57}
-                        , nthKat `{58}
-                        , nthKat `{59}
-                        , nthKat `{60}
-                        , nthKat `{61}
-                        , nthKat `{62}
-                        , nthKat `{63}
-                        , nthKat `{64}
-                        , nthKat `{65}
-                        , nthKat `{66}
-                        , nthKat `{67}
-                        , nthKat `{68}
-                        , nthKat `{69}
-                        , nthKat `{70}
-                        , nthKat `{71}
-                        , nthKat `{72}
-                        , nthKat `{73}
-                        , nthKat `{74}
-                        , nthKat `{75}
-                        , nthKat `{76}
-                        , nthKat `{77}
-                        , nthKat `{78}
-                        , nthKat `{79}
-                        , nthKat `{80}
-                        , nthKat `{81}
-                        , nthKat `{82}
-                        , nthKat `{83}
-                        , nthKat `{84}
-                        , nthKat `{85}
-                        , nthKat `{86}
-                        , nthKat `{87}
-                        , nthKat `{88}
-                        , nthKat `{89}
-                        , nthKat `{90}
-                        , nthKat `{91}
-                        , nthKat `{92}
-                        , nthKat `{93}
-                        , nthKat `{94}
-                        , nthKat `{95}
-                        , nthKat `{96}
-                        , nthKat `{97}
-                        , nthKat `{98}
-                        , nthKat `{99}
-                        , nthKat `{100}
-                        , nthKat `{101}
-                        , nthKat `{102}
-                        , nthKat `{103}
-                        , nthKat `{104}
-                        , nthKat `{105}
-                        , nthKat `{106}
-                        , nthKat `{107}
-                        , nthKat `{108}
-                        , nthKat `{109}
-                        , nthKat `{110}
-                        , nthKat `{111}
-                        , nthKat `{112}
-                        , nthKat `{113}
-                        , nthKat `{114}
-                        , nthKat `{115}
-                        , nthKat `{116}
-                        , nthKat `{117}
-                        , nthKat `{118}
-                        , nthKat `{119}
-                        , nthKat `{120}
-                        , nthKat `{121}
-                        , nthKat `{122}
-                        , nthKat `{123}
-                        , nthKat `{124}
-                        , nthKat `{125}
-                        , nthKat `{126}
-                        , nthKat `{127}
-                        , nthKat `{128}
-                        , nthKat `{129}
-                        , nthKat `{130}
-                        , nthKat `{131}
-                        , nthKat `{132}
-                        , nthKat `{133}
-                        , nthKat `{134}
-                        , nthKat `{135}
-                        , nthKat `{136}
-                        , nthKat `{137}
-                        , nthKat `{138}
-                        , nthKat `{139}
-                        , nthKat `{140}
-                        , nthKat `{141}
-                        , nthKat `{142}
-                        , nthKat `{143}
-                        , nthKat `{144}
-                        , nthKat `{145}
-                        , nthKat `{146}
-                        , nthKat `{147}
-                        , nthKat `{148}
-                        , nthKat `{149}
-                        , nthKat `{150}
-                        , nthKat `{151}
-                        , nthKat `{152}
-                        , nthKat `{153}
-                        , nthKat `{154}
-                        , nthKat `{155}
-                        , nthKat `{156}
-                        , nthKat `{157}
-                        , nthKat `{158}
-                        , nthKat `{159}
-                        , nthKat `{160}
-                        , nthKat `{161}
-                        , nthKat `{162}
-                        , nthKat `{163}
-                        , nthKat `{164}
-                        , nthKat `{165}
-                        , nthKat `{166}
-                        , nthKat `{167}
-                        , nthKat `{168}
-                        , nthKat `{169}
-                        , nthKat `{170}
-                        , nthKat `{171}
-                        , nthKat `{172}
-                        , nthKat `{173}
-                        , nthKat `{174}
-                        , nthKat `{175}
-                        , nthKat `{176}
-                        , nthKat `{177}
-                        , nthKat `{178}
-                        , nthKat `{179}
-                        , nthKat `{180}
-                        , nthKat `{181}
-                        , nthKat `{182}
-                        , nthKat `{183}
-                        , nthKat `{184}
-                        , nthKat `{185}
-                        , nthKat `{186}
-                        , nthKat `{187}
-                        , nthKat `{188}
-                        , nthKat `{189}
-                        , nthKat `{190}
-                        , nthKat `{191}
-                        , nthKat `{192}
-                        , nthKat `{193}
-                        , nthKat `{194}
-                        , nthKat `{195}
-                        , nthKat `{196}
-                        , nthKat `{197}
-                        , nthKat `{198}
-                        , nthKat `{199}
-                        , nthKat `{200}
-                        , nthKat `{201}
-                        , nthKat `{202}
-                        , nthKat `{203}
-                        , nthKat `{204}
-                        , nthKat `{205}
-                        , nthKat `{206}
-                        , nthKat `{207}
-                        , nthKat `{208}
-                        , nthKat `{209}
-                        , nthKat `{210}
-                        , nthKat `{211}
-                        , nthKat `{212}
-                        , nthKat `{213}
-                        , nthKat `{214}
-                        , nthKat `{215}
-                        , nthKat `{216}
-                        , nthKat `{217}
-                        , nthKat `{218}
-                        , nthKat `{219}
-                        , nthKat `{220}
-                        , nthKat `{221}
-                        , nthKat `{222}
-                        , nthKat `{223}
-                        , nthKat `{224}
-                        , nthKat `{225}
-                        , nthKat `{226}
-                        , nthKat `{227}
-                        , nthKat `{228}
-                        , nthKat `{229}
-                        , nthKat `{230}
-                        , nthKat `{231}
-                        , nthKat `{232}
-                        , nthKat `{233}
-                        , nthKat `{234}
-                        , nthKat `{235}
-                        , nthKat `{236}
-                        , nthKat `{237}
-                        , nthKat `{238}
-                        , nthKat `{239}
-                        , nthKat `{240}
-                        , nthKat `{241}
-                        , nthKat `{242}
-                        , nthKat `{243}
-                        , nthKat `{244}
-                        , nthKat `{245}
-                        , nthKat `{246}
-                        , nthKat `{247}
-                        , nthKat `{248}
-                        , nthKat `{249}
-                        , nthKat `{250}
-                        , nthKat `{251}
-                        , nthKat `{252}
-                        , nthKat `{253}
-                        , nthKat `{254}
-                        , nthKat `{255}
+                        [ nthKat{0}
+                        , nthKat{1}
+                        , nthKat{2}
+                        , nthKat{3}
+                        , nthKat{4}
+                        , nthKat{5}
+                        , nthKat{6}
+                        , nthKat{7}
+                        , nthKat{8}
+                        , nthKat{9}
+                        , nthKat{10}
+                        , nthKat{11}
+                        , nthKat{12}
+                        , nthKat{13}
+                        , nthKat{14}
+                        , nthKat{15}
+                        , nthKat{16}
+                        , nthKat{17}
+                        , nthKat{18}
+                        , nthKat{19}
+                        , nthKat{20}
+                        , nthKat{21}
+                        , nthKat{22}
+                        , nthKat{23}
+                        , nthKat{24}
+                        , nthKat{25}
+                        , nthKat{26}
+                        , nthKat{27}
+                        , nthKat{28}
+                        , nthKat{29}
+                        , nthKat{30}
+                        , nthKat{31}
+                        , nthKat{32}
+                        , nthKat{33}
+                        , nthKat{34}
+                        , nthKat{35}
+                        , nthKat{36}
+                        , nthKat{37}
+                        , nthKat{38}
+                        , nthKat{39}
+                        , nthKat{40}
+                        , nthKat{41}
+                        , nthKat{42}
+                        , nthKat{43}
+                        , nthKat{44}
+                        , nthKat{45}
+                        , nthKat{46}
+                        , nthKat{47}
+                        , nthKat{48}
+                        , nthKat{49}
+                        , nthKat{50}
+                        , nthKat{51}
+                        , nthKat{52}
+                        , nthKat{53}
+                        , nthKat{54}
+                        , nthKat{55}
+                        , nthKat{56}
+                        , nthKat{57}
+                        , nthKat{58}
+                        , nthKat{59}
+                        , nthKat{60}
+                        , nthKat{61}
+                        , nthKat{62}
+                        , nthKat{63}
+                        , nthKat{64}
+                        , nthKat{65}
+                        , nthKat{66}
+                        , nthKat{67}
+                        , nthKat{68}
+                        , nthKat{69}
+                        , nthKat{70}
+                        , nthKat{71}
+                        , nthKat{72}
+                        , nthKat{73}
+                        , nthKat{74}
+                        , nthKat{75}
+                        , nthKat{76}
+                        , nthKat{77}
+                        , nthKat{78}
+                        , nthKat{79}
+                        , nthKat{80}
+                        , nthKat{81}
+                        , nthKat{82}
+                        , nthKat{83}
+                        , nthKat{84}
+                        , nthKat{85}
+                        , nthKat{86}
+                        , nthKat{87}
+                        , nthKat{88}
+                        , nthKat{89}
+                        , nthKat{90}
+                        , nthKat{91}
+                        , nthKat{92}
+                        , nthKat{93}
+                        , nthKat{94}
+                        , nthKat{95}
+                        , nthKat{96}
+                        , nthKat{97}
+                        , nthKat{98}
+                        , nthKat{99}
+                        , nthKat{100}
+                        , nthKat{101}
+                        , nthKat{102}
+                        , nthKat{103}
+                        , nthKat{104}
+                        , nthKat{105}
+                        , nthKat{106}
+                        , nthKat{107}
+                        , nthKat{108}
+                        , nthKat{109}
+                        , nthKat{110}
+                        , nthKat{111}
+                        , nthKat{112}
+                        , nthKat{113}
+                        , nthKat{114}
+                        , nthKat{115}
+                        , nthKat{116}
+                        , nthKat{117}
+                        , nthKat{118}
+                        , nthKat{119}
+                        , nthKat{120}
+                        , nthKat{121}
+                        , nthKat{122}
+                        , nthKat{123}
+                        , nthKat{124}
+                        , nthKat{125}
+                        , nthKat{126}
+                        , nthKat{127}
+                        , nthKat{128}
+                        , nthKat{129}
+                        , nthKat{130}
+                        , nthKat{131}
+                        , nthKat{132}
+                        , nthKat{133}
+                        , nthKat{134}
+                        , nthKat{135}
+                        , nthKat{136}
+                        , nthKat{137}
+                        , nthKat{138}
+                        , nthKat{139}
+                        , nthKat{140}
+                        , nthKat{141}
+                        , nthKat{142}
+                        , nthKat{143}
+                        , nthKat{144}
+                        , nthKat{145}
+                        , nthKat{146}
+                        , nthKat{147}
+                        , nthKat{148}
+                        , nthKat{149}
+                        , nthKat{150}
+                        , nthKat{151}
+                        , nthKat{152}
+                        , nthKat{153}
+                        , nthKat{154}
+                        , nthKat{155}
+                        , nthKat{156}
+                        , nthKat{157}
+                        , nthKat{158}
+                        , nthKat{159}
+                        , nthKat{160}
+                        , nthKat{161}
+                        , nthKat{162}
+                        , nthKat{163}
+                        , nthKat{164}
+                        , nthKat{165}
+                        , nthKat{166}
+                        , nthKat{167}
+                        , nthKat{168}
+                        , nthKat{169}
+                        , nthKat{170}
+                        , nthKat{171}
+                        , nthKat{172}
+                        , nthKat{173}
+                        , nthKat{174}
+                        , nthKat{175}
+                        , nthKat{176}
+                        , nthKat{177}
+                        , nthKat{178}
+                        , nthKat{179}
+                        , nthKat{180}
+                        , nthKat{181}
+                        , nthKat{182}
+                        , nthKat{183}
+                        , nthKat{184}
+                        , nthKat{185}
+                        , nthKat{186}
+                        , nthKat{187}
+                        , nthKat{188}
+                        , nthKat{189}
+                        , nthKat{190}
+                        , nthKat{191}
+                        , nthKat{192}
+                        , nthKat{193}
+                        , nthKat{194}
+                        , nthKat{195}
+                        , nthKat{196}
+                        , nthKat{197}
+                        , nthKat{198}
+                        , nthKat{199}
+                        , nthKat{200}
+                        , nthKat{201}
+                        , nthKat{202}
+                        , nthKat{203}
+                        , nthKat{204}
+                        , nthKat{205}
+                        , nthKat{206}
+                        , nthKat{207}
+                        , nthKat{208}
+                        , nthKat{209}
+                        , nthKat{210}
+                        , nthKat{211}
+                        , nthKat{212}
+                        , nthKat{213}
+                        , nthKat{214}
+                        , nthKat{215}
+                        , nthKat{216}
+                        , nthKat{217}
+                        , nthKat{218}
+                        , nthKat{219}
+                        , nthKat{220}
+                        , nthKat{221}
+                        , nthKat{222}
+                        , nthKat{223}
+                        , nthKat{224}
+                        , nthKat{225}
+                        , nthKat{226}
+                        , nthKat{227}
+                        , nthKat{228}
+                        , nthKat{229}
+                        , nthKat{230}
+                        , nthKat{231}
+                        , nthKat{232}
+                        , nthKat{233}
+                        , nthKat{234}
+                        , nthKat{235}
+                        , nthKat{236}
+                        , nthKat{237}
+                        , nthKat{238}
+                        , nthKat{239}
+                        , nthKat{240}
+                        , nthKat{241}
+                        , nthKat{242}
+                        , nthKat{243}
+                        , nthKat{244}
+                        , nthKat{245}
+                        , nthKat{246}
+                        , nthKat{247}
+                        , nthKat{248}
+                        , nthKat{249}
+                        , nthKat{250}
+                        , nthKat{251}
+                        , nthKat{252}
+                        , nthKat{253}
+                        , nthKat{254}
+                        , nthKat{255}
                         ]
 
 
 nthKat : {n} (8 >= width n) => Bit
-nthKat = blake2s (nthKatInput `{n}) == kats @ (`n : [8])
+nthKat = blake2s(nthKatInput{n}) == kats @ (`n : [8])
 
 nthKatInput : {n} [n][8]
 nthKatInput = [0 ... ]

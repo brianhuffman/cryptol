@@ -17,10 +17,10 @@ pbkdf2 : {pwBytes, saltBytes, dkLenBits, C}
          , 32 >= width ((dkLenBits + 255)/256)
          )
       => [pwBytes][8] -> [saltBytes][8] -> [dkLenBits]
-pbkdf2 P S = take `{dkLenBits} (join Ts)
+pbkdf2 P S = take{dkLenBits}(join(Ts))
  where
  Ts : [_][256]
- Ts = [ inner `{C=C} P (split (hmacSHA256 P (S # split i))) | i <- [1..len] : [_][32] ]
+ Ts = [ inner{C=C}(P, split(hmacSHA256(P, S # split(i)))) | i <- [1..len] : [_][32] ]
  type len = (dkLenBits + 255)/256
 
 inner : {pwBytes, C}
@@ -31,15 +31,15 @@ inner : {pwBytes, C}
 inner P U0 = (Ts @ 0).0 // XXX should be ! 0
  where
   // Ts : [_][([256],[32][8])]
-  Ts = [(join U0, U0)] # [ F P t u  | _ <- [1..C] : [_][16] | (t,u) <- Ts ]
+  Ts = [(join(U0), U0)] # [ F(P, t, u)  | _ <- [1..C] : [_][16] | (t,u) <- Ts ]
 
 F : {pwBytes} ( 64 >= width (8 * pwBytes)
               ) => [pwBytes][8] -> [256] -> [32][8] -> ([256],[32][8])
 F P Tprev Uprev = (Tnext,Unext)
   where
-  Unext = split (hmacSHA256 P Uprev)
-  Tnext = Tprev ^ join Unext
+  Unext = split(hmacSHA256(P, Uprev))
+  Tnext = Tprev ^ join(Unext)
 
 
 test1 : Bit
-property test1 = pbkdf2 `{C=1,dkLenBits=64*8} "passwd" "salt" == 0x55ac046e56e3089fec1691c22544b605f94185216dde0465e68b9d57c20dacbc49ca9cccf179b645991664b39d77ef317c71b845b1e30bd509112041d3a19783
+property test1 = pbkdf2{C=1,dkLenBits=64*8}("passwd", "salt") == 0x55ac046e56e3089fec1691c22544b605f94185216dde0465e68b9d57c20dacbc49ca9cccf179b645991664b39d77ef317c71b845b1e30bd509112041d3a19783

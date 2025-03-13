@@ -10,22 +10,22 @@ import Cipher
 // DES API
 DES : Cipher 64 64
 DES =
-    { encrypt key pt = des pt (expandKey key)
-    , decrypt key ct = des ct (reverse (expandKey key))
+    { encrypt = \key pt -> des(pt, expandKey(key))
+    , decrypt = \key ct -> des(ct, reverse(expandKey(key)))
     }
 
 // Encryption
 
-des pt keys = (swap (split lst)) @@ FPz
+des pt keys = swap(split(lst)) @@ FPz
   where
         pt' = pt @@ IPz
-        iv  = [ round (k, split lr)
+        iv  = [ round((k, split(lr)))
               | k  <- keys
               | lr <- [pt'] # iv ]
-        lst = iv @ (length keys - 1)
+        lst = iv @ (length(keys) - 1)
 
 round : ([48],[2][32]) -> [64]
-round (k, [l, r]) = r # (l ^ f (r, k))
+round (k, [l, r]) = r # (l ^ f((r, k)))
 
 // f : {a} (a >= 6) => ([2^^(a-1)],[48]) -> [32]
 // f : {b} (b >= 1, 6 == lg2 b) => ([b - 1], [48]) -> [32]
@@ -36,24 +36,24 @@ swap [a, b] = b # a
 // Key expansion
 
 expandKey : [64] -> [16][48]
-expandKey key = expand (split (key @@ KPz))
+expandKey(key) = expand(split(key @@ KPz))
 
 expand: [2][28] -> [16][48]
 expand [kl, kr] =
     [ ((kl <<< i) # (kr <<< i)) @@ CPz
-    | i <- sums [ 1, 1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1 ] ]
+    | i <- sums([ 1, 1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1 ]) ]
 
 sums : [16][8] -> [16][8]
 sums xs = ys
   where ys = [ x + y | x <- xs | y <- [0] # ys ]
 
 zeroBasify XP = [ i - 1 | i <- XP ]
-KPz = zeroBasify KP
-CPz = zeroBasify CP
-PPz = zeroBasify PP
-EPz = zeroBasify EP
-IPz = zeroBasify IP
-FPz = zeroBasify FP
+KPz = zeroBasify(KP)
+CPz = zeroBasify(CP)
+PPz = zeroBasify(PP)
+EPz = zeroBasify(EP)
+IPz = zeroBasify(IP)
+FPz = zeroBasify(FP)
 
 KP : [56][6]
 KP  = [57,49,41,33,25,17, 9, 1,58,50,42,34,26,18,
@@ -99,7 +99,7 @@ FP = [40,  8, 48, 16, 56, 24, 64, 32, 39,  7, 47, 15, 55, 23, 63, 31,
 
 // Sboxen
 SBox : [48] -> [32]
-SBox x = join [ sbox (n, b) | n <- [1 .. 8] | b <- split x ]
+SBox x = join([ sbox((n, b)) | n <- [1 .. 8] | b <- split(x) ])
 
 sbox : ([4], [6]) -> [4]
 sbox (n, x) = (s @ [b1, b6] @ [b2, b3, b4, b5])

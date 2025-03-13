@@ -73,10 +73,10 @@ minilock : {nrRecip, fileNameBytes, msgBytes}
         -> [MiniLockBytes nrRecip msgBytes][8]
 minilock rs fileName0 msg senderKeys fileKey fileNonce ephemKeys = lockFile
  where
-  filename               = take `{256} (fileName0 # (zero : [256][8]))
-  ct                     = encryptData fileKey fileNonce filename msg
-  fileInfo               = mkFileInfoBlob (fileKey, fileNonce, split (blake2s `{nn=32} ct))
-  lockFile               = mkMiniLock rs senderKeys ephemKeys fileInfo ct
+  filename               = take{256}(fileName0 # (zero : [256][8]))
+  ct                     = encryptData(fileKey, fileNonce, filename, msg)
+  fileInfo               = mkFileInfoBlob((fileKey, fileNonce, split(blake2s{nn=32}(ct))))
+  lockFile               = mkMiniLock(rs, senderKeys, ephemKeys, fileInfo, ct)
 
 private
   magic : [8][8]
@@ -84,9 +84,9 @@ private
 
   encryptData : {msgBytes} (63 >= width msgBytes)
              => [32][8]-> [16][8] -> [256][8] -> [msgBytes][8] -> [EncryptedBytes msgBytes][8]
-  encryptData k n f m = encryptChunks k n f cs cN
+  encryptData k n f m = encryptChunks(k, n, f, cs, cN)
    where
-    (cs,cN) = mkChunks m
+    (cs,cN) = mkChunks(m)
 
   // encrypt chunks results in the ciphertext AND poly1305 tag for each chunk.
   encryptChunks : {chunks,rem}
@@ -94,16 +94,16 @@ private
                   , 64 >= width chunks)
                => [32][8] -> [16][8] -> [256][8] -> [chunks]Chunk -> [rem][8]
                -> [4 + 16 + 256 + chunks*((2^^20) + 4 + 16) + 4 + 16 + rem][8]
-  encryptChunks key nonce c0 cs end = encChunk0 # join ctChunks # ctFinal
+  encryptChunks key nonce c0 cs end = encChunk0 # join(ctChunks) # ctFinal
     where
-    fullNonce0 = nonce # put64le zero
-    encChunk0  = put32le 256      # crypto_secretbox c0 key fullNonce0 : [4 + 16 + 256][8]
+    fullNonce0 = nonce # put64le(zero)
+    encChunk0  = put32le(256) # crypto_secretbox(c0, key, fullNonce0) : [4 + 16 + 256][8]
 
-    nonces     = [nonce # put64le i | i <- [1...] : [chunks]_]
-    ctChunks   = [put32le (2^^20) # crypto_secretbox cnk key n | n <- nonces | cnk <- cs]
+    nonces     = [nonce # put64le(i) | i <- [1...] : [chunks]_]
+    ctChunks   = [put32le(2^^20) # crypto_secretbox(cnk, key, n) | n <- nonces | cnk <- cs]
 
-    nFinal     =  nonce # put64le ((`chunks + 1) || 0x8000000000000000)
-    ctFinal    =  put32le `rem     # crypto_secretbox end key nFinal
+    nFinal     =  nonce # put64le((`chunks + 1) || 0x8000000000000000)
+    ctFinal    =  put32le(`rem) # crypto_secretbox(end, key, nFinal)
 ```
 
 The minilock file format is a concatenation of the magic, header length field, header, and ciphertext.
@@ -122,9 +122,9 @@ The minilock file format is a concatenation of the magic, header length field, h
             -> [ctBytes][8]
             -> [8 + 4 + 89 + (DecryptInfoSize + 1) * nrRecip + ctBytes - 1][8]
   mkMiniLock rs senderKeys ephemKeys fileInfo ct =
-      magic # put32le (length header) # header # ct
+      magic # put32le(length(header)) # header # ct
    where
-    header = mkHeader rs senderKeys ephemKeys fileInfo
+    header = mkHeader(rs, senderKeys, ephemKeys, fileInfo)
 ```
 
 Construction of the "file info blob" means we build the plaintext value:
@@ -144,9 +144,9 @@ Construction of the "file info blob" means we build the plaintext value:
                 -> FileInfoBlob
   mkFileInfoBlob (key,nonce,hash) =
       brace(
-          jsonPair "fileKey"   (quote64 key)     # "," #
-          jsonPair "fileNonce" (quote64 nonce) # "," #
-          jsonPair "fileHash"  (quote64 hash)
+          jsonPair("fileKey",   quote64(key))   # "," #
+          jsonPair("fileNonce", quote64(nonce)) # "," #
+          jsonPair("fileHash",  quote64(hash))
       )
 ```
 
@@ -169,32 +169,32 @@ fileinfo inside a decryptInfo field as such:
             -> [89 + (DecryptInfoSize+1) * nrRecip - 1][8]
   mkHeader rs senderKeys ephemKeys infoBlob =
       brace (
-            jsonPair "version" "1" # ","
-          # jsonPair "ephemeral" (quote64 ephemKeys.1) # ","
-          # jsonPair "decryptInfo" (brace decInfoFull)
+            jsonPair("version", "1") # ","
+          # jsonPair("ephemeral", quote64(ephemKeys.1)) # ","
+          # jsonPair("decryptInfo", brace(decInfoFull))
         )
    where
-    ds = [ mkDecryptInfo senderKeys ephemKeys recvID recvNonce infoBlob  # "," | (recvID,recvNonce) <- rs ]
+    ds = [ mkDecryptInfo(senderKeys, ephemKeys, recvID, recvNonce, infoBlob) # "," | (recvID,recvNonce) <- rs ]
     // Drop the trailing comma
-    decInfoFull = take `{back = min nrRecip 1} (join ds)
+    decInfoFull = take{back = min nrRecip 1}(join(ds))
 
   // XXX return 'succ' for successful decode of the public id
   mkDecryptInfo :
                    (Private25519, Public25519)
                 -> (Private25519, Public25519)
                 -> MinilockID -> [24][8] -> FileInfoBlob -> [DecryptInfoSize][8]
-  mkDecryptInfo senderKeys ephemKeys theirID nonce infoBlob = quote64 nonce # ":" # quote ct
+  mkDecryptInfo senderKeys ephemKeys theirID nonce infoBlob = quote64(nonce) # ":" # quote(ct)
    where
-    ct        = encryptWith nonce (ephemKeys.0) theirPublic internals
-    internals =   brace ( jsonPair "senderID"    (quote (encodeID senderKeys.1)) # ","
-                        # jsonPair "recipientID" (quote theirID)                 # ","
-                        # jsonPair "fileInfo"    (quote fileInfoCT)
+    ct        = encryptWith(nonce, ephemKeys.0, theirPublic, internals)
+    internals =   brace ( jsonPair("senderID",    quote(encodeID(senderKeys.1))) # ","
+                        # jsonPair("recipientID", quote(theirID))                # ","
+                        # jsonPair("fileInfo",    quote(fileInfoCT))
                         )
-    fileInfoCT  = encryptWith nonce (senderKeys.0) theirPublic infoBlob
-    (succ,theirPublic) = decodeID theirID
+    fileInfoCT  = encryptWith(nonce, senderKeys.0, theirPublic, infoBlob)
+    (succ,theirPublic) = decodeID(theirID)
 
   encryptWith : {n} (64 >= width (32 + n)) => [24][8] -> Private25519 -> Public25519 -> [n][8] -> [Enc64 (n+16)][8]
-  encryptWith nonce secret public pt = base64enc (crypto_box pt nonce public secret)
+  encryptWith nonce secret public pt = base64enc(crypto_box(pt, nonce, public, secret))
 
   type NrChunks ptBytes = ptBytes / (2^^20)
   type LastChunkSize ptBytes = ptBytes - (NrChunks ptBytes) * 2^^20
@@ -207,18 +207,18 @@ fileinfo inside a decryptInfo field as such:
 
   mkChunks : {bytes} [bytes][8] -> ([FullChunks bytes]Chunk, [Rem bytes][8])
   mkChunks pt = (cs,lst)
-    where cs   = split (take `{front = FullChunks bytes * ChunkSize, back = Rem bytes} pt)
-          lst = drop `{FullChunks bytes * ChunkSize} pt
+    where cs  = split(take{front = FullChunks bytes * ChunkSize, back = Rem bytes}(pt))
+          lst = drop{FullChunks bytes * ChunkSize}(pt)
 ```
 
 The above code used some custom utility functions, which appear below.
 
 ```cryptol
   put32le : [32] -> [4][8]
-  put32le x = reverse (split x)
+  put32le x = reverse(split(x))
 
   put64le : [64] -> [8][8]
-  put64le x = reverse (split x)
+  put64le x = reverse(split(x))
 
   quote : {m} [m][8] -> [m+2][8]
   quote m = "\"" # m # "\""
@@ -227,10 +227,10 @@ The above code used some custom utility functions, which appear below.
   brace m = "{" # m # "}"
 
   quote64 : {m} [m][8] -> [4*(m + (3 - m % 3) % 3)/3 + 2][8]
-  quote64 m = quote (base64enc m)
+  quote64 m = quote(base64enc(m))
 
   jsonPair : {m,n} [m][8] -> [n][8] -> [3+m+n][8]
-  jsonPair m n = quote m # ":" # n
+  jsonPair m n = quote(m) # ":" # n
 
 // Encrypt a file such that one recipient
 // User: "example@example.com
@@ -243,12 +243,12 @@ test_lock fname cont = file
   myPub     = testPub
   theirID   = testID
   ephemPriv = zero # "ephemeral Curve25519"
-  ephemPub  = Curve25519 ephemPriv basePoint25519
+  ephemPub  = Curve25519(ephemPriv, basePoint25519)
   nonceA    = zero # "recip1 nonce"
   nonceF    = zero # "file   nonce"
   key       = zero # "file key"
-  file      = minilock [(theirID,nonceA)] fname cont (myPriv,myPub) key nonceF (ephemPriv,ephemPub)
+  file      = minilock([(theirID,nonceA)], fname, cont, (myPriv,myPub), key, nonceF, (ephemPriv,ephemPub))
 
 test_construction : [MiniLockBytes 1 13][8]
-test_construction = test_lock "some_filename" "some contents"
+test_construction = test_lock("some_filename", "some contents")
 ```

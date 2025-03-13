@@ -506,16 +506,16 @@ Internet-Draft                  cfrgcurve                     March 2015
 // Decode little endian bytes into Curve25519
 decodeLittleEndian : {a} (a >= 1) => [a][8] -> [a*8]
 decodeLittleEndian bytes = s ! 0
-  where s = [zero] # [(acc<<8) + (zero#byte) | acc <- s | byte <- reverse bytes]
+  where s = [zero] # [(acc<<8) + (zero#byte) | acc <- s | byte <- reverse(bytes)]
 
 decodeUCoordinate25519 : [32][8] -> [256]
 decodeUCoordinate25519 u = decodeLittleEndian ((u @@ ([0..30] : [_][5])) # [((u@31) && 127)])
 
 decodeUCoordinate448 : [448/8][8] -> [448]
-decodeUCoordinate448 u = decodeLittleEndian u
+decodeUCoordinate448 u = decodeLittleEndian(u)
 
 encodeUCoordinate : {a} [a*8] -> [a*8] -> [a][8]
-encodeUCoordinate p u = reverse (split `{each=8} u')
+encodeUCoordinate p u = reverse(split{each=8}(u'))
  where u' = u % p
 ```
 
@@ -660,37 +660,37 @@ Internet-Draft                  cfrgcurve                     March 2015
 ```cryptol
 // curveX private public prime == public
 curveX : {a} (9 >= width a, 9 >= width (a-2), 9 >= width (a-1), a>=2) => [a] -> [a] -> [a] -> [a] -> [a]
-curveX a24 p s x = mul p x2F (power p z2F (p - 2))
+curveX a24 p s x = mul(p, x2F, power(p, z2F, p - 2))
  where
  X1  = x
  X2  = 1
  Z2  = 0
  X3  = x
  Z3  = 1
- xzs = [(X2,X3,Z2,Z3)] # [curveX' a24 p (s!t) X1 x2 x3 z2 z3 | t <- [a-1,a-2..0] : [_][9] | (x2,x3,z2,z3) <- xzs]
+ xzs = [(X2,X3,Z2,Z3)] # [curveX'(a24, p, s!t, X1, x2, x3, z2, z3) | t <- [a-1,a-2..0] : [_][9] | (x2,x3,z2,z3) <- xzs]
  (x2F,_,z2F,_) = xzs ! 0
 
 // curveX' : {a} (10 >= width (a-1)) => [a] -> [a] -> Bit -> [a] -> [a] -> [a] -> [a] -> [a] ->
 //          ([a],[a],[a],[a])
 curveX' a24 p st x1 x2 x3 z2 z3 = (x2F,x3F,z2F,z3F)
   where
-  (x2',x3') = cswap st x2 x3
-  (z2',z3') = cswap st z2 z3
-  A         = add p x2' z2'
-  AA        = square p A
-  B         = sub p x2' z2'
-  BB        = square p B
-  E         = sub p AA BB
-  C         = add p x3' z3'
-  D         = sub p x3' z3'
-  DA        = mul p D A
-  CB        = mul p C B
-  x3''      = square p (add p DA CB)
-  z3''      = mul p x1 (square p (sub p CB DA))
-  x2''      = mul p AA BB
-  z2''      = mul p E (add p AA (mul p a24 E))
-  (x2F,x3F) = cswap st x2'' x3''
-  (z2F,z3F) = cswap st z2'' z3''
+  (x2',x3') = cswap(st, x2, x3)
+  (z2',z3') = cswap(st, z2, z3)
+  A         = add(p, x2', z2')
+  AA        = square(p, A)
+  B         = sub(p, x2', z2')
+  BB        = square(p, B)
+  E         = sub(p, AA, BB)
+  C         = add(p, x3', z3')
+  D         = sub(p, x3', z3')
+  DA        = mul(p, D, A)
+  CB        = mul(p, C, B)
+  x3''      = square(p, add(p, DA, CB))
+  z3''      = mul(p, x1, square(p, sub(p, CB, DA)))
+  x2''      = mul(p, AA, BB)
+  z2''      = mul(p, E, add(p, AA, mul(p, a24, E)))
+  (x2F,x3F) = cswap(st, x2'', x3'')
+  (z2F,z3F) = cswap(st, z2'', z3'')
 ```
 
    Finally, encode the resulting value as 32 or 56 bytes in little-
@@ -698,14 +698,14 @@ curveX' a24 p st x1 x2 x3 z2 z3 = (x2F,x3F,z2F,z3F)
 
 ```cryptol
 Curve25519 : Private25519 -> Public25519 -> Public25519
-Curve25519 priv pub = encodeUCoordinate pCurve25519 (curveX a24Curve25519 pCurve25519 (decodeScalar25519 priv) (decodeUCoordinate25519 pub))
+Curve25519 priv pub = encodeUCoordinate(pCurve25519, curveX(a24Curve25519, pCurve25519, decodeScalar25519(priv), decodeUCoordinate25519(pub)))
 
 Curve448 : Private448 -> Public448 -> Public448
-Curve448 priv pub = encodeUCoordinate pCurve448 (curveX a24Curve448 pCurve448 (decodeScalar448 priv) (decodeUCoordinate448 pub))
+Curve448 priv pub = encodeUCoordinate(pCurve448, curveX(a24Curve448, pCurve448, decodeScalar448(priv), decodeUCoordinate448(pub)))
 
 // basePoints are not discussed, but a DH section exists - I suggest revision.
-basePoint25519 = reverse (split 9)
-basePoint448   = reverse (split 5)
+basePoint25519 = reverse(split(9))
+basePoint448   = reverse(split(5))
 ```
 
    When implementing this procedure, due to the existence of side-
@@ -827,15 +827,15 @@ Output U-coordinate:
 property test_25519 = ~zero == [test1, test2]
  where
   test1 : Bit
-  test1 = Curve25519 (split 0xa546e36bf0527c9d3b16154b82465edd62144c0ac1fc5a18506a2244ba449ac4) (split 0xe6db6867583030db3594c1a424b15f7c726624ec26b3353b10a903a6d0ab1c4c) == split 0xc3da55379de9c6908e94ea4df28d084f32eccf03491c71f754b4075577a28552
+  test1 = Curve25519(split(0xa546e36bf0527c9d3b16154b82465edd62144c0ac1fc5a18506a2244ba449ac4), split(0xe6db6867583030db3594c1a424b15f7c726624ec26b3353b10a903a6d0ab1c4c)) == split(0xc3da55379de9c6908e94ea4df28d084f32eccf03491c71f754b4075577a28552)
 
   test2 : Bit
-  test2 = Curve25519 (split 0x4b66e9d4d1b4673c5ad22691957d6af5c11b6421e0ea01d42ca4169e7918ba0d) (split 0xe5210f12786811d3f4b7959d0538ae2c31dbe7106fc03c3efc4cd549c715a493) == split 0x95cbde9476e8907d7aade45cb4b873f88b595a68799fa152e6f8f7647aac7957
+  test2 = Curve25519(split(0x4b66e9d4d1b4673c5ad22691957d6af5c11b6421e0ea01d42ca4169e7918ba0d), split(0xe5210f12786811d3f4b7959d0538ae2c31dbe7106fc03c3efc4cd549c715a493)) == split(0x95cbde9476e8907d7aade45cb4b873f88b595a68799fa152e6f8f7647aac7957)
 
 property test_448 = ~zero == [test1, test2]
  where
-  test1 = Curve448 (split 0x3d262fddf9ec8e88495266fea19a34d28882acef045104d0d1aae121700a779c984c24f8cdd78fbff44943eba368f54b29259a4f1c600ad3) (split 0x06fce640fa3487bfda5f6cf2d5263f8aad88334cbd07437f020f08f9814dc031ddbdc38c19c6da2583fa5429db94ada18aa7a7fb4ef8a086) == split 0xce3e4ff95a60dc6697da1db1d85e6afbdf79b50a2412d7546d5f239fe14fbaadeb445fc66a01b0779d98223961111e21766282f73dd96b6f
-  test2 = Curve448 (split 0x203d494428b8399352665ddca42f9de8fef600908e0d461cb021f8c538345dd77c3e4806e25f46d3315c44e0a5b4371282dd2c8d5be3095f) (split 0x0fbcc2f993cd56d3305b0b7d9e55d4c1a8fb5dbb52f8e9a1e9b6201b165d015894e56c4d3570bee52fe205e28a78b91cdfbde71ce8d157db) == split 0x884a02576239ff7a2f2f63b2db6a9ff37047ac13568e1e30fe63c4a7ad1b3ee3a5700df34321d62077e63633c575c1c954514e99da7c179d
+  test1 = Curve448(split(0x3d262fddf9ec8e88495266fea19a34d28882acef045104d0d1aae121700a779c984c24f8cdd78fbff44943eba368f54b29259a4f1c600ad3), split(0x06fce640fa3487bfda5f6cf2d5263f8aad88334cbd07437f020f08f9814dc031ddbdc38c19c6da2583fa5429db94ada18aa7a7fb4ef8a086)) == split(0xce3e4ff95a60dc6697da1db1d85e6afbdf79b50a2412d7546d5f239fe14fbaadeb445fc66a01b0779d98223961111e21766282f73dd96b6f)
+  test2 = Curve448(split(0x203d494428b8399352665ddca42f9de8fef600908e0d461cb021f8c538345dd77c3e4806e25f46d3315c44e0a5b4371282dd2c8d5be3095f), split(0x0fbcc2f993cd56d3305b0b7d9e55d4c1a8fb5dbb52f8e9a1e9b6201b165d015894e56c4d3570bee52fe205e28a78b91cdfbde71ce8d157db)) == split(0x884a02576239ff7a2f2f63b2db6a9ff37047ac13568e1e30fe63c4a7ad1b3ee3a5700df34321d62077e63633c575c1c954514e99da7c179d)
 ```
 
 8.  Diffie-Hellman
@@ -893,15 +893,15 @@ Internet-Draft                  cfrgcurve                     March 2015
 property test_dh_25519 =
     ~zero == [ fG == gF, fG == K, F == F_KAT, G == G_KAT]
  where
-  f     = split 0x77076d0a7318a57d3c16c17251b26645df4c2f87ebc0992ab177fba51db92c2a
-  F     = Curve25519 f basePoint25519
-  g     = split 0x5dab087e624a8a4b79e17f8b83800ee66f3bb1292618b6fd1c2f8b27ff88e0eb
-  G     = Curve25519 g basePoint25519
-  F_KAT = split 0x8520f0098930a754748b7ddcb43ef75a0dbf3a0d26381af4eba4a98eaa9b4e6a
-  G_KAT = split 0xde9edb7d7b7dc1b4d35b61c2ece435373f8343c85b78674dadfc7e146f882b4f
-  K     = split 0x4a5d9d5ba4ce2de1728e3bf480350f25e07e21c947d19e3376f09b3c1e161742
-  fG    = Curve25519 f G
-  gF    = Curve25519 g F
+  f     = split(0x77076d0a7318a57d3c16c17251b26645df4c2f87ebc0992ab177fba51db92c2a)
+  F     = Curve25519(f, basePoint25519)
+  g     = split(0x5dab087e624a8a4b79e17f8b83800ee66f3bb1292618b6fd1c2f8b27ff88e0eb)
+  G     = Curve25519(g, basePoint25519)
+  F_KAT = split(0x8520f0098930a754748b7ddcb43ef75a0dbf3a0d26381af4eba4a98eaa9b4e6a)
+  G_KAT = split(0xde9edb7d7b7dc1b4d35b61c2ece435373f8343c85b78674dadfc7e146f882b4f)
+  K     = split(0x4a5d9d5ba4ce2de1728e3bf480350f25e07e21c947d19e3376f09b3c1e161742)
+  fG    = Curve25519(f, G)
+  gF    = Curve25519(g, F)
 ```
 
    curve448:
@@ -927,15 +927,15 @@ property test_dh_25519 =
 property test_dh_448 =
     ~zero == [fG == gF, fG == K, F == F_KAT, G == G_KAT]
  where
-  f = split 0x9a8f4925d1519f5775cf46b04b5800d4ee9ee8bae8bc5565d498c28dd9c9baf574a9419744897391006382a6f127ab1d9ac2d8c0a598726b
-  F = Curve448 f basePoint448
-  g = split 0x1c306a7ac2a0e2e0990b294470cba339e6453772b075811d8fad0d1d6927c120bb5ee8972b0d3e21374c9c921b09d1b0366f10b65173992d
-  G = Curve448 g basePoint448
-  F_KAT = split 0x9b08f7cc31b7e3e67d22d5aea121074a273bd2b83de09c63faa73d2c22c5d9bbc836647241d953d40c5b12da88120d53177f80e532c41fa0
-  G_KAT = split 0x3eb7a829b0cd20f5bcfc0b599b6feccf6da4627107bdb0d4f345b43027d8b972fc3e34fb4232a13ca706dcb57aec3dae07bdc1c67bf33609
-  K     = split 0x07fff4181ac6cc95ec1c16a94a0f74d12da232ce40a77552281d282bb60c0b56fd2464c335543936521c24403085d59a449a5037514a879d
-  fG    = Curve448 f G
-  gF    = Curve448 g F
+  f = split(0x9a8f4925d1519f5775cf46b04b5800d4ee9ee8bae8bc5565d498c28dd9c9baf574a9419744897391006382a6f127ab1d9ac2d8c0a598726b)
+  F = Curve448(f, basePoint448)
+  g = split(0x1c306a7ac2a0e2e0990b294470cba339e6453772b075811d8fad0d1d6927c120bb5ee8972b0d3e21374c9c921b09d1b0366f10b65173992d)
+  G = Curve448(g, basePoint448)
+  F_KAT = split(0x9b08f7cc31b7e3e67d22d5aea121074a273bd2b83de09c63faa73d2c22c5d9bbc836647241d953d40c5b12da88120d53177f80e532c41fa0)
+  G_KAT = split(0x3eb7a829b0cd20f5bcfc0b599b6feccf6da4627107bdb0d4f345b43027d8b972fc3e34fb4232a13ca706dcb57aec3dae07bdc1c67bf33609)
+  K     = split(0x07fff4181ac6cc95ec1c16a94a0f74d12da232ce40a77552281d282bb60c0b56fd2464c335543936521c24403085d59a449a5037514a879d)
+  fG    = Curve448(f, G)
+  gF    = Curve448(g, F)
 ```
 
 
@@ -952,12 +952,12 @@ separate file.
 
 ```cryptol
 mul, add, sub, power,div : {a} (a>=1) => [a] -> [a] -> [a] -> [a]
-power p a b = mod_pow(p, a, b)
-mul p a b = mod_mul(p, a, b)
-add p a b = mod_add(p, a, b)
-sub p a b = mod_sub(p, a, b)
-div p x y   = mod_div(p,x,y)
-square p a  = mul p a a
+power p a b = mod_pow((p, a, b))
+mul p a b = mod_mul((p, a, b))
+add p a b = mod_add((p, a, b))
+sub p a b = mod_sub((p, a, b))
+div p x y   = mod_div((p,x,y))
+square p a  = mul(p, a, a)
 ```
 
 

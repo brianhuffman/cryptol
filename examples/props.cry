@@ -6,7 +6,7 @@ property p1 = z == 3
 
 xx = [[True,False]]
 yy = [[False, True]]
-zz = xx + yy
+zz = zipWith((+), xx, yy)
 
 
 

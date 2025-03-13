@@ -19,7 +19,7 @@
 */
 
 all : {n, a} (a -> Bit, [n]a) -> Bit
-all (f, xs) = [ f x | x <- xs ] == ~zero
+all (f, xs) = [ f(x) | x <- xs ] == ~zero
 
 contains xs e = [ x == e | x <- xs ] != zero
 
@@ -45,7 +45,7 @@ checkDiag qs (i, j) = (i >= j) || (diffR != diffC)
           diffC = j - i                   // we know i < j
 
 nQueens : {n} (n >= 1) => Solution n
-nQueens qs = all (inRange qs, qs) /\ all (checkDiag qs, ijs `{n}) /\ distinct qs
+nQueens qs = all((inRange(qs), qs)) /\ all((checkDiag(qs), ijs{n})) /\ distinct(qs)
 
 ijs : {n} (n >= 1) => [_](Position n, Position n)
 ijs = [ (i, j) | i <- [0 .. (n-1)], j <- [0 .. (n-1)]]
@@ -53,4 +53,4 @@ ijs = [ (i, j) | i <- [0 .. (n-1)], j <- [0 .. (n-1)]]
 inRange : {n} (n >= 1) => Board n -> Position n -> Bit
 inRange qs x = x <= `(n - 1)
 
-property nQueensProve x = (nQueens x) == False
+property nQueensProve x = nQueens(x) == False

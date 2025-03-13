@@ -7,9 +7,9 @@ type Nb          = 4
 type RoundKey    = State
 
 msgToState : [128] -> State
-msgToState msg = transpose (split (split msg))
+msgToState msg = transpose(split(split(msg)))
 
 stateToMsg : State -> [128]
-stateToMsg st = join (join (transpose st))
+stateToMsg st = join(join(transpose(st)))
 
 

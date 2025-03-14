@@ -1,2 +1,0 @@
-foreign f : {n} (n >= 2^^64) => [n - 2^^64][8] -> Bit
-foreign g : Bit -> Bit

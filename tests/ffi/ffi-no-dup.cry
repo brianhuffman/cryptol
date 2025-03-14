@@ -1,7 +1,0 @@
-
-
-foreign f : () -> [8]
-
-submodule A where
-  foreign f : () -> [16]
-

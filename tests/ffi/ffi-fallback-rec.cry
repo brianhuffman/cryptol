@@ -1,5 +1,0 @@
-foreign f : Bit -> Bit
-f x = ~ g x
-
-foreign g : Bit -> Bit
-g x = ~ f x

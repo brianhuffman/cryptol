@@ -1,7 +1,0 @@
-
-submodule A where
-  parameter
-    type n : #
-
-  foreign f : [n][8] -> [8]
-

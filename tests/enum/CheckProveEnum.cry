@@ -21,8 +21,8 @@ maybeMap f m =
 maybeMapProp : Maybe [8] -> Bit
 property maybeMapProp m =
   maybeEqual
-    (maybeMap (\x -> x + 1) (maybeMap (\x -> x + 1) m))
-    (maybeMap (\x -> x + 2) m)
+    (maybeMap(\x -> x + 1, maybeMap(\x -> x + 1, m)),
+     maybeMap(\x -> x + 2, m))
 
 enum Either a b = Left a | Right b
 
@@ -41,26 +41,26 @@ eitherEqual e1 e2 =
 eitherMapLeft : {a, a', b} (a -> a') -> Either a b -> Either a' b
 eitherMapLeft f e =
   case e of
-    Left x  -> Left (f x)
-    Right y -> Right y
+    Left x  -> Left(f(x))
+    Right y -> Right(y)
 
 eitherMapRight : {a, b, b'} (b -> b') -> Either a b -> Either a b'
 eitherMapRight g e =
   case e of
-    Left x  -> Left x
-    Right y -> Right (g y)
+    Left x  -> Left(x)
+    Right y -> Right(g(y))
 
 eitherMapBoth : {a, a', b, b'} (a -> a') -> (b -> b') -> Either a b -> Either a' b'
 eitherMapBoth f g e =
   case e of
-    Left x  -> Left (f x)
-    Right y -> Right (g y)
+    Left x  -> Left(f(x))
+    Right y -> Right(g(y))
 
 eitherMapProp : Either [8] [8] -> Bit
 property eitherMapProp e =
   eitherEqual
-    (eitherMapLeft (\x -> x + 1) (eitherMapRight (\y -> y + 1) e))
-    (eitherMapBoth (\x -> x + 1) (\y -> y + 1) e)
+    (eitherMapLeft(\x -> x + 1, eitherMapRight(\y -> y + 1, e)),
+     eitherMapBoth(\x -> x + 1, \y -> y + 1, e))
 
 enum Foo a = Bar | Baz | Quux | Fred [8] a
 
@@ -98,13 +98,13 @@ fooMap f ff =
     Bar      -> Bar
     Baz      -> Baz
     Quux     -> Quux
-    Fred x y -> Fred x (f y)
+    Fred x y -> Fred(x, f(y))
 
 fooMapProp : Foo [8] -> Bit
 property fooMapProp f =
   fooEqual
-    (fooMap (\x -> x + 1) (fooMap (\x -> x + 1) f))
-    (fooMap (\x -> x + 2) f)
+    (fooMap(\x -> x + 1, fooMap(\x -> x + 1, f)),
+     fooMap(\x -> x + 2, f))
 
 enum Letter = A | B | C
 
@@ -136,4 +136,4 @@ letterRotate l =
 
 letterRotateProp : Letter -> Bit
 property letterRotateProp l =
-  letterEqual l (letterRotate (letterRotate (letterRotate l)))
+  letterEqual(l, letterRotate(letterRotate(letterRotate(l))))

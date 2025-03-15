@@ -5,7 +5,7 @@ module Cryptol::Reference where
  * Reference implementation.
  */
 pmult : {u, v} [1 + u] -> [1 + v] -> [1 + u + v]
-pmult x y = last(zs)
+pmult(x, y) = last(zs)
   where
     zs = [0] # [ (z << 1) ^ (if yi then 0 # x else 0) | yi <- y | z <- zs ]
 
@@ -14,14 +14,14 @@ pmult x y = last(zs)
  * Reference implementation.
  */
 pdiv : {u, v} [u] -> [v] -> [u]
-pdiv x y = [ z ! degree | z <- zs ]
+pdiv(x, y) = [ z ! degree | z <- zs ]
   where
     degree : [width v]
     degree = last (ds : [1 + v]_)
       where ds = [0/0] # [if yi then i else d | yi <- reverse(y) | i <- [0..v] | d <- ds ]
 
     reduce : [v] -> [v]
-    reduce u = if u ! degree then u ^ y else u
+    reduce(u) = if u ! degree then u ^ y else u
 
     zs : [u][v]
     zs = [ tail (reduce(z) # [xi]) | z <- [0] # zs | xi <- x ]
@@ -31,14 +31,14 @@ pdiv x y = [ z ! degree | z <- zs ]
  * Reference implementation.
  */
 pmod : {u, v} [u] -> [1 + v] -> [v]
-pmod x y = if y == 0 then 0/0 else last(zs)
+pmod(x, y) = if y == 0 then 0/0 else last(zs)
   where
     degree : [width v]
     degree = last (ds : [2 + v]_)
       where ds = [0/0] # [if yi then i else d | yi <- reverse(y) | i <- [0..v] | d <- ds ]
 
     reduce : [1 + v] -> [1 + v]
-    reduce u = if u ! degree then u ^ y else u
+    reduce(u) = if u ! degree then u ^ y else u
 
     powers : [u][1 + v]
     powers = take{u}([reduce(1)] # [ reduce(p << 1) | p <- powers ])
@@ -53,7 +53,7 @@ pmod x y = if y == 0 then 0/0 else last(zs)
  * Reference implementation.
  */
 foldl : {n, a, b} (a -> b -> a) -> a -> [n]b -> a
-foldl f z bs = last(scanl(f, z, bs))
+foldl(f, z, bs) = last(scanl(f, z, bs))
 
 /**
  * Scan left is like a foldl that also emits the intermediate values.
@@ -61,7 +61,7 @@ foldl f z bs = last(scanl(f, z, bs))
  * Reference implementation.
  */
 scanl : {n, a, b}  (a -> b -> a) -> a -> [n]b -> [1+n]a
-scanl f z bs = as
+scanl(f, z, bs) = as
   where
     as = [z] # [ f(a, b) | a <- as | b <- bs ]
 
@@ -72,5 +72,5 @@ scanl f z bs = as
  * Reference implementation.
  */
 iterate : {a, n} (a -> a) -> a -> [1+n]a
-iterate f z = xs
+iterate(f, z) = xs
   where xs = [z] # [ f(x) | x <- take{n}(xs) ]

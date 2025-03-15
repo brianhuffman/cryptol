@@ -760,8 +760,8 @@ iapat                          :: { Pattern PName }
   : apat                          {% mkIPat $1 }
 
 iapats                         :: { [Pattern PName] }
-  : iapat                         { [$1] }
-  | iapats iapat                  { $2 : $1 }
+  : '(' pat ')'                   {% traverse mkIPat [$2] }
+  | '(' tuple_pats ')'            {% traverse mkIPat $2 }
 
 indices                 :: { [Pattern PName] }
   : '@' indices1           { $2 }

@@ -149,7 +149,7 @@ demote = number{val}
  * on the type of the argument, not its value.
  */
 length : {n, a, b} (Literal n b) => [n]a -> b
-length _ = `n
+length(_) = `n
 
 /**
  * A finite sequence counting up from 'first' to 'last'.
@@ -396,13 +396,13 @@ primitive (!=) : {a} (Eq a) => a -> a -> Bit
  * Compare the outputs of two functions for equality.
  */
 (===) : {a, b} (Eq b) => (a -> b) -> (a -> b) -> (a -> Bit)
-f === g = \ x -> f(x) == g(x)
+f === g = \(x) -> f(x) == g(x)
 
 /**
  * Compare the outputs of two functions for inequality.
  */
 (!==) : {a, b} (Eq b) => (a -> b) -> (a -> b) -> (a -> Bit)
-f !== g = \x -> f(x) != g(x)
+f !== g = \(x) -> f(x) != g(x)
 
 
 // The Cmp class ---------------------------------------------------
@@ -443,14 +443,14 @@ primitive (>=) : {a} (Cmp a) => a -> a -> Bit
  * Bitvectors are compared using unsigned arithmetic.
  */
 min : {a} (Cmp a) => a -> a -> a
-min x y = if x < y then x else y
+min(x, y) = if x < y then x else y
 
 /**
  * Returns the greater of two comparable arguments.
  * Bitvectors are compared using unsigned arithmetic.
  */
 max : {a} (Cmp a) => a -> a -> a
-max x y = if x > y then x else y
+max(x, y) = if x > y then x else y
 
 /**
  * Compute the absolute value of a value from an ordered ring.
@@ -458,7 +458,7 @@ max x y = if x > y then x else y
  * the identity function on [n].
  */
 abs : {a} (Cmp a, Ring a) => a -> a
-abs x = if x < fromInteger(0) then negate(x) else x
+abs(x) = if x < fromInteger(0) then negate(x) else x
 
 
 // The Option and Result types ------------------------------------
@@ -566,14 +566,14 @@ primitive (%$) : {n} (n >= 1) => [n] -> [n] -> [n]
  * bitvector arguments would result in an unsigned overflow.
  */
 carry : {n} [n] -> [n] -> Bit
-carry x y = (x + y) < x
+carry(x, y) = (x + y) < x
 
 /**
  * Signed carry.  Returns true if the 2's complement signed addition of the
  * given bitvector arguments would result in a signed overflow.
  */
 scarry : {n} (n >= 1) => [n] -> [n] -> Bit
-scarry x y = (sx == sy) && (sx != sz)
+scarry(x, y) = (sx == sy) && (sx != sz)
   where
     z  = x + y
     sx = x@0
@@ -585,19 +585,19 @@ scarry x y = (sx == sy) && (sx != sz)
  * given bitvector arguments would result in a signed overflow.
  */
 sborrow : {n} (n >= 1) => [n] -> [n] -> Bit
-sborrow x y = ( x <$ (x-y) ) ^ y@0
+sborrow(x, y) = ( x <$ (x-y) ) ^ y@0
 
 /**
  * Zero extension of a bitvector.
  */
 zext : {m, n} (m >= n) => [n] -> [m]
-zext x = zero # x
+zext(x) = zero # x
 
 /**
  * Sign extension of a bitvector.
  */
 sext : {m, n} (m >= n, n >= 1) => [n] -> [m]
-sext x = newbits # x
+sext(x) = newbits # x
   where newbits = if x@0 then ~zero else zero
 
 /**
@@ -633,7 +633,7 @@ primitive (#) : {front, back, a} [front]a -> [back]a -> [front + back] a
  * 'splitAt z = (x, y)' iff 'x # y = z'.
  */
 splitAt : {front, back, a} [front + back]a -> ([front]a, [back]a)
-splitAt xs = (take{front,back}(xs), drop{front,back}(xs))
+splitAt(xs) = (take{front,back}(xs), drop{front,back}(xs))
 
 /**
  * Concatenates a list of sequences.
@@ -672,19 +672,19 @@ primitive drop : {front, back, a} [front + back]a -> [back]a
  * Drop the first (left-most) element of a sequence.
  */
 tail : {n, a} [1 + n]a -> [n]a
-tail xs = drop{1}(xs)
+tail(xs) = drop{1}(xs)
 
 /**
  * Return the first (left-most) element of a sequence.
  */
 head : {n, a} [1 + n]a -> a
-head xs = xs @ 0
+head(xs) = xs @ 0
 
 /**
  * Return the right-most element of a sequence.
  */
 last : {n, a} [1 + n]a -> a
-last xs = xs ! 0
+last(xs) = xs ! 0
 
 /**
  * Same as 'split', but with a different type argument order.
@@ -772,9 +772,9 @@ primitive updateEnd : {n, a, ix} (Integral ix) => [n]a -> ix -> a -> [n]a
  * given update pairs.
  */
 updates : {n, k, ix, a} (Integral ix) => [n]a -> [k]ix -> [k]a -> [n]a
-updates xs0 idxs vals = foldl(upd, xs0, zip(idxs, vals))
+updates(xs0, idxs, vals) = foldl(upd, xs0, zip(idxs, vals))
   where
-    upd xs (i,b) = update(xs, i, b)
+    upd(xs, (i,b)) = update(xs, i, b)
 
 /**
  * Perform a series of updates to a sequence.  The first argument is
@@ -784,9 +784,9 @@ updates xs0 idxs vals = foldl(upd, xs0, zip(idxs, vals))
  * given update pairs.
  */
 updatesEnd : {n, k, ix, a} (Integral ix) => [n]a -> [k]ix -> [k]a -> [n]a
-updatesEnd xs0 idxs vals = foldl(upd, xs0, zip(idxs, vals))
+updatesEnd(xs0, idxs, vals) = foldl(upd, xs0, zip(idxs, vals))
   where
-    upd xs (i,b) = updateEnd(xs, i, b)
+    upd(xs, (i,b)) = updateEnd(xs, i, b)
 
 /**
  * Produce a sequence using a generating function.
@@ -796,7 +796,7 @@ updatesEnd xs0 idxs vals = foldl(upd, xs0, zip(idxs, vals))
  * 'x = generate (\i -> e)'.
  */
 generate : {n, a, ix} (Integral ix, LiteralLessThan n ix) => (ix -> a) -> [n]a
-generate f = [ f(i) | i <- [0 .. <n] ]
+generate(f) = [ f(i) | i <- [0 .. <n] ]
 
 
 /**
@@ -811,7 +811,7 @@ sort = sortBy((<=))
  * pair of elements that are equivalent according to the order relation.
  */
 sortBy : {a, n} (a -> a -> Bit) -> [n]a -> [n]a
-sortBy le ((xs : [n/2]a) # (ys : [n/^2]a)) = zs.0
+sortBy(le, ((xs : [n/2]a) # (ys : [n/^2]a))) = zs.0
   where
     xs' = if `(n/2)  == 1 then xs else sortBy(le, xs)
     ys' = if `(n/^2) == 1 then ys else sortBy(le, ys)
@@ -874,7 +874,7 @@ primitive deepseq : {a, b} Eq a => a -> b -> b
  * where reduction to normal form makes sense.
  */
 rnf : {a} Eq a => a -> a
-rnf x = deepseq(x, x)
+rnf(x) = deepseq(x, x)
 
 /**
  * Raise a run-time error with the given message.
@@ -895,7 +895,7 @@ undefined = error("undefined")
  * holds, return the third argument unchanged.
  */
 assert : {a, n} Bit -> String n -> a -> a
-assert pred msg x = if pred then x else error(msg)
+assert(pred, msg, x) = if pred then x else error(msg)
 
 /**
  * Generates random values from a seed.  When called with a function, currently
@@ -928,7 +928,7 @@ primitive trace : {n, a, b} String n -> a -> b -> b
  * operation may be difficult to predict.
  */
 traceVal : {n, a} String n -> a -> a
-traceVal msg x = trace(msg, x, x)
+traceVal(msg, x) = trace(msg, x, x)
 
 
 /* Functions previously in Cryptol::Extras */
@@ -937,31 +937,31 @@ traceVal msg x = trace(msg, x, x)
  * Conjunction of all bits in a sequence.
  */
 and : {n} [n]Bit -> Bit
-and xs = ~zero == xs
+and(xs) = ~zero == xs
 
 /**
  * Disjunction of all bits in a sequence.
  */
 or : {n} [n]Bit -> Bit
-or xs = zero != xs
+or(xs) = zero != xs
 
 /**
  * Conjunction after applying a predicate to all elements.
  */
 all : {n, a} (a -> Bit) -> [n]a -> Bit
-all f xs = foldl'((/\), True, map(f, xs))
+all(f, xs) = foldl'((/\), True, map(f, xs))
 
 /**
  * Disjunction after applying a predicate to all elements.
  */
 any : {n, a} (a -> Bit) -> [n]a -> Bit
-any f xs = foldl'((\/), False, map(f, xs))
+any(f, xs) = foldl'((\/), False, map(f, xs))
 
 /**
  * Map a function over a sequence.
  */
 map : {n, a, b} (a -> b) -> [n]a -> [n]b
-map f xs = [f(x) | x <- xs]
+map(f, xs) = [f(x) | x <- xs]
 
 /**
  * Functional left fold.
@@ -985,8 +985,8 @@ primitive foldl' : {n, a, b} (Eq a) => (a -> b -> a) -> a -> [n]b -> a
  * foldr (-) 0 [1,2,3] = 0 - (1 - (2 - 3))
  */
 foldr : {n, a, b} (a -> b -> b) -> b -> [n]a -> b
-foldr f acc xs = foldl(g, acc, reverse(xs))
-  where g b a = f(a, b)
+foldr(f, acc, xs) = foldl(g, acc, reverse(xs))
+  where g(b, a) = f(a, b)
 
 /**
  * Functional right fold, with strict evaluation of the accumulator value.
@@ -995,20 +995,20 @@ foldr f acc xs = foldl(g, acc, reverse(xs))
  * foldr' (-) 0 [1,2,3] = 0 - (1 - (2 - 3))
  */
 foldr' : {n, a, b} (Eq b) => (a -> b -> b) -> b -> [n]a -> b
-foldr' f acc xs = foldl'(g, acc, reverse(xs))
-  where g b a = f(a, b)
+foldr'(f, acc, xs) = foldl'(g, acc, reverse(xs))
+  where g(b, a) = f(a, b)
 
 /**
  * Compute the sum of the values in the sequence.
  */
 sum : {n, a} (Eq a, Ring a) => [n]a -> a
-sum xs = foldl'((+), fromInteger(0), xs)
+sum(xs) = foldl'((+), fromInteger(0), xs)
 
 /**
  * Compute the product of the values in the sequence.
  */
 product : {n, a} (Eq a, Ring a) => [n]a -> a
-product xs = foldl'((*), fromInteger(1), xs)
+product(xs) = foldl'((*), fromInteger(1), xs)
 
 /**
  * Scan left is like a foldl that also emits the intermediate values.
@@ -1019,47 +1019,47 @@ primitive scanl : {n, a, b}  (a -> b -> a) -> a -> [n]b -> [1+n]a
  * Scan right is like a foldr that also emits the intermediate values.
  */
 scanr : {n, a, b} (a -> b -> b) -> b -> [n]a -> [1+n]b
-scanr f acc xs = reverse (scanl (\a b -> f(b, a), acc, reverse(xs)))
+scanr(f, acc, xs) = reverse (scanl (\(a, b) -> f(b, a), acc, reverse(xs)))
 
 /**
  * Repeat a value.
  */
 repeat : {n, a} a -> [n]a
-repeat x = [ x | _ <- zero : [n] ]
+repeat(x) = [ x | _ <- zero : [n] ]
 
 /**
  * 'elem x xs' returns true if x is equal to a value in xs.
  */
 elem : {n, a} (Eq a) => a -> [n]a -> Bit
-elem a xs = any(\x -> x == a, xs)
+elem(a, xs) = any(\(x) -> x == a, xs)
 
 /**
  * Create a list of tuples from two lists.
  */
 zip : {n, a, b} [n]a -> [n]b -> [n](a, b)
-zip xs ys = [(x,y) | x <- xs | y <- ys]
+zip(xs, ys) = [(x,y) | x <- xs | y <- ys]
 
 /**
  * Create a list by applying the function to each pair of elements in the input.
  */
 zipWith : {n, a, b, c} (a -> b -> c) -> [n]a -> [n]b -> [n]c
-zipWith f xs ys = [f(x, y) | x <- xs | y <- ys]
+zipWith(f, xs, ys) = [f(x, y) | x <- xs | y <- ys]
 
 /**
  * Transform a function into uncurried form.
  */
 uncurry : {a, b, c} (a -> b -> c) -> (a, b) -> c
-uncurry f = \(a, b) -> f(a, b)
+uncurry(f) = \((a, b)) -> f(a, b)
 
 /**
  * Transform a function into curried form.
  */
 curry : {a, b, c} ((a, b) -> c) -> a -> b -> c
-curry f = \a b -> f((a, b))
+curry(f) = \(a, b) -> f((a, b))
 
 /**
  * Map a function iteratively over a seed value, producing an infinite
  * list of successive function applications.
  */
 iterate : {a, n} (a -> a) -> a -> [1+n]a
-iterate f z = scanl(\x _ -> f(x), z, zero:[n]())
+iterate(f, z) = scanl(\(x, _) -> f(x), z, zero:[n]())

@@ -7,6 +7,6 @@ parameter
 type T = ([X],[Y])
 
 f : T -> [X]
-f (x,_) = x
+f((x,_)) = x
 
 

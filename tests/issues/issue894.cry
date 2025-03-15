@@ -1,4 +1,4 @@
 type Int n = Integer
 
 foo : {n} [n] -> Int n
-foo x = `n
+foo(x) = `n

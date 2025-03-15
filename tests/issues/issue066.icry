@@ -1,26 +1,26 @@
 // Don't show examples, as they can differ depending on the solver version.
 // See #1280.
 :set show-examples=false
-let f x = (x : [4]) == x
+let f(x) = (x : [4]) == x
 :prove f
 :t it
 it.result
-let f x = (x : [4]) == 3
+let f(x) = (x : [4]) == 3
 :prove f
 :t it
 it.result
 :sat f
 :t it
 it.result
-let f x = (x : [4]) == 3 /\ x == 2
+let f(x) = (x : [4]) == 3 /\ x == 2
 :sat f
 :t it
-let g p = (p : { x : [32], y : [32]}).x == p.y
+let g(p) = (p : { x : [32], y : [32]}).x == p.y
 :prove g
 :t it
 :sat g
 :t it
-let h x y = (x : [8]) < y
+let h(x, y) = (x : [8]) < y
 :prove h
 :t it
 :sat h

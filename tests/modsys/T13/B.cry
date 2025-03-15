@@ -8,6 +8,6 @@ parameter
 
 type T = 1
 
-f x = x
+f(x) = x
 
 

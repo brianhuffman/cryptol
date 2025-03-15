@@ -4,7 +4,7 @@
 
 ``` cryptol
 foo : [3] -> [3]
-foo x = x + x
+foo(x) = x + x
 ```
 
 Some more...

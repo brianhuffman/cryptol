@@ -13,12 +13,12 @@ test2 = True
 /**
  * Test that doc strings work on function bindings
  */
-test3 x = x
+test3(x) = x
 
 /**
  * Test that doc strings work on property declarations
  */
-property test4 x = (x : Bit)
+property test4(x) = (x : Bit)
 
 /**
  * Test that doc strings work on fixity declarations

@@ -6,7 +6,7 @@ submodule F where
   newtype NT = { field : T -> () }
 
   nt : NT
-  nt = NT({ field = \_ -> () })
+  nt = NT({ field = \(_) -> () })
 
 import submodule F where
   type T = [32]

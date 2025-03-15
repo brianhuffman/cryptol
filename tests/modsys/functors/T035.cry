@@ -9,7 +9,7 @@ submodule F where
 
   newtype X = { x : [n] }
   f : X -> X
-  f x = x
+  f(x) = x
 
 submodule M = submodule F { _ }
 submodule N = submodule F { _ }

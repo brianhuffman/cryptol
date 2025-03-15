@@ -29,23 +29,23 @@ Simon128_192' = decrypt{n=64,m=3,T=69,j=3}
 Simon128_256' = decrypt{n=64,m=4,T=72,j=4}
 
 // check only a few of them for now
-property correctSimon32_64 k p = Simon32_64'(k, Simon32_64(k, p)) == p
-property correctSimon64_96 k p = Simon64_96'(k, Simon64_96(k, p)) == p
-property correctSimon96_144 k p = Simon96_144'(k, Simon96_144(k, p)) == p
-property correctSimon128_128 k p = Simon128_128'(k, Simon128_128(k, p)) == p
-property correctSimon128_256 k p = Simon128_256'(k, Simon128_256(k, p)) == p
+property correctSimon32_64(k, p) = Simon32_64'(k, Simon32_64(k, p)) == p
+property correctSimon64_96(k, p) = Simon64_96'(k, Simon64_96(k, p)) == p
+property correctSimon96_144(k, p) = Simon96_144'(k, Simon96_144(k, p)) == p
+property correctSimon128_128(k, p) = Simon128_128'(k, Simon128_128(k, p)) == p
+property correctSimon128_256(k, p) = Simon128_256'(k, Simon128_256(k, p)) == p
 
 
 ///////////////////////////////////////////////////////////////////////
 // round function
 ///////////////////////////////////////////////////////////////////////
 
-R k (x, y) = (y ^ f(x) ^ k, x)
+R(k, (x, y)) = (y ^ f(x) ^ k, x)
 
 // inverse
-R' k (x, y) = (y, x ^ f(y) ^ k)
+R'(k, (x, y)) = (y, x ^ f(y) ^ k)
 
-f x = ((x <<< 1) && (x <<< 8)) ^ (x <<< 2)
+f(x) = ((x <<< 1) && (x <<< 8)) ^ (x <<< 2)
 
 
 ///////////////////////////////////////////////////////////////////////
@@ -55,7 +55,7 @@ f x = ((x <<< 1) && (x <<< 8)) ^ (x <<< 2)
 encrypt : {n, m, T, j : #}
     ( n >= 2, T - 1 >= m, T >= 1
     ) => [m][n] -> ([n], [n]) -> ([n], [n])
-encrypt k0 p0 = ps ! 0
+encrypt(k0, p0) = ps ! 0
   where
     ps = [p0] # [ R(k, p) | p <- ps | k <- ks ]
     ks = expandKey{n=n,m=m,T=T,j=j}(reverse(k0))
@@ -64,7 +64,7 @@ encrypt k0 p0 = ps ! 0
 decrypt : {n, m, T, j : #}
     ( n >= 2, T - 1 >= m, T >= 1
     ) => [m][n] -> ([n], [n]) -> ([n], [n])
-decrypt k0 p0 = ps ! 0
+decrypt(k0, p0) = ps ! 0
   where
     ps = [p0] # [ R'(k, p) | p <- ps | k <- reverse(ks) ]
     ks = expandKey{n=n,m=m,T=T,j=j}(reverse(k0))
@@ -77,7 +77,7 @@ decrypt k0 p0 = ps ! 0
 expandKey : {n, m, T, j : #}
     ( n >= 2, T - 1 >= m, T >= 1
     ) => [m][n] -> [T][n]
-expandKey k0 = k
+expandKey(k0) = k
   where
     k = k0 # [ r where
                     o = k @ (i - 1) >>> 3

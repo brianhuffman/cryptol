@@ -13,7 +13,7 @@ vzero : {n} (n > 0) => [n]Fld
 vzero = [ zero | _ <- nats{n=n} ]
 
 build1item : [width nn] -> [width nn] -> Fld
-build1item i j =
+build1item(i, j) =
   if i == j then
     1
   else
@@ -21,12 +21,12 @@ build1item i j =
 
 build2 : [v1][v1]Fld -> [v1][o1]Fld -> [v1][o2]Fld ->
          [o1][o1]Fld -> [o1][o2]Fld -> [nn][nn]Fld
-build2 a11 a12 a13 a22 a23 =
+build2(a11, a12, a13, a22, a23) =
   map(build2row(a11, a12, a13, a22, a23), nats{n=nn})
 
 build2row : [v1][v1]Fld -> [v1][o1]Fld -> [v1][o2]Fld ->
             [o1][o1]Fld -> [o1][o2]Fld  -> [width nn] -> [nn]Fld
-build2row a11 a12 a13 a22 a23 i =
+build2row(a11, a12, a13, a22, a23, i) =
   if i < `v1 then
     a11 @ i # a12 @ i # a13 @ i
   else if i < `{v1 + o1} then

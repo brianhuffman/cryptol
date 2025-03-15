@@ -19,6 +19,6 @@ can_not_width = zero # (`n : [width n])
 // Tell me if there should be another ticket - probably one that already exists. -TMD
 // Issue: Cryptol 2.3 wants 'n == 4 + (?a3 - n % 4)'
 take_knows_no_bounds : {n} (n >= 4) => [n][8] -> [4 - (n%4)][8]
-take_knows_no_bounds ns = foo
+take_knows_no_bounds(ns) = foo
  where
  foo = take{4 - (n%4)}(ns)

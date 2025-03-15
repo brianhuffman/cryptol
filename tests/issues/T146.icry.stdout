@@ -9,7 +9,7 @@ Loading module Main
   where
   ?b is type argument 'fv' of 'Main::ec_v2' at T146.cry:5:19--5:24
   fv`892 is signature variable 'fv' at T146.cry:11:10--11:12
-[error] at T146.cry:12:11--12:21:
+[error] at T146.cry:12:12--12:22:
   The type ?a is not sufficiently polymorphic.
     It cannot depend on quantified variables: fv`892
     When checking type of field 'v0'

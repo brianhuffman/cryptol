@@ -1,5 +1,5 @@
 f : [8] -> [8]
-f x = 20 + x
+f(x) = 20 + x
 
 // Note! This test case may be a bit fragile, as it
 // tests the output of tracing, which depends on evaluation

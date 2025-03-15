@@ -3,6 +3,6 @@ module T030 where
 import interface T030_I
 
 g : W -> X
-g x = f
+g(x) = f
 
 

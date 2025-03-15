@@ -1,7 +1,7 @@
 f : {n} [n] -> [n]
-f x = g(x)
+f(x) = g(x)
   where
     m1 = x
 
     g : {k} [k] -> [k]
-    g m0 = m0 ^ m1
+    g(m0) = m0 ^ m1

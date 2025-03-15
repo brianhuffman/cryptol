@@ -13,4 +13,4 @@ fromIntIntegral : {a} (Integral a) => a
 fromIntIntegral = fromInteger(42)
 
 eqCmp : {a} (Cmp a) => a -> a -> Bit
-eqCmp x y = x == y
+eqCmp(x, y) = x == y

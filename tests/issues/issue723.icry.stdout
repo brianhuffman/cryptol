@@ -2,7 +2,7 @@ Loading module Cryptol
 Loading module Cryptol
 Loading module Main
 
-[error] at issue723.cry:7:5--7:19:
+[error] at issue723.cry:7:5--7:20:
   Failed to validate user-specified signature.
     in the definition of 'g', at issue723.cry:7:5--7:6,
     we need to show that
@@ -11,6 +11,6 @@ Loading module Main
         • k == n`889
             arising from
             matching types
-            at issue723.cry:7:17--7:19
+            at issue723.cry:7:18--7:20
   where
   n`889 is signature variable 'n' at issue723.cry:1:6--1:7

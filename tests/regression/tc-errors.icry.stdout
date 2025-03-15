@@ -14,7 +14,7 @@ Loading module Cryptol
   Ambiguous numeric type: type argument 'n' of '(@)'
   Must be at least: 1
 
-[error] at tc-errors.icry:4:9--4:10:
+[error] at tc-errors.icry:4:11--4:12:
   Matching would result in an infinite type.
     The type:  ?b
     occurs in: ?b -> ?a

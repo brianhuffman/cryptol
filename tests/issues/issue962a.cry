@@ -1,8 +1,8 @@
 f : {a, b} [a]b -> (Bit, [a]b)
-f x = (True, x)
+f(x) = (True, x)
 
 g : {a,b} [a]b -> [a]b
-g x = (f{a=a}(x)).1
+g(x) = (f{a=a}(x)).1
 
 h = f.1
 

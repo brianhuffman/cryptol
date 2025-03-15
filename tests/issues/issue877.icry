@@ -3,7 +3,7 @@
 let xs = [1,2,3] : [_]Integer
 
 xs @@ []
-xs @@ map(\x -> [x], [])
+xs @@ map(\(x) -> [x], [])
 
 :l issue877.cry
 

@@ -18,8 +18,8 @@ test04::test =
 Loading module Cryptol
 Loading module test04
 
-[error] at test04.cry:3:1--5:14:
+[error] at test04.cry:3:1--5:15:
   • `10` is not a valid literal of type `()`
       arising from
       use of literal or demoted expression
-      at test04.cry:3:20--3:22
+      at test04.cry:3:21--3:23

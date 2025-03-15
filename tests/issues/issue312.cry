@@ -1,7 +1,7 @@
 f : [16] -> [16]
-f x = 3 * x
+f(x) = 3 * x
 
 g : [16] -> [16]
-g x = x + x + x
+g(x) = x + x + x
 
 property f_g = (f === g)

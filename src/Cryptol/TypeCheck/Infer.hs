@@ -276,7 +276,7 @@ checkE expr tGoal =
          return (hasDoSelect f e')
 
     P.EIndex e x ->
-      do prim <- mkPrim "@"
+      do prim <- mkPrim "at"
          checkE (P.EApp ((P.EApp prim) e) x) tGoal
 
     P.EList [] ->

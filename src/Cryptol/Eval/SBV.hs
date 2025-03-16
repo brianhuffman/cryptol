@@ -53,7 +53,7 @@ primTable sym getEOpts =
   Map.fromList $ map (\(n, v) -> (prelPrim (T.pack n), v))
 
   [ -- Indexing and updates
-    ("@"           , indexPrim sym IndexForward  (indexFront sym) (indexFront_segs sym))
+    ("at"          , indexPrim sym IndexForward  (indexFront sym) (indexFront_segs sym))
   , ("!"           , indexPrim sym IndexBackward (indexFront sym) (indexFront_segs sym))
 
   , ("update"      , updatePrim sym (updateFrontSym_word sym) (updateFrontSym sym))

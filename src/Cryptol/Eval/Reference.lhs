@@ -765,7 +765,7 @@ by corresponding type classes:
 >   , ">>>"        ~> rotateV rotateRV
 >
 >   -- Indexing:
->   , "@"          ~> indexPrimOne  indexFront
+>   , "at"         ~> indexPrimOne  indexFront
 >   , "!"          ~> indexPrimOne  indexBack
 >   , "update"     ~> updatePrim updateFront
 >   , "updateEnd"  ~> updatePrim updateBack

@@ -145,7 +145,7 @@ primTable getEOpts = let sym = Concrete in
   Map.fromList $ map (\(n, v) -> (prelPrim n, v))
 
   [ -- Indexing and updates
-    ("@"          , {-# SCC "Prelude::(@)" #-}
+    ("at"         , {-# SCC "Prelude::at" #-}
                     indexPrim sym IndexForward indexFront_int indexFront_segs)
   , ("!"          , {-# SCC "Prelude::(!)" #-}
                     indexPrim sym IndexBackward indexFront_int indexFront_segs)

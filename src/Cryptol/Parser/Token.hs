@@ -64,7 +64,7 @@ data TokenKW  = KW_else
 -- used for all other cases that lexed as an operator.
 data TokenOp  = Plus | Minus | Mul | Div | Exp | Mod
               | Equal | LEQ | GEQ
-              | Complement | Hash | At
+              | Complement | Hash
               | Other [Text] Text
                 deriving (Eq, Show, Generic, NFData)
 

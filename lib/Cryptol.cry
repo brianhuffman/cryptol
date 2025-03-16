@@ -18,7 +18,7 @@ infixl 70 <<, <<<, >>, >>>, >>$
 infixl 80 +, -
 infixl 90 *, /, %, /$, %$, %^, /^
 infixr 95 ^^
-infixl 100 @, @@, !, !!
+infixl 100 @@, !, !!
 
 
 // Base types -----------------------------------------------------------------------
@@ -518,109 +518,13 @@ x \/ y = if x then True else y
 a ==> b = if a then b else True
 
 
-// Bitvector specific operations ----------------------------------
-
-/**
- * 2's complement signed less-than.
- */
-primitive (<$) : {n} (n >= 1) => [n] -> [n] -> Bit
-
-/**
- * 2's complement signed greater-than.
- */
-(>$) : {n} (n >= 1) => [n] -> [n] -> Bit
-x >$ y = y <$ x
-
-/**
- * 2's complement signed less-than-or-equal.
- */
-(<=$) : {n} (n >= 1) => [n] -> [n] -> Bit
-x <=$ y = ~(y <$ x)
-
-/**
- * 2's complement signed greater-than-or-equal.
- */
-(>=$) : {n} (n >= 1) => [n] -> [n] -> Bit
-x >=$ y = ~(x <$ y)
-
-/**
- * 2's complement signed division.  Division rounds toward 0.
- *  Division by 0 is undefined.
- *
- *  * Satisfies 'x == x %$ y + (x /$ y) * y' for 'y != 0'.
- */
-primitive (/$) : {n} (n >= 1) => [n] -> [n] -> [n]
-
-/**
- * 2's complement signed remainder.  Division rounds toward 0.
- * Division by 0 is undefined.  Satisfies the following for 'y != 0'
- *
- *  * 'x %$ y == x - (x /$ y) * y'.
- *  * 'x >=$ 0 ==> x %$ y >=$ 0'
- *  * 'x <=$ 0 ==> x %$ y <=$ 0'
- */
-primitive (%$) : {n} (n >= 1) => [n] -> [n] -> [n]
-
-/**
- * Unsigned carry.  Returns true if the unsigned addition of the given
- * bitvector arguments would result in an unsigned overflow.
- */
-carry : {n} [n] -> [n] -> Bit
-carry(x, y) = (x + y) < x
-
-/**
- * Signed carry.  Returns true if the 2's complement signed addition of the
- * given bitvector arguments would result in a signed overflow.
- */
-scarry : {n} (n >= 1) => [n] -> [n] -> Bit
-scarry(x, y) = (sx == sy) && (sx != sz)
-  where
-    z  = x + y
-    sx = x@0
-    sy = y@0
-    sz = z@0
-
-/**
- * Signed borrow.  Returns true if the 2's complement signed subtraction of the
- * given bitvector arguments would result in a signed overflow.
- */
-sborrow : {n} (n >= 1) => [n] -> [n] -> Bit
-sborrow(x, y) = ( x <$ (x-y) ) ^ y@0
-
-/**
- * Zero extension of a bitvector.
- */
-zext : {m, n} (m >= n) => [n] -> [m]
-zext(x) = zero # x
-
-/**
- * Sign extension of a bitvector.
- */
-sext : {m, n} (m >= n, n >= 1) => [n] -> [m]
-sext(x) = newbits # x
-  where newbits = if x@0 then ~zero else zero
-
-/**
- * 2's complement signed (arithmetic) right shift.  The first argument
- * is the sequence to shift (considered as a signed value),
- * the second argument is the number of positions to shift
- * by (considered as an unsigned value).
- */
-primitive (>>$) : {n, ix} (n >= 1, Integral ix) => [n] -> ix -> [n]
-
-/**
- * The ceiling of the base-2 logarithm of an unsigned bitvector.
- * We set 'lg2(0) = 0'.
- */
-primitive lg2 : {n} [n] -> [n]
-
-/**
- * Convert a signed 2's complement bitvector to an integer.
- */
-primitive toSignedInteger : {n} (n >= 1) => [n] -> Integer
-
-
 // Sequence operations -------------------------------------------------------
+
+/**
+ * Index operator.  The first argument is a sequence.  The second argument is
+ * the zero-based index of the element to select from the sequence.
+ */
+primitive at : {n, a, ix} (Integral ix) => [n]a -> ix -> a
 
 /**
  * Concatenates two sequences.  On bitvectors, the most-significant bits
@@ -654,7 +558,7 @@ primitive reverse : {n, a} [n]a -> [n]a
 
 /**
  * Transposes a matrix.
- * Satisfies the property 'transpose m @ i @ j == m @ j @ i'.
+ * Satisfies the property 'transpose(m)[i][j] == m[j][i]'.
  */
 primitive transpose : {rows, cols, a} [rows][cols]a -> [cols][rows]a
 
@@ -678,7 +582,7 @@ tail(xs) = drop{1}(xs)
  * Return the first (left-most) element of a sequence.
  */
 head : {n, a} [1 + n]a -> a
-head(xs) = xs @ 0
+head(xs) = xs[0]
 
 /**
  * Return the right-most element of a sequence.
@@ -719,17 +623,11 @@ primitive (<<<) : {n, ix, a} (Integral ix) => [n]a -> ix -> [n]a
 primitive (>>>) : {n, ix, a} (Integral ix) => [n]a -> ix -> [n]a
 
 /**
- * Index operator.  The first argument is a sequence.  The second argument is
- * the zero-based index of the element to select from the sequence.
- */
-primitive (@) : {n, a, ix} (Integral ix) => [n]a -> ix -> a
-
-/**
  * Bulk index operator.  The first argument is a sequence.  The second argument
  * is a sequence of the zero-based indices of the elements to select.
  */
 (@@) : {n, k, ix, a} (Integral ix) => [n]a -> [k]ix -> [k]a
-xs @@ is = [ xs @ i | i <- is ]
+xs @@ is = [ xs[i] | i <- is ]
 
 /**
  * Reverse index operator.  The first argument is a finite sequence.  The second
@@ -790,9 +688,9 @@ updatesEnd(xs0, idxs, vals) = foldl(upd, xs0, zip(idxs, vals))
 
 /**
  * Produce a sequence using a generating function.
- * Satisfies 'generate f @ i == f i' for all 'i' between '0' and 'n-1'.
+ * Satisfies 'generate(f)[i] i == f(i)' for all 'i' between '0' and 'n-1'.
  *
- * Declarations of the form 'x @ i = e' are syntactic sugar for
+ * Declarations of the form 'x[i] = e' are syntactic sugar for
  * 'x = generate (\i -> e)'.
  */
 generate : {n, a, ix} (Integral ix, LiteralLessThan n ix) => (ix -> a) -> [n]a
@@ -815,12 +713,115 @@ sortBy(le, ((xs : [n/2]a) # (ys : [n/^2]a))) = zs.0
   where
     xs' = if number{n/2} == 1 then xs else sortBy(le, xs)
     ys' = if number{n/^2} == 1 then ys else sortBy(le, ys)
-    zs  = [ if i == number{n/2}   then (ys'@j, i  , j+1) else
-            if j == number{n/^2}  then (xs'@i, i+1, j  ) else
-            if le(xs'@i, ys'@j)   then (xs'@i, i+1, j  )
-            else                       (ys'@j, i  , j+1)
+    zs  = [ if i == number{n/2}   then (ys'[j], i  , j+1) else
+            if j == number{n/^2}  then (xs'[i], i+1, j  ) else
+            if le(xs'[i], ys'[j]) then (xs'[i], i+1, j  )
+            else                       (ys'[j], i  , j+1)
           | (_, i, j) <- take{n}([ (undefined, 0, 0) ] # zs)
           ]
+
+// Bitvector specific operations ----------------------------------
+
+/**
+ * 2's complement signed less-than.
+ */
+primitive (<$) : {n} (n >= 1) => [n] -> [n] -> Bit
+
+/**
+ * 2's complement signed greater-than.
+ */
+(>$) : {n} (n >= 1) => [n] -> [n] -> Bit
+x >$ y = y <$ x
+
+/**
+ * 2's complement signed less-than-or-equal.
+ */
+(<=$) : {n} (n >= 1) => [n] -> [n] -> Bit
+x <=$ y = ~(y <$ x)
+
+/**
+ * 2's complement signed greater-than-or-equal.
+ */
+(>=$) : {n} (n >= 1) => [n] -> [n] -> Bit
+x >=$ y = ~(x <$ y)
+
+/**
+ * 2's complement signed division.  Division rounds toward 0.
+ *  Division by 0 is undefined.
+ *
+ *  * Satisfies 'x == x %$ y + (x /$ y) * y' for 'y != 0'.
+ */
+primitive (/$) : {n} (n >= 1) => [n] -> [n] -> [n]
+
+/**
+ * 2's complement signed remainder.  Division rounds toward 0.
+ * Division by 0 is undefined.  Satisfies the following for 'y != 0'
+ *
+ *  * 'x %$ y == x - (x /$ y) * y'.
+ *  * 'x >=$ 0 ==> x %$ y >=$ 0'
+ *  * 'x <=$ 0 ==> x %$ y <=$ 0'
+ */
+primitive (%$) : {n} (n >= 1) => [n] -> [n] -> [n]
+
+/**
+ * Unsigned carry.  Returns true if the unsigned addition of the given
+ * bitvector arguments would result in an unsigned overflow.
+ */
+carry : {n} [n] -> [n] -> Bit
+carry(x, y) = (x + y) < x
+
+/**
+ * Signed carry.  Returns true if the 2's complement signed addition of the
+ * given bitvector arguments would result in a signed overflow.
+ */
+scarry : {n} (n >= 1) => [n] -> [n] -> Bit
+scarry(x, y) = (sx == sy) && (sx != sz)
+  where
+    z  = x + y
+    sx = x[0]
+    sy = y[0]
+    sz = z[0]
+    //sz = at(z, 0)
+
+/**
+ * Signed borrow.  Returns true if the 2's complement signed subtraction of the
+ * given bitvector arguments would result in a signed overflow.
+ */
+sborrow : {n} (n >= 1) => [n] -> [n] -> Bit
+sborrow(x, y) = ( x <$ (x-y) ) ^ y[0]
+
+/**
+ * Zero extension of a bitvector.
+ */
+zext : {m, n} (m >= n) => [n] -> [m]
+zext(x) = zero # x
+
+/**
+ * Sign extension of a bitvector.
+ */
+sext : {m, n} (m >= n, n >= 1) => [n] -> [m]
+sext(x) = newbits # x
+  where newbits = if x[0] then ~zero else zero
+
+/**
+ * 2's complement signed (arithmetic) right shift.  The first argument
+ * is the sequence to shift (considered as a signed value),
+ * the second argument is the number of positions to shift
+ * by (considered as an unsigned value).
+ */
+primitive (>>$) : {n, ix} (n >= 1, Integral ix) => [n] -> ix -> [n]
+
+/**
+ * The ceiling of the base-2 logarithm of an unsigned bitvector.
+ * We set 'lg2(0) = 0'.
+ */
+primitive lg2 : {n} [n] -> [n]
+
+/**
+ * Convert a signed 2's complement bitvector to an integer.
+ */
+primitive toSignedInteger : {n} (n >= 1) => [n] -> Integer
+
 
 // GF_2^n polynomial computations -------------------------------------------
 

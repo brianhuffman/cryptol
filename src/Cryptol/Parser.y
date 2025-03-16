@@ -134,7 +134,6 @@ import Paths_cryptol
   '~'         { Located $$ (Token (Op Complement) _)}
 
   '#'         { Located $$ (Token (Op Hash) _)}
-  '@'         { Located $$ (Token (Op At) _)}
 
   OP          { $$@(Located _ (Token (Op (Other [] _)) _))}
   QOP         { $$@(Located _ (Token (Op  Other{}   )  _))}
@@ -505,7 +504,6 @@ qop                              :: { LPName }
 op                               :: { LPName }
   : pat_op                          { $1 }
   | '#'                             { Located $1 $ mkUnqual $ mkInfix "#" }
-  | '@'                             { Located $1 $ mkUnqual $ mkInfix "@" }
 
 pat_op                           :: { LPName }
   : other_op                        { $1 }

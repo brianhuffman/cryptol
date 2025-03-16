@@ -715,12 +715,12 @@ pat                            :: { Pattern PName }
 
 cpat                           :: { Pattern PName }
   : cpat '#' cpat                 { at ($1,$3) $ PSplit $1 $3 }
-  | qname apats                   { at ($1,$2) $ PCon $1 (reverse $2)   }
+  | qname '(' pats ')'            { at ($1,$2) $ PCon $1 (reverse $3) }
   | apat                          { $1                        }
 
-apats                          :: { [Pattern PName] }
-  : apat                          { [$1] }
-  | apats apat                    { $2 : $1 }
+pats                           :: { [Pattern PName] }
+  : pat                           { [$1] }
+  | pats ',' pat                  { $3 : $1 }
 
 apat                           :: { Pattern PName }
   : qname                         { at $1 (mkPVar $1) }
@@ -759,8 +759,7 @@ iapat                          :: { Pattern PName }
   : apat                          {% mkIPat $1 }
 
 iapats                         :: { [Pattern PName] }
-  : '(' pat ')'                   {% traverse mkIPat [$2] }
-  | '(' tuple_pats ')'            {% traverse mkIPat $2 }
+  : '(' pats ')'                  {% traverse mkIPat $2 }
 
 indices                 :: { [Pattern PName] }
   : '@' indices1           { $2 }

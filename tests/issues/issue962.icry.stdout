@@ -1,8 +1,7 @@
 Loading module Cryptol
-
-[error] at issue962.icry:1:2--1:5:
-  Unexpected bare type application.
-  Perhaps you meant `( ... ) instead.
+Showing a specific instance of polymorphic result:
+  * Using 'Integer' for type argument 'rep' of 'Cryptol::number'
+1
 0
 3
 Loading module Cryptol
@@ -11,7 +10,3 @@ i : {a} [a] -> [a]
 j : {a} [a]{fld : Integer} -> [a]Integer
 Loading module Cryptol
 Loading module Main
-
-[error] at issue962b.cry:32:16--32:25:
-  Unexpected bare type application.
-  Perhaps you meant `( ... ) instead.

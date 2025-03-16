@@ -149,12 +149,12 @@ demote = number{val}
  * on the type of the argument, not its value.
  */
 length : {n, a, b} (Literal n b) => [n]a -> b
-length(_) = `n
+length(_) = number{n}
 
 /**
  * A finite sequence counting up from 'first' to 'last'.
  *
- * '[x .. y]' is syntactic sugar for 'fromTo`{first=x,last=y}'.
+ * '[x .. y]' is syntactic sugar for 'fromTo{first=x,last=y}'.
  */
 primitive fromTo : {first, last, a}
   (last >= first, Literal last a) =>
@@ -163,7 +163,7 @@ primitive fromTo : {first, last, a}
 /**
  * A possibly infinite sequence counting up from 'first' up to (but not including) 'bound'.
  *
- * '[ x ..< y ]' is syntactic sugar for 'fromToLessThan`{first=x,bound=y}'.
+ * '[ x ..< y ]' is syntactic sugar for 'fromToLessThan{first=x,bound=y}'.
  *
  * Note that if 'first' = 'bound' then the sequence will be empty.  If 'bound = inf'
  * then the sequence will be infinite, and will eventually wrap around for bounded types.
@@ -177,7 +177,7 @@ primitive fromToLessThan :
  * Note that 'last' will only be an element of the enumeration if
  * 'stride' divides 'last - first' evenly.
  *
- * '[x .. y by n]' is syntactic sugar for 'fromToBy`{first=x,last=y,stride=n}'.
+ * '[x .. y by n]' is syntactic sugar for 'fromToBy{first=x,last=y,stride=n}'.
  */
 primitive fromToBy : {first, last, stride, a}
   (stride >= 1, last >= first, Literal last a) =>
@@ -189,7 +189,7 @@ primitive fromToBy : {first, last, stride, a}
  * be empty.  If 'bound = inf' then the sequence will be infinite, and will
  * eventually wrap around for bounded types.
  *
- * '[x ..< y by n]' is syntactic sugar for 'fromToByLessThan`{first=x,bound=y,stride=n}'.
+ * '[x ..< y by n]' is syntactic sugar for 'fromToByLessThan{first=x,bound=y,stride=n}'.
  */
 primitive fromToByLessThan : {first, bound, stride, a}
   (stride >= 1, bound >= first, LiteralLessThan bound a) =>
@@ -200,7 +200,7 @@ primitive fromToByLessThan : {first, bound, stride, a}
  * Note that 'last' will only be an element of the enumeration if
  * 'stride' divides 'first - last' evenly.
  *
- * '[x .. y down by n]' is syntactic sugar for 'fromToDownBy`{first=x,last=y,stride=n}'.
+ * '[x .. y down by n]' is syntactic sugar for 'fromToDownBy{first=x,last=y,stride=n}'.
  */
 primitive fromToDownBy : {first, last, stride, a}
   (stride >= 1, first >= last, Literal first a) =>
@@ -211,7 +211,7 @@ primitive fromToDownBy : {first, last, stride, a}
  * 'bound' by 'stride'.
  *
  * '[x ..> y down by n]' is syntactic sugar for
- * 'fromToDownByGreaterThan`{first=x,bound=y,stride=n}'.
+ * 'fromToDownByGreaterThan{first=x,bound=y,stride=n}'.
  *
  * Note that if 'first = bound' the sequence will be empty.
  */
@@ -223,7 +223,7 @@ primitive fromToDownByGreaterThan : {first, bound, stride, a}
  * A finite arithmetic sequence starting with 'first' and 'next',
  * stopping when the values reach or would skip over 'last'.
  *
- * '[x,y..z]' is syntactic sugar for 'fromThenTo`{first=x,next=y,last=z}'.
+ * '[x,y..z]' is syntactic sugar for 'fromThenTo{first=x,next=y,last=z}'.
  */
 primitive fromThenTo : {first, next, last, a, len}
                        ( Literal first a, Literal next a, Literal last a
@@ -813,10 +813,10 @@ sort = sortBy((<=))
 sortBy : {a, n} (a -> a -> Bit) -> [n]a -> [n]a
 sortBy(le, ((xs : [n/2]a) # (ys : [n/^2]a))) = zs.0
   where
-    xs' = if `(n/2)  == 1 then xs else sortBy(le, xs)
-    ys' = if `(n/^2) == 1 then ys else sortBy(le, ys)
-    zs  = [ if i == `(n/2)        then (ys'@j, i  , j+1) else
-            if j == `(n/^2)       then (xs'@i, i+1, j  ) else
+    xs' = if number{n/2} == 1 then xs else sortBy(le, xs)
+    ys' = if number{n/^2} == 1 then ys else sortBy(le, ys)
+    zs  = [ if i == number{n/2}   then (ys'@j, i  , j+1) else
+            if j == number{n/^2}  then (xs'@i, i+1, j  ) else
             if le(xs'@i, ys'@j)   then (xs'@i, i+1, j  )
             else                       (ys'@j, i  , j+1)
           | (_, i, j) <- take{n}([ (undefined, 0, 0) ] # zs)

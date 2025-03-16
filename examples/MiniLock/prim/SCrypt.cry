@@ -33,7 +33,7 @@ SMix(B) = join (Xs ! 0)
                             x' = BlockMix(T))
                         | x <- Xs | _ <- [0..N-1] : [_][width N + 1] ]
 
-  integerify(w) = (join (reverse (split {each=8} (w!0)))) % `N
+  integerify(w) = (join (reverse (split {each=8} (w!0)))) % number{N}
 
 // SCrypt paper, page 11: MFCrypt specialized to sha256 (see the 'pbkdf2' function)
 // p = 1

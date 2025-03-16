@@ -2,7 +2,7 @@ f : {a} [2^^a - 1] -> [3*(2^^a - 1)]
 f(x) = x # x # x
 
 asdf1 : {r} (width (2^^r)==r+1) => [r+1]
-asdf1 = `(2^^r)
+asdf1 = number{2^^r}
 
 asdf2 : {r} (width(2^^r-1)==r) => [r]
-asdf2 = `(2^^r-1)
+asdf2 = number{2^^r-1}

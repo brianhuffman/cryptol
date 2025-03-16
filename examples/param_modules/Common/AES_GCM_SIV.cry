@@ -71,8 +71,8 @@ gcm_siv_plus((K1,K2), N, AAD, MSG) = (unblockify(Cs), TAG)
   T       = polyvalFrom(K1, A # M # [msg_len # aad_len], 0)
   A       = blockify(AAD)
   M       = blockify(MSG)
-  aad_len = `AAD : [64]
-  msg_len = `n   : [64]
+  aad_len = number{AAD} : [64]
+  msg_len = number{n}   : [64]
 
   _ # tUpper # tLower = TAG
 

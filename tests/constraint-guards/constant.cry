@@ -11,7 +11,7 @@ property isZero_correct =
   ~isZero{ 16}
 
 idTypeNum : {n : #} Integer
-idTypeNum = `n
+idTypeNum = number{n}
 
 property idTypeNum_correct =
   (idTypeNum{ 0}  ==  0) &&

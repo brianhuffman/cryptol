@@ -1,6 +1,6 @@
 :l issue1455/Inst3.cry
-`n : Integer
-`m : Integer
+number{n} : Integer
+number{m} : Integer
 x
 y
 :t x

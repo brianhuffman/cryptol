@@ -57,7 +57,7 @@ preprocess : {msgLen}
      ( 64 >= width msgLen                              // message width fits in a word
      )
      => [msgLen] -> [(msgLen + 65) /^ 512][512]
-preprocess(msg) = split (msg # [True] # (zero:[(msgLen + 65) %^ 512]) # (`msgLen:[64]))
+preprocess(msg) = split (msg # [True] # (zero:[(msgLen + 65) %^ 512]) # (number{msgLen}:[64]))
 
 /*
  * SHA256 Initial Hash Value :  Section 5.3.3

@@ -52,13 +52,13 @@ swap(xs, a, b) = [ if(i == a) then xs@b else
 generate_random_permutation : {a} (a >= 1, width a >= width(a-1)) => [256] -> [a][width(a-1)]
 generate_random_permutation(seed) = pss!0
   where
-    indices = [ take{width(a-1)}(b % `a) | b <- random(seed) : [a][width a] ]
+    indices = [ take{width(a-1)}(b % number{a}) | b <- random(seed) : [a][width a] ]
     pss = [ [0 .. a-1] ] # [ swap(ps, a, b) | ps <- pss | a <- [0 .. a-1] | b <- indices ]
 
 unique : {a, b} (a>=1) => [a][b] -> Bit
 unique(xs) = [ exist(x, i+1) | x <- xs | i <- [0...] ] == 0
   where exist : [b] -> [width a] -> Bit
-        exist(x, i) = if(i>=`a) then False
+        exist(x, i) = if(i>=number{a}) then False
                       else if(x==(xs@i)) then True
                       else exist(x, i+1)
 

@@ -102,8 +102,8 @@ private
     nonces     = [nonce # put64le(i) | i <- [1...] : [chunks]_]
     ctChunks   = [put32le(2^^20) # crypto_secretbox(cnk, key, n) | n <- nonces | cnk <- cs]
 
-    nFinal     =  nonce # put64le((`chunks + 1) || 0x8000000000000000)
-    ctFinal    =  put32le(`rem) # crypto_secretbox(end, key, nFinal)
+    nFinal     =  nonce # put64le((number{chunks} + 1) || 0x8000000000000000)
+    ctFinal    =  put32le(number{rem}) # crypto_secretbox(end, key, nFinal)
 ```
 
 The minilock file format is a concatenation of the magic, header length field, header, and ciphertext.

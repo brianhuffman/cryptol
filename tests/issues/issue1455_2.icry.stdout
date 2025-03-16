@@ -4,7 +4,7 @@ Loading interface module I
 Loading module F
 Loading module Inst2
 
-[error] at issue1455_2.icry:2:2--2:3
+[error] at issue1455_2.icry:2:8--2:9
     Type not in scope: n
 6
 

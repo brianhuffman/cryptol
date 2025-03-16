@@ -18,10 +18,10 @@ J::y : [4]
 K::x : [3]
 K::y : [6]
 
-[error] at issue1561_2.icry:14:2--14:3
+[error] at issue1561_2.icry:14:8--14:9
     Type not in scope: n
 
-[error] at issue1561_2.icry:15:2--15:3
+[error] at issue1561_2.icry:15:8--15:9
     Type not in scope: m
 
 [error] at issue1561_2.icry:16:1--16:2

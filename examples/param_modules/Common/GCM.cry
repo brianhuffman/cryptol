@@ -69,8 +69,8 @@ enc_dec(K, IV, A, P) = (C,T)
 GHASH : {C,A} (64 >= width C, 64 >= width A) => [128] -> [A] -> [C] -> [128]
 GHASH(H, A, C) = step(XS ! 0, wa # wc)
   where
-  wa = `A : [64]
-  wc = `C : [64]
+  wa = number{A} : [64]
+  wc = number{C} : [64]
 
   XS = [0] # [ step(X', B) | X' <- XS | B <- blockify(A) # blockify(C) ]
 
@@ -101,7 +101,7 @@ unblockify(ms) = take(join(ms))
 
 
 ifWidth : {w,n,a} [n] -> ([w] -> a) -> a -> a
-ifWidth(thing, yep, nope) = if `w == (`n : [max (width w) (width n)])
+ifWidth(thing, yep, nope) = if number{w} == (number{n} : [max (width w) (width n)])
                             then yep (take (thing # (zero : [w])))
                             else nope
 

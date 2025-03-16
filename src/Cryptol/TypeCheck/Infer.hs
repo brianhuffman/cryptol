@@ -187,7 +187,6 @@ appTys expr ts tGoal =
     P.EApp      {} -> mono
     P.EIf       {} -> mono
     P.ETyped    {} -> mono
-    P.ETypeVal  {} -> mono
     P.EFun      {} -> mono
     P.ESplit    {} -> mono
     P.EPrefix   {} -> mono
@@ -442,14 +441,6 @@ checkE expr tGoal =
          e' <- checkE e (WithSource tSig TypeFromUserAnnotation (getLoc expr))
          checkHasType tSig tGoal
          return e'
-
-    P.ETypeVal t ->
-      do l <- curRange
-         prim <- mkPrim "number"
-         checkE (P.EAppT prim
-                  [P.NamedInst
-                   P.Named { name = Located l (packIdent "val")
-                           , value = t }]) tGoal
 
     P.EFun desc ps e -> checkFun desc ps e tGoal
 

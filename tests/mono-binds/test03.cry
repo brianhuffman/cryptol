@@ -6,4 +6,4 @@ module test03 where
 test : {a} (a >= width a) => [a]
 test = foo
   where
-  foo = `(a)
+  foo = number{a}

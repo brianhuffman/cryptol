@@ -183,7 +183,6 @@ noPatE expr =
     ECase e as    -> ECase  <$> noPatE e  <*> traverse noPatAlt as
     EWhere e ds   -> EWhere <$> noPatE e <*> noPatDs ds
     ETyped e t    -> ETyped <$> noPatE e <*> return t
-    ETypeVal {}   -> return expr
     EFun desc ps e -> noPatFun (funDescrName desc) (funDescrArgOffset desc) ps e
     ELocated e r1 -> ELocated <$> inRange r1 (noPatE e) <*> return r1
 

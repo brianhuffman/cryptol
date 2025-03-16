@@ -29,7 +29,7 @@ module Karatsuba where
 kmult : {limb,n} (limb >= 6, n >= 1) => [n] -> [n] -> [2*n]
 
 kmult(x, y) =
- if `n >= (`limb : [max (width limb) (width n)]) then
+ if number{n} >= (number{limb} : [max (width limb) (width n)]) then
    take (splitmult{limb}(make_atleast{limb}(x), make_atleast{limb}(y)))
  else
    (zero#x)*(zero#y)

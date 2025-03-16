@@ -633,7 +633,6 @@ no_sel_aexpr                   :: { Expr PName                             }
                                        Right fs -> mkRecord (rComb $1 $3) ERecord fs; }}
   | '[' ']'                       { at ($1,$2) $ EList []                  }
   | '[' list_expr  ']'            { at ($1,$3) $2                          }
-  | '`' tick_ty                   { at ($1,$2) $ ETypeVal $2               }
 
   | '(' qop ')'                   { at ($1,$3) $ EVar $ thing $2           }
 
@@ -897,17 +896,6 @@ help_name                      :: { Located PName    }
   : qname                         { $1               }
   | qop                           { $1               }
   | '(' qop ')'                   { $2               }
-
-{- The types that can come after a back-tick: either a type demotion,
-or an explicit type application. -}
-tick_ty                        :: { Type PName }
-  : qname                         { at $1 $ TUser (thing $1) []      }
-  | NUM                           { at $1 $ TNum  (getNum $1)          }
-  | '(' type ')'                  {% validDemotedType (rComb $1 $3) $2 }
-  | '{' '}'                       { at ($1,$2) (TTyApp [])             }
-  | '{' field_ty_vals '}'         { at ($1,$3) (TTyApp (reverse $2))   }
-  | '{' type '}'                  { anonTyApp (getLoc ($1,$3)) [$2]    }
-  | '{' tuple_types '}'           { anonTyApp (getLoc ($1,$3)) (reverse $2) }
 
 -- This for explicit type applications (e.g., f ` { front = 3 })
 field_ty_val                   :: { Named (Type PName)              }

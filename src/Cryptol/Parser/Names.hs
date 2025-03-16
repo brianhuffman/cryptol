@@ -115,7 +115,6 @@ namesE expr =
     EWhere  e ds  -> let (bs,xs) = namesDs ds
                      in Set.union (boundLNames bs (namesE e)) xs
     ETyped e _    -> namesE e
-    ETypeVal _    -> Set.empty
     EFun _ ps e   -> boundLNames (fst (namesPs ps)) (namesE e) -- no free
     ELocated e _  -> namesE e
 
@@ -264,7 +263,6 @@ tnamesE expr =
     EWhere  e ds    -> let (bs,xs) = tnamesDs ds
                        in Set.union (boundLNames bs (tnamesE e)) xs
     ETyped e t      -> Set.union (tnamesE e) (tnamesT t)
-    ETypeVal t      -> tnamesT t
     EFun _ ps e     -> Set.union (Set.unions (map tnamesP ps)) (tnamesE e)
     ELocated e _    -> tnamesE e
 

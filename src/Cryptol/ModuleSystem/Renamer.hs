@@ -1180,7 +1180,6 @@ instance Rename Expr where
     EWhere e' ds    -> shadowNames (map (InModule Nothing) ds) $
                           EWhere <$> rename e' <*> renameDecls ds
     ETyped e' ty    -> ETyped  <$> rename e' <*> rename ty
-    ETypeVal ty     -> ETypeVal<$> rename ty
     EFun desc ps e' -> do desc' <- rename desc
                           (env,ps') <- renamePats ps
                           -- NOTE: renamePats will generate warnings, so we don't

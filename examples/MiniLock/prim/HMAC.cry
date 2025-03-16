@@ -25,7 +25,7 @@ hmac : { msgBytes, pwBytes, digest, blockLength }
 hmac(hash, hash2, hash3, key, message) = hash2 (okey # internal)
  where
  ks : [blockLength][8]
- ks   = if `pwBytes > (`blockLength : [max (width pwBytes) (width blockLength)])
+ ks   = if number{pwBytes} > (number{blockLength} : [max (width pwBytes) (width blockLength)])
             then take{blockLength}(split(hash3(key)) # (zero : [blockLength][8]))
             else take{blockLength}(key # (zero : [blockLength][8]))
  okey = [k ^ 0x5C | k <- ks]

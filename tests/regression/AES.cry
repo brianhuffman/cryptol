@@ -122,9 +122,9 @@ RotWord([a0, a1, a2, a3]) = [a1, a2, a3, a0]
 
 NextWord : [8] -> [4][8] -> [4][8] -> [4][8]
 NextWord(i, prev, old) = old ^ mask
-   where mask = if i % `Nk == 0
-                then SubWord(RotWord(prev)) ^ Rcon (i / `Nk)
-                else if (`Nk > 6) && (i % `Nk == 4)
+   where mask = if i % number{Nk} == 0
+                then SubWord(RotWord(prev)) ^ Rcon (i / number{Nk})
+                else if (number{Nk} > 6) && (i % number{Nk} == 4)
                      then SubWord(prev)
                      else prev
 
@@ -135,7 +135,7 @@ ExpandKeyForever(seed) = [ transpose(g) | g <- groupBy{4}(keyWS(seed)) ]
 keyWS : {n} [Nk][4][8] -> [n][4][8]
 keyWS(seed) = take{n}(xs) where
       xs   = seed # [ NextWord(i, prev, old)
-                    | i    <- [ `Nk ... ] : [n]_
+                    | i    <- [ number{Nk} ... ] : [n]_
                     | prev <- take{n}(drop{Nk-1}(xs))
                     | old  <- take{n}(xs)
                     ]
@@ -144,7 +144,7 @@ checkKey = take{16}(drop{8}(keyWS(["abcd", "defg", "1234", "5678"])))
 checkKey2 = [transpose(g) | g <- groupBy{4}(checkKey)]
 
 ExpandKey : [AESKeySize] -> KeySchedule
-ExpandKey(key) = (keys @ 0, keys @@ [1 .. (Nr - 1)], keys @ `Nr)
+ExpandKey(key) = (keys @ 0, keys @@ [1 .. (Nr - 1)], keys @ number{Nr})
   where   seed : [Nk][4][8]
           seed = split(split(key))
           keys : [Nr+1]RoundKey

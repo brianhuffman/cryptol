@@ -65,7 +65,7 @@ private
   (2 * w)-bit word (consistent w/ Figure 1)
   */
   pad : {L} (2 * w >= width L) => [L] -> [padded_size L]
-  pad(M) = M # 0b1 # zero # (`L : [2*w])
+  pad(M) = M # 0b1 # zero # (number{L} : [2*w])
 
   /**
     5.2 Parsing the Message

@@ -1,6 +1,6 @@
 :l issue1455/Inst2.cry
-`n
-`(m 3) : Integer
+number{n}
+number{m 3} : Integer
 x
 y
 :t a

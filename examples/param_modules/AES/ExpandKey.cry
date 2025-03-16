@@ -16,7 +16,7 @@ parameter
 expandKey : [32 * Nk] -> (RoundKey, [Nr-1]RoundKey, RoundKey)
 expandKey(key) = ( keys @ 0
                  , keys @@ ([1 .. (Nr - 1)] : [_][8])
-                 , keys @ (`Nr : [8])
+                 , keys @ (number{Nr} : [8])
                  )
   where   seed : [Nk][4][8]
           seed = split(split(key))
@@ -30,7 +30,7 @@ keyWS : {n} [Nk][4][8] -> [n][4][8]
 keyWS(seed)   = take{n}(xs)
      where xs : [Nk+n][4][8]
            xs = seed # [ NextWord(i, prev, old)
-                       | i    <- [ `Nk ... ] : [n]_
+                       | i    <- [ number{Nk} ... ] : [n]_
                        | prev <- take{n}(drop{Nk-1}(xs))
                        | old  <- take{n}(xs)
                        ]
@@ -48,11 +48,11 @@ RotWord([a0, a1, a2, a3]) = [a1, a2, a3, a0]
 NextWord : [8] ->[4][8] -> [4][8] -> [4][8]
 NextWord(i, prev, old) = old ^ mask
    where mask = if i % nk == 0
-                then SubWord(RotWord(prev)) ^ Rcon (i / `Nk)
+                then SubWord(RotWord(prev)) ^ Rcon (i / number{Nk})
                 else if (nk > 6) && (i % nk == 4)
                      then SubWord(prev)
                      else prev
 
-         nk = `Nk : [8]
+         nk = number{Nk} : [8]
 
 

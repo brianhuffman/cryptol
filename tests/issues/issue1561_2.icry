@@ -1,8 +1,8 @@
 :l issue1561/Inst2.cry
-`J::n : Integer
-`J::m : Integer
-`K::n : Integer
-`K::m : Integer
+number{J::n} : Integer
+number{J::m} : Integer
+number{K::n} : Integer
+number{K::m} : Integer
 J::x
 J::y
 K::x
@@ -11,8 +11,8 @@ K::y
 :t J::y
 :t K::x
 :t K::y
-`n
-`m
+number{n}
+number{m}
 x
 y
 ja

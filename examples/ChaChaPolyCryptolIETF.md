@@ -739,9 +739,9 @@ Next, divide the message into 16-byte blocks. The last block might be shorter:
 
 ```cryptol
     lastAccum : [136]
-    lastAccum = if `rem == 0
-                   then accum@`floorBlocks
-                   else computeElt(accum@`floorBlocks, lastBlock, r, P)
+    lastAccum = if number{rem} == 0
+                   then accum@number{floorBlocks}
+                   else computeElt(accum@number{floorBlocks}, lastBlock, r, P)
 ```
 
 Finally, the value of the secret key "s" is added to the accumulator,
@@ -825,9 +825,9 @@ AccumBlocks(key, msg) = (accum, lastAccum) where
     accum = [zero:[136]] # [ computeElt(a, b, r, P) | a <- take{back=1}(accum) | b <- paddedBlocks ]
     //       ^ the accumulator starts at zero
     lastAccum : [136]
-    lastAccum = if `rem == 0
-                   then accum@`floorBlocks
-                   else computeElt(accum@`floorBlocks, lastBlock, r, P)
+    lastAccum = if number{rem} == 0
+                   then accum@number{floorBlocks}
+                   else computeElt(accum@number{floorBlocks}, lastBlock, r, P)
 
 ```
 
@@ -1071,9 +1071,9 @@ takes a 256-bit key and 96-bit nonce as follows:
 
 ```cryptol
     ptlen : [8][8]
-    ptlen = groupBy{8}(littleendian(groupBy{8}(`m:[64])))
+    ptlen = groupBy{8}(littleendian(groupBy{8}(number{m}:[64])))
     adlen : [8][8]
-    adlen = groupBy{8}(littleendian(groupBy{8}(`n:[64])))
+    adlen = groupBy{8}(littleendian(groupBy{8}(number{n}:[64])))
     // compute padding
     tag = Poly1305(PolyKey, AeadConstruction(aad, ct))
 
@@ -1082,9 +1082,9 @@ AeadConstruction (AAD : [n][8], CT : [m][8]) = (AAD # padding1 # CT # padding2 #
 	padding1 = (zero:[n %^ 16][8])
 	padding2 = (zero:[m %^ 16][8])
 	adlen : [8][8]
-	adlen = groupBy{8}(littleendian(groupBy{8}(`n:[64])))
+	adlen = groupBy{8}(littleendian(groupBy{8}(number{n}:[64])))
 	ptlen : [8][8]
-	ptlen = groupBy{8}(littleendian(groupBy{8}(`m:[64])))
+	ptlen = groupBy{8}(littleendian(groupBy{8}(number{m}:[64])))
 
 ```
 
@@ -1106,9 +1106,9 @@ AEAD_CHACHA20_POLY1305_DECRYPT(k, nonce, ct, ad) = (pt, valid) where
     PolyKey = GeneratePolyKeyUsingChaCha(k, nonce, 0)
     pt = ChaCha20DecryptBytes(inCt, k, nonce, 1)
     ptlen : [8][8]
-    ptlen = groupBy{8}(littleendian(groupBy{8}(`m:[64])))
+    ptlen = groupBy{8}(littleendian(groupBy{8}(number{m}:[64])))
     adlen : [8][8]
-    adlen = groupBy{8}(littleendian(groupBy{8}(`n:[64])))
+    adlen = groupBy{8}(littleendian(groupBy{8}(number{n}:[64])))
     tag = Poly1305(PolyKey, AeadConstruction(ad, inCt))
     valid = tag == inTag
 ```

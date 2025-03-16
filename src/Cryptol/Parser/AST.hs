@@ -614,7 +614,6 @@ data Expr n   = EVar n                          -- ^ @ x @
               | ECase (Expr n) [CaseAlt n]      -- ^ @ case e of { P -> e }@
               | EWhere (Expr n) [Decl n]        -- ^ @ 1 + x where { x = 2 } @
               | ETyped (Expr n) (Type n)        -- ^ @ 1 : [8] @
-              | ETypeVal (Type n)               -- ^ @ `(x + 1)@, @x@ is a type
               | EFun (FunDesc n) [Pattern n] (Expr n) -- ^ @ \\x y -> x @
               | ELocated (Expr n) Range         -- ^ position annotation
 
@@ -1246,7 +1245,6 @@ instance (Show name, PPName name) => PP (Expr name) where
       EUpd mb fs    -> braces (hd <+> "|" <+> commaSep (map pp fs))
         where hd = maybe "_" pp mb
 
-      ETypeVal t    -> text "`" <.> ppPrec 5 t     -- XXX
       EAppT e ts    -> ppPrec 4 e <.> text "`" <.> braces (commaSep (map pp ts))
       ESel    e l   -> ppPrec 4 e <.> text "." <.> pp l
       EIndex  e x   -> ppPrec 4 e <.> brackets (pp x)
@@ -1587,7 +1585,6 @@ instance NoPos (Expr name) where
       EIf   x y z     -> EIf      (noPos x) (noPos y) (noPos z)
       EWhere x y      -> EWhere   (noPos x) (noPos y)
       ETyped x y      -> ETyped   (noPos x) (noPos y)
-      ETypeVal x      -> ETypeVal (noPos x)
       EFun dsc x y    -> EFun dsc (noPos x) (noPos y)
       ELocated x _    -> noPos x
 

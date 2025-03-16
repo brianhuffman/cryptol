@@ -12,7 +12,7 @@ infix  20 ==, ===, !=, !==
 infix  30 >, >=, <, <=, <$, >$, <=$, >=$
 infixr 40 ||
 infixl 45 ^
-infixr 50 &&
+infixr 50 &
 infixr 60 #
 infixl 70 <<, <<<, >>, >>>, >>$
 infixl 80 +, -
@@ -250,7 +250,7 @@ primitive type Logic : * -> Prop
 /**
  * Logical 'and' over bits. Extends element-wise over sequences, tuples.
  */
-primitive (&&) : {a} (Logic a) => a -> a -> a
+primitive (&) : {a} (Logic a) => a -> a -> a
 
 /**
  * Logical 'or' over bits. Extends element-wise over sequences, tuples.
@@ -775,13 +775,12 @@ carry(x, y) = (x + y) < x
  * given bitvector arguments would result in a signed overflow.
  */
 scarry : {n} (n >= 1) => [n] -> [n] -> Bit
-scarry(x, y) = (sx == sy) && (sx != sz)
+scarry(x, y) = (sx == sy) /\ (sx != sz)
   where
     z  = x + y
     sx = x[0]
     sy = y[0]
     sz = z[0]
-    //sz = at(z, 0)
 
 /**
  * Signed borrow.  Returns true if the 2's complement signed subtraction of the

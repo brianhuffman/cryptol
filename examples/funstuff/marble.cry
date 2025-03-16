@@ -63,7 +63,7 @@ goal = [[False,False,False,False,False,False,False],
         [False,False,False,False,False,False,False]]
 
 validBoard : Board -> Bit
-validBoard(b) = join (b && ~posns) == zero
+validBoard(b) = join (b & ~posns) == zero
 
 validRowJump : Board -> Board -> Bit
 validRowJump(a, a') = validBoard(a)
@@ -92,7 +92,7 @@ validRowMove((r, r')) = (xors == 0b0000111 \/
                         rxors == 0b0110000 \/
                         rxors == 0b1100000)
     where xors = r ^ r'
-          rxors = r && rxors
+          rxors = r & rxors
 
 validColJump : Board -> Board -> Bit
 validColJump(a, a') = validRowJump(transpose(a), transpose (a'))

@@ -3,20 +3,20 @@ isZero | n == 0 => True
        | ()     => False
 
 property isZero_correct =
-   isZero{  0}   &&
-  ~isZero{  1}   &&
-  ~isZero{  2}   &&
-  ~isZero{  4}   &&
-  ~isZero{  8}   &&
+   isZero{  0}   /\
+  ~isZero{  1}   /\
+  ~isZero{  2}   /\
+  ~isZero{  4}   /\
+  ~isZero{  8}   /\
   ~isZero{ 16}
 
 idTypeNum : {n : #} Integer
 idTypeNum = number{n}
 
 property idTypeNum_correct =
-  (idTypeNum{ 0}  ==  0) &&
-  (idTypeNum{ 1}  ==  1) &&
-  (idTypeNum{ 2}  ==  2) &&
-  (idTypeNum{ 4}  ==  4) &&
-  (idTypeNum{ 8}  ==  8) &&
+  (idTypeNum{ 0}  ==  0) /\
+  (idTypeNum{ 1}  ==  1) /\
+  (idTypeNum{ 2}  ==  2) /\
+  (idTypeNum{ 4}  ==  4) /\
+  (idTypeNum{ 8}  ==  8) /\
   (idTypeNum{16}  == 16)

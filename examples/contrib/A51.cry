@@ -24,7 +24,7 @@ A51(reg1, reg2, reg3) = keystream
 lfsrki_step : {d} (d >= 1) => [d+1] -> Bit -> [d] -> [d]
 lfsrki_step(poly, cond, fill) = fill'
  where
-   feedback_bit = if(poly[0]) then prefix((^), reverse([False]#fill) && poly)
+   feedback_bit = if(poly[0]) then prefix((^), reverse([False]#fill) & poly)
                              else error("polynomial does not have high-bit set.")
    fill' = if cond then [feedback_bit] # take{d-1}(fill) else fill
 
@@ -39,7 +39,7 @@ lfsrki(poly, conds, init) = (stream, fills)
 prefix(f, xs) = ys!0
   where ys = [xs[0]] # [ f(y, x) | y <- ys | x <- tail(xs) ]
 
-majv(a, b, c) = (a && b) || (a && c) || (b && c)
+majv(a, b, c) = (a & b) || (a & c) || (b & c)
 
 /***********************************************************************/
 

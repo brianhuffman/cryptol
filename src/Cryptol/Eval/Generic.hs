@@ -1551,7 +1551,7 @@ genericPrimTable sym getEOpts =
                     PPrim (zeroV sym ty))
 
     -- Logic
-  , ("&&"         , {-# SCC "Prelude::(&&)" #-}
+  , ("&"          , {-# SCC "Prelude::(&)" #-}
                     binary (andV sym))
   , ("||"         , {-# SCC "Prelude::(||)" #-}
                     binary (orV sym))

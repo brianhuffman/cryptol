@@ -8,13 +8,13 @@ average1 : [32] -> [32] -> [32]
 average1(x, y) = (x + y)/2
 
 average2 : [32] -> [32] -> [32]
-average2(x, y) = x/2 + y/2 + (x%2 && y%2)
+average2(x, y) = x/2 + y/2 + (x%2 & y%2)
 
 average3 : [32] -> [32] -> [32]
 average3(x, y) = (x + y) >> 1
 
 average4 : [32] -> [32] -> [32]
-average4(x, y) =    (x >> 1) + (y >> 1) + (x && y && 1)
+average4(x, y) =    (x >> 1) + (y >> 1) + (x & y & 1)
 
 average5 : [32] -> [32] -> [32]
 average5(x, y) = lo + ((hi - lo)>>1) where

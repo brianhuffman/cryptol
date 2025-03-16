@@ -631,7 +631,7 @@ by corresponding type classes:
 >   , "zero"       ~> VPoly (pure . zero)
 >
 >   -- Logic (bitwise)
->   , "&&"         ~> binary (logicBinary (&&))
+>   , "&"          ~> binary (logicBinary (&&))
 >   , "||"         ~> binary (logicBinary (||))
 >   , "^"          ~> binary (logicBinary (/=))
 >   , "complement" ~> unary  (logicUnary not)

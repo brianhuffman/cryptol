@@ -6,4 +6,4 @@ v2 = 32
 check10a = v2 + v2 == 0
 check10b = v1 * v2 == 0
 
-check10 = check10a && check10b
+check10 = check10a /\ check10b

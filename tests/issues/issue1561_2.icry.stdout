@@ -137,7 +137,7 @@ Symbols
     (>=$) : {n} (n >= 1) => [n] -> [n] -> Bit
     (||) : {a} (Logic a) => a -> a -> a
     (^) : {a} (Logic a) => a -> a -> a
-    (&&) : {a} (Logic a) => a -> a -> a
+    (&) : {a} (Logic a) => a -> a -> a
     (#) : {front, back, a} [front]a -> [back]a -> [front + back]a
     (<<) : {n, ix} (Integral ix) => [n] -> ix -> [n]
     (<<<) : {n, ix, a} (Integral ix) => [n]a -> ix -> [n]a

@@ -133,7 +133,7 @@ NextWord : [8] -> [4][8] -> [4][8] -> [4][8]
 NextWord(i, prev, old) = old ^ mask
    where mask = if i % number{Nk} == 0
                 then SubWord(RotWord(prev)) ^ Rcon(i / number{Nk})
-                else if (number{Nk} > 6) && (i % number{Nk} == 4)
+                else if (number{Nk} > 6) /\ (i % number{Nk} == 4)
                      then SubWord(prev)
                      else prev
 

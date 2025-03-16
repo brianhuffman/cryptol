@@ -1,6 +1,6 @@
 Loading module Cryptol
 Satisfiable
-(\(x : {b : Bit, a : Bit}) -> x.a && x.b)
+(\(x : {b : Bit, a : Bit}) -> x.a /\ x.b)
   {b = True, a = True}
   = True
 Satisfiable

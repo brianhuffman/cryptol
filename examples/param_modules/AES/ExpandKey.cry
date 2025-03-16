@@ -49,7 +49,7 @@ NextWord : [8] ->[4][8] -> [4][8] -> [4][8]
 NextWord(i, prev, old) = old ^ mask
    where mask = if i % nk == 0
                 then SubWord(RotWord(prev)) ^ Rcon (i / number{Nk})
-                else if (nk > 6) && (i % nk == 4)
+                else if (nk > 6) /\ (i % nk == 4)
                      then SubWord(prev)
                      else prev
 

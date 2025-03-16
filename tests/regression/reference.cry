@@ -9,4 +9,4 @@ property scanl_eq (z:Integer, xs:[10]Integer) =
   scanl((-), z, xs) == Ref::scanl((-), z, xs)
 
 property iterate_eq (z:Integer, i:[8]) =
-  iterate{n=256}(\(x) -> x + 1, z)@i == Ref::iterate{n=256}(\(x) -> x + 1, z)@i
+  iterate{n=256}(\(x) -> x + 1, z)[i] == Ref::iterate{n=256}(\(x) -> x + 1, z)[i]

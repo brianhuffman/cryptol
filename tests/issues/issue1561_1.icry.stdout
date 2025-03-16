@@ -142,13 +142,13 @@ Symbols
     (^^) : {a, e} (Ring a, Integral e) => a -> e -> a
     (!) : {n, a, ix} (Integral ix) => [n]a -> ix -> a
     (!!) : {n, k, ix, a} (Integral ix) => [n]a -> [k]ix -> [k]a
-    (@) : {n, a, ix} (Integral ix) => [n]a -> ix -> a
     (@@) : {n, k, ix, a} (Integral ix) => [n]a -> [k]ix -> [k]a
     abs : {a} (Cmp a, Ring a) => a -> a
     all : {n, a} (a -> Bit) -> [n]a -> Bit
     and : {n} [n] -> Bit
     any : {n, a} (a -> Bit) -> [n]a -> Bit
     assert : {a, n} Bit -> String n -> a -> a
+    at : {n, a, ix} (Integral ix) => [n]a -> ix -> a
     carry : {n} [n] -> [n] -> Bit
     complement : {a} (Logic a) => a -> a
     curry : {a, b, c} ((a, b) -> c) -> a -> b -> c

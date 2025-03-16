@@ -51,8 +51,8 @@ G(r, i, vec, abcd, ms) = foldl(updateVector, vec, zip(abcd, new))
 G' : [4] -> [4] -> [4][32] -> Block -> [4][32]
 G'(r, i, vals, ms) = [a2, b2, c2, d2]
   where
-  x = ms @ (SIGMA_TABLE @ r @ (2*i))
-  y = ms @ (SIGMA_TABLE @ r @ (2*i+1))
+  x = ms[SIGMA_TABLE[r][2*i]]
+  y = ms[SIGMA_TABLE[r][2*i+1]]
   [a,b,c,d] = vals
   a1 =  a + b + x
   d1 = (d ^ a1) >>> R1
@@ -115,10 +115,10 @@ blake2s'(m) = take{nn*8}(blake2sFinish({ state = (hs!0).state, counter = number{
  lastBlock  =
     if (number{ll} == (zero:[64]))
         then zero // Special case full zero block for empty messages
-        else mkBlock((split{parts=ll/^64 - dd}(join(partialBlock # (zero : [ll%^64][8]))))@0)
+        else mkBlock(split{parts=ll/^64 - dd}(join(partialBlock # (zero : [ll%^64][8])))[0])
 
  h : Context
- h  = { state = [IV@0 ^ number{0x01010000} ^ number{nn}] # drop{1}(IV), counter = 0 }
+ h  = { state = [IV[0] ^ number{0x01010000} ^ number{nn}] # drop{1}(IV), counter = 0 }
 
  hs : [dd+1]Context
  hs = [h] # [blake2Update(h', dX) |  h' <- hs | dX <- fullBlocks]
@@ -156,7 +156,7 @@ updateVector(orig, idxNew) = vs
  where
  idx = idxNew.0
  new = idxNew.1
- vs = [if i == idx then new else orig@i | i <- [0..a-1]]
+ vs = [if i == idx then new else orig[i] | i <- [0..a-1]]
 
 
 property katsPass = ~zero ==
@@ -420,7 +420,7 @@ property katsPass = ~zero ==
 
 
 nthKat : {n} (8 >= width n) => Bit
-nthKat = blake2s(nthKatInput{n}) == kats @ (number{n} : [8])
+nthKat = blake2s(nthKatInput{n}) == kats[number{n} : [8]]
 
 nthKatInput : {n} [n][8]
 nthKatInput = [0 ... ]

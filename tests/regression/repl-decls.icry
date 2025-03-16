@@ -36,7 +36,7 @@ take([1...]) : X 42
 type constraint CS t = (Ring t, Logic t, Integral t)
 
 let f : {a} CS a => a -> Integer;\
-let f(x) = [1..100]@( (x + fromInteger(5)) && fromInteger(number{0x1f}))
+let f(x) = [1..100][(x + fromInteger(5)) && fromInteger(number{0x1f})]
 
 :t f
 f(0x1234)

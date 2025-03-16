@@ -39,8 +39,8 @@ type Solution n = Board n -> Bit
 
 checkDiag : {n} (n >= 1) => Board n -> (Position n, Position n) -> Bit
 checkDiag(qs, (i, j)) = (i >= j) || (diffR != diffC)
-  where   qi = qs @ i
-          qj = qs @ j
+  where   qi = qs[i]
+          qj = qs[j]
           diffR = if qi >= qj then qi-qj else qj-qi
           diffC = j - i                   // we know i < j
 

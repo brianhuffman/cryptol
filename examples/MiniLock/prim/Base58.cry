@@ -14,7 +14,7 @@ base58enc : {n,m} (n >= 6) => [n] -> [m][8]
 base58enc(ns) = [ x.1 | x <- reverse(drop{1}(enc)) ]
  where
   enc       = [(ns,zero)] # [ (n/58, charOf(n%58)) | (n,_) <- take{back=1}(enc) ]
-  charOf(x) = charMap @ x
+  charOf(x) = charMap[x]
 
 charMap : [58][8]
 charMap = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"

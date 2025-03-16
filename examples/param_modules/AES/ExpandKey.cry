@@ -14,9 +14,9 @@ parameter
   type constraint (8 >= width Nr, Nr >= 2)
 
 expandKey : [32 * Nk] -> (RoundKey, [Nr-1]RoundKey, RoundKey)
-expandKey(key) = ( keys @ 0
+expandKey(key) = ( keys[0]
                  , keys @@ ([1 .. (Nr - 1)] : [_][8])
-                 , keys @ (number{Nr} : [8])
+                 , keys[number{Nr} : [8]]
                  )
   where   seed : [Nk][4][8]
           seed = split(split(key))

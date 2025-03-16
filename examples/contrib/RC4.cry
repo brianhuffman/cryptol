@@ -1,15 +1,15 @@
 // Contributed by GitHub user orchid-hybrid
 
 swap : [256][8] -> [8] -> [8] -> [256][8]
-swap(s, i, j) = [ s @ (if n == i then j else
-                       if n == j then i else
-                       n)
+swap(s, i, j) = [ s [if n == i then j else
+                     if n == j then i else
+                     n]
                 | n <- [0..255]
                 ]
 
 ksa_step : [256][8] -> [8] -> [8] -> [256][8] -> ([8],[256][8])
 ksa_step(key, i, j, s) = (j', swap(s, i, j'))
- where j' = j + s@i + key@i
+ where j' = j + s[i] + key[i]
 
 ksa : [256][8] -> [256][8]
 ksa(key) = (go ! 0).1 where
@@ -20,8 +20,8 @@ ksa(key) = (go ! 0).1 where
                        ]
 
 ks_step : [8] -> [8] -> [256][8] -> ([8],[256][8],[8])
-ks_step(i, j, s) = (j',s',s@(s@i + s@j'))
- where j' = j + s@i
+ks_step(i, j, s) = (j',s',s[s[i] + s[j']])
+ where j' = j + s[i]
        s' = swap(s, i, j')
 
 ks : {n, m} (n >= 1) => [n][8] -> [m][8]

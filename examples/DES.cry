@@ -22,7 +22,7 @@ des(pt, keys) = swap(split(lst)) @@ FPz
         iv  = [ round(k, split(lr))
               | k  <- keys
               | lr <- [pt'] # iv ]
-        lst = iv @ (length(keys) - 1)
+        lst = iv[length(keys) - 1]
 
 round : [48] -> [2][32] -> [64]
 round (k, [l, r]) = r # (l ^ f(r, k))
@@ -102,14 +102,14 @@ SBox : [48] -> [32]
 SBox(x) = join([ sbox(n, b) | n <- [1 .. 8] | b <- split(x) ])
 
 sbox : [4] -> [6] -> [4]
-sbox(n, x) = (s @ [b1, b6] @ [b2, b3, b4, b5])
-  where s = sboxes @ (n - 1)
-        b1 = x @ 0
-        b2 = x @ 1
-        b3 = x @ 2
-        b4 = x @ 3
-        b5 = x @ 4
-        b6 = x @ 5
+sbox(n, x) = (s[[b1, b6]][[b2, b3, b4, b5]])
+  where s = sboxes[n - 1]
+        b1 = x[0]
+        b2 = x[1]
+        b3 = x[2]
+        b4 = x[3]
+        b5 = x[4]
+        b6 = x[5]
 
 // here are all the SBoxes
 

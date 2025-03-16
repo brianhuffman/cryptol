@@ -13,7 +13,7 @@ ys : [1][32]
 ys = [ 0xdeadbeef ]
 
 g : [1][32] -> [32]
-g(zs) = (zs@0) <<< ( [True,False,False]:[3] )
+g(zs) = zs[0] <<< ( [True,False,False]:[3] )
 
 r0 = g(ys)
 r1 = g(split(rnf(join(ys))))

@@ -3,16 +3,16 @@ Counterexample
 (\x -> assert x "asdf" "asdf") False ~> ERROR
 Run-time error: asdf
 -- Backtrace --
-Cryptol::error called at Cryptol:898:44--898:49
+Cryptol::error called at Cryptol:899:44--899:49
 Cryptol::assert called at safety.icry:3:16--3:22
 <interactive>::it called at safety.icry:3:7--3:42
 Counterexample
-(\(x : [4]) -> [0 .. 14] @ x == x) 0xf ~> ERROR
+(\(x : [4]) -> ([0 .. 14])[x] == x) 0xf ~> ERROR
 invalid sequence index: 15
 -- Backtrace --
-(Cryptol::@) called at safety.icry:4:20--4:34
-(Cryptol::==) called at safety.icry:4:20--4:34
-<interactive>::it called at safety.icry:4:7--4:35
+Cryptol::at called at safety.icry:4:20--4:37
+(Cryptol::==) called at safety.icry:4:20--4:37
+<interactive>::it called at safety.icry:4:7--4:38
 Counterexample
 (\y -> (10 : Integer) / y) 0 ~> ERROR
 division by 0

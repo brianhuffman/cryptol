@@ -44,9 +44,9 @@ property E_and_D_are_inverses(K, M) = D(K, E(K, M)) == M
 /******* Utilities *******/
 
 swap : {a, b} (a >= 1) => [a]b -> [width(a-1)] -> [width(a-1)] -> [a]b
-swap(xs, a, b) = [ if(i == a) then xs@b else
-                   if(i == b) then xs@a
-                   else xs@i
+swap(xs, a, b) = [ if(i == a) then xs[b] else
+                   if(i == b) then xs[a]
+                   else xs[i]
                  | i <- [0 .. a-1] ]
 
 generate_random_permutation : {a} (a >= 1, width a >= width(a-1)) => [256] -> [a][width(a-1)]
@@ -59,14 +59,14 @@ unique : {a, b} (a>=1) => [a][b] -> Bit
 unique(xs) = [ exist(x, i+1) | x <- xs | i <- [0...] ] == 0
   where exist : [b] -> [width a] -> Bit
         exist(x, i) = if(i>=number{a}) then False
-                      else if(x==(xs@i)) then True
+                      else if(x==xs[i]) then True
                       else exist(x, i+1)
 
 leq(xs, a) = [ x <= a | x <- xs ] == ~0
 
 index_of : {a, b} (a>=1, Cmp b) => [a]b -> b -> [width(a-1)]
 index_of(xs, a) = (ret!0).1
-  where ret = [(False, 0)] # [ if(xs@i == a) then (True, i) else r
+  where ret = [(False, 0)] # [ if(xs[i] == a) then (True, i) else r
                              | i <- [0 .. a-1 ]
                              | r <- ret ]
 

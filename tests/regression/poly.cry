@@ -21,7 +21,7 @@ polyMul(p1, p2) = foldl(polyAdd, polyConst(zero), ps)
     ps[i] = Poly({ coeffs = scaleAndShift(i) })
 
     scaleAndShift(i) =
-      ([ p1.coeffs@i * c | c <- p2.coeffs ] # zero) >>> i
+      ([ p1.coeffs[i] * c | c <- p2.coeffs ] # zero) >>> i
 
 property polySquare(x:Integer) =
   evalPoly(Poly({ coeffs = [0,0,1] }), x) == x * x

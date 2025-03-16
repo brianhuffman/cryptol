@@ -345,7 +345,7 @@ ChaChaTwoRounds (xs:ChaChaState) = xs'' where
     xs'' = join([ChaChaQuarterround(x) | x <- groupBy{4}(xs'@@diags ) ]) @@ invDiags
 
 ChaCha : ChaChaState -> [8] -> ChaChaState
-ChaCha(s, n) = chain@n where
+ChaCha(s, n) = chain[n] where
     chain = [s] # [ ChaChaTwoRounds(ci) | ci <- chain | i <- [0 .. 9] ]
 ```
 
@@ -740,8 +740,8 @@ Next, divide the message into 16-byte blocks. The last block might be shorter:
 ```cryptol
     lastAccum : [136]
     lastAccum = if number{rem} == 0
-                   then accum@number{floorBlocks}
-                   else computeElt(accum@number{floorBlocks}, lastBlock, r, P)
+                   then accum[number{floorBlocks}]
+                   else computeElt(accum[number{floorBlocks}], lastBlock, r, P)
 ```
 
 Finally, the value of the secret key "s" is added to the accumulator,
@@ -826,8 +826,8 @@ AccumBlocks(key, msg) = (accum, lastAccum) where
     //       ^ the accumulator starts at zero
     lastAccum : [136]
     lastAccum = if number{rem} == 0
-                   then accum@number{floorBlocks}
-                   else computeElt(accum@number{floorBlocks}, lastBlock, r, P)
+                   then accum[number{floorBlocks}]
+                   else computeElt(accum[number{floorBlocks}], lastBlock, r, P)
 
 ```
 
@@ -865,8 +865,8 @@ Acc + block = 2d8adaf23b0337fa7cccfb4ea344ca153
 
 ```cryptol
 property polyBlocksOK =
-    (blocks @ 1 == 0x02c88c77849d64ae9147ddeb88e69c83fc) /\
-    (blocks @ 2 == 0x02d8adaf23b0337fa7cccfb4ea344b30de) /\
+    (blocks[1] == 0x02c88c77849d64ae9147ddeb88e69c83fc) /\
+    (blocks[2] == 0x02d8adaf23b0337fa7cccfb4ea344b30de) /\
     (lastBlock  == 0x028d31b7caff946c77c8844335369d03a7) where
         (blocks, lastBlock) = AccumBlocks(Poly1305TestKey, Poly1305TestMessage)
 ```

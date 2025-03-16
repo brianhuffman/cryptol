@@ -13,7 +13,7 @@ infixl 1 $
 f $ x = f(x)
 
 foo : [10][4]
-foo = generate $ \(i:[8]) -> if i == 0 then 1 else foo@(i-1)
+foo = generate $ \(i:[8]) -> if i == 0 then 1 else foo[i-1]
 
 bar : [10][4]
-bar = generate(\(i:[8]) -> if i == 0 then 1 else foo@(i-1))
+bar = generate(\(i:[8]) -> if i == 0 then 1 else foo[i-1])

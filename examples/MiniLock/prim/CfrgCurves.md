@@ -509,7 +509,7 @@ decodeLittleEndian(bytes) = s ! 0
   where s = [zero] # [(acc<<8) + (zero#byte) | acc <- s | byte <- reverse(bytes)]
 
 decodeUCoordinate25519 : [32][8] -> [256]
-decodeUCoordinate25519(u) = decodeLittleEndian ((u @@ ([0..30] : [_][5])) # [((u@31) && 127)])
+decodeUCoordinate25519(u) = decodeLittleEndian ((u @@ ([0..30] : [_][5])) # [(u[31] && 127)])
 
 decodeUCoordinate448 : [448/8][8] -> [448]
 decodeUCoordinate448(u) = decodeLittleEndian(u)
@@ -562,10 +562,10 @@ Internet-Draft                  cfrgcurve                     March 2015
 
 ```cryptol
 decodeScalar25519 : [256/8][8] -> [256]
-decodeScalar25519(k) = decodeLittleEndian ([(k@0) && 248] # (k @@ ([1..30] : [_][5])) # [((k@31) && 127) || 64])
+decodeScalar25519(k) = decodeLittleEndian ([k[0] && 248] # (k @@ ([1..30] : [_][5])) # [(k[31] && 127) || 64])
 
 decodeScalar448 : [448/8][8] -> [448]
-decodeScalar448(k) = decodeLittleEndian ([(k@0) && 252] # (k @@ ([1..54] : [_][6])) # [(k@55) || 128])
+decodeScalar448(k) = decodeLittleEndian ([k[0] && 252] # (k @@ ([1..54] : [_][6])) # [k[55] || 128])
 ```
 
    To implement the "curve25519(k, u)" and "curve448(k, u)" functions

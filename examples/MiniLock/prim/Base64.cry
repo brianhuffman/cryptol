@@ -22,7 +22,7 @@ base64chunks(m) = [basify(x) |  x <- ns]
  where
   ns = split(join(m)) : [_][6]
   basify : [6] -> [8]
-  basify(x) = alphabet @ x
+  basify(x) = alphabet[x]
 
 // Base64 strings are always in 4n byte chunks, the final chunk might be
 // padded. We can not give a proper cryptol implementation that strips the

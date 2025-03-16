@@ -1,6 +1,6 @@
 f : [1] -> [2]
 f(x) = out
-  where out = x # [out@0]
+  where out = x # [out[0]]
 
 g : [1] -> [2]
 g(x) = out

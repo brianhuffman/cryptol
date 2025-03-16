@@ -29,7 +29,7 @@ SMix(B) = join (Xs ! 0)
   Xs : [N+1][2*r][64*8]
   Xs = [Vs!0]    # [ (x' where
                             j  = integerify(x)
-                            T  = x ^ (V@j)
+                            T  = x ^ V[j]
                             x' = BlockMix(T))
                         | x <- Xs | _ <- [0..N-1] : [_][width N + 1] ]
 

@@ -120,7 +120,7 @@ property doubleround_passes_tests =
 Salsa20 : {r} (8 >= width r) => [64][8] -> [64][8]
 Salsa20(xs) = join(ar)
   where
-    ar = [ littleendian_inverse(words) | words <- zipWith((+), xw, zs@(number{r/2} : [8])) ]
+    ar = [ littleendian_inverse(words) | words <- zipWith((+), xw, zs[number{r/2} : [8]]) ]
     xw = [ littleendian(xi) | xi <- split(xs) ]
     zs = [xw] # [ doubleround(zi) | zi <- take{back=1}(zs) ]
 
@@ -191,7 +191,7 @@ Salsa20_encrypt(k, v, m) = c
 HSalsa20 : {r} (8 >= width r) => Key -> Nonce -> [8][32]
 HSalsa20(key0, nonce0) = zs @@ ([0,5,10,15,6,7,8,9] : [_][8])
   where
-  zs    = infZs @ (number{r/2} :[8])
+  zs    = infZs[number{r/2} :[8]]
   infZs = [xs] # [ doubleround(x) | x <- take{back=1}(infZs) ]
 
   nonce                         = [ littleendian(split(n)) | n <- split(join(nonce0))]
@@ -230,7 +230,7 @@ XSalsa20(key0, nonce0, ctr) =
               , x'9 ,x'10 ,x'11 ,x'12 ,x'13 ,x'14 ,x'15
               ]
   infZs'    = [xs'] # [ doubleround(x) | x <- take{back=1}(infZs') ]
-  zs'       = infZs' @ (number{r/2} : [8])
+  zs'       = infZs'[number{r/2} : [8]]
 
 XSalsa20_expansion : {n,r} (8 >= width r, 64 >= width n) => Key -> Nonce -> [n][8]
 XSalsa20_expansion(k, n) = take(join(ks))

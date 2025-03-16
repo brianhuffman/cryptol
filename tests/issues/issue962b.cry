@@ -28,9 +28,9 @@ build2row : [v1][v1]Fld -> [v1][o1]Fld -> [v1][o2]Fld ->
             [o1][o1]Fld -> [o1][o2]Fld  -> [width nn] -> [nn]Fld
 build2row(a11, a12, a13, a22, a23, i) =
   if i < number{v1} then
-    a11 @ i # a12 @ i # a13 @ i
+    a11[i] # a12[i] # a13[i]
   else if i < number{v1 + o1} then
-    /*    vzero{n=v1} # a22 @ (i - number{v1}) # a23 @ (i - number{v1}) */
+    /*    vzero{n=v1} # a22[i - number{v1}] # a23[i - number{v1}] */
     vzero{n=v1} # vzero{n=o1} # vzero{n=o2}
   else
     map(build1item(i), nats{n=nn})

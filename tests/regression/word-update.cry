@@ -10,7 +10,7 @@ property wordUpdate2 (x:[16], y:[8], b:Bit) =
   y < 16 ==> update(x, y, b) == x'
 
  where
- x' = [ if i == y then b else x@i | i <- [0 .. 15] ]
+ x' = [ if i == y then b else x[i] | i <- [0 .. 15] ]
 
 property wordUpdateEnd (x:[16], y:[8], b:Bit) =
   y < 16 ==> updateEnd(x, y, b) == if b then x || msk else x && ~msk

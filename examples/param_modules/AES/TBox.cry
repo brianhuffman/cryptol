@@ -15,7 +15,7 @@ makeDecKey((a,xs,b)) = (b, [ InvMixColumns(rk) | rk <- reverse(xs) ], a)
 
 genRound : (State -> State) -> TBox -> RoundKey -> State -> State
 genRound(shift, boxes, rk, st) =
-  rk ^ transpose([ add([ box @ i | box <- boxes | i <- col ])
+  rk ^ transpose([ add([ box[i] | box <- boxes | i <- col ])
                  | col <- transpose(shift(st)) ])
   where add([a, b, c, d]) = a ^ b ^ c ^ d
 

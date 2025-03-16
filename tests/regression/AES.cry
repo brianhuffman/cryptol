@@ -69,7 +69,7 @@ SubByte : GF28 -> GF28
 SubByte(b) = xformByte(gf28Inverse(b))
 
 SubByte' : GF28 -> GF28
-SubByte'(b) = sbox@b
+SubByte'(b) = sbox[b]
 
 SubBytes : State -> State
 SubBytes(state) = [ [ SubByte'(b) | b <- row ] | row <- state ]
@@ -144,7 +144,7 @@ checkKey = take{16}(drop{8}(keyWS(["abcd", "defg", "1234", "5678"])))
 checkKey2 = [transpose(g) | g <- groupBy{4}(checkKey)]
 
 ExpandKey : [AESKeySize] -> KeySchedule
-ExpandKey(key) = (keys @ 0, keys @@ [1 .. (Nr - 1)], keys @ number{Nr})
+ExpandKey(key) = (keys[0], keys @@ [1 .. (Nr - 1)], keys[number{Nr}])
   where   seed : [Nk][4][8]
           seed = split(split(key))
           keys : [Nr+1]RoundKey

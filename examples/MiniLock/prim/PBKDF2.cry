@@ -28,7 +28,7 @@ inner : {pwBytes, C}
          , C >= 1, 16 >= width C
          )
      =>  [pwBytes][8] -> [32][8] -> [256]
-inner(P, U0) = (Ts @ 0).0 // XXX should be ! 0
+inner(P, U0) = Ts[0].0 // XXX should be ! 0
  where
   // Ts : [_][([256],[32][8])]
   Ts = [(join(U0), U0)] # [ F(P, t, u)  | _ <- [1..C] : [_][16] | (t,u) <- Ts ]

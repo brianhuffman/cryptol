@@ -10,8 +10,8 @@ Loading module Cryptol
     Kind '*' is not a function,
     but it was applied to 2 parameters.
 
-[error] at tc-errors.icry:3:3--3:6:
-  Ambiguous numeric type: type argument 'n' of '(@)'
+[error] at tc-errors.icry:3:3--3:7:
+  Ambiguous numeric type: type argument 'n' of 'at'
   Must be at least: 1
 
 [error] at tc-errors.icry:4:11--4:12:

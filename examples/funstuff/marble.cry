@@ -10,10 +10,10 @@
 type Board = [7][7]Bit
 
 all : {n} [n] -> Bit
-all xs = xs == ~zero
+all(xs) = xs == ~zero
 
 popCount : {a} (a >= 1) => [a] -> [width a]
-popCount bs = ic ! 0 where
+popCount(bs) = ic ! 0 where
     ic = [0] # [ if elt then prev + 1 else prev | elt <- bs | prev <- ic]
 
 posns : Board
@@ -63,15 +63,15 @@ goal = [[False,False,False,False,False,False,False],
         [False,False,False,False,False,False,False]]
 
 validBoard : Board -> Bit
-validBoard b = join (b && ~posns) == zero
+validBoard(b) = join (b && ~posns) == zero
 
 validRowJump : Board -> Board -> Bit
-validRowJump a a' = validBoard(a)
+validRowJump(a, a') = validBoard(a)
                  /\ validBoard(a')
                  /\ validRowMove(differentRow(a, a'))
 
 differentRow : Board -> Board -> ([7], [7])
-differentRow a a' = rows ! 0
+differentRow(a, a') = rows ! 0
     where rows = [(0b0000000,0b0000000)]
                # [ if row != row' then (row,row') else old
                  | row <- a
@@ -79,7 +79,7 @@ differentRow a a' = rows ! 0
                  | old <- rows ]
 
 validRowMove : ([7], [7]) -> Bit
-validRowMove (r, r') = (xors == 0b0000111 \/
+validRowMove((r, r')) = (xors == 0b0000111 \/
                         xors == 0b0001110 \/
                         xors == 0b0011100 \/
                         xors == 0b0111000 \/
@@ -95,13 +95,13 @@ validRowMove (r, r') = (xors == 0b0000111 \/
           rxors = r && rxors
 
 validColJump : Board -> Board -> Bit
-validColJump a a' = validRowJump(transpose(a), transpose (a'))
+validColJump(a, a') = validRowJump(transpose(a), transpose (a'))
 
 validMove : Board -> Board -> Bit
-validMove a a' = validRowJump(a, a') \/ validColJump(a, a')
+validMove(a, a') = validRowJump(a, a') \/ validColJump(a, a')
 
 validMoveSequence : {n} (n >= 1) => [n] Board -> Bit
-validMoveSequence moves = all([validMove(a, b) | a <- moves | b <- drop{1}(moves)])
+validMoveSequence(moves) = all([validMove(a, b) | a <- moves | b <- drop{1}(moves)])
 
 solutionInNmoves : {n} [n] Board -> Bit
-property solutionInNmoves ms = validMoveSequence ([start] # ms # [second])
+property solutionInNmoves(ms) = validMoveSequence ([start] # ms # [second])

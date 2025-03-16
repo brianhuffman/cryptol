@@ -1,5 +1,5 @@
 len : {n,a} [n] a -> Integer
-len x
+len(x)
   | (n == 0) => 0
   | (n >  0) => 1 + len(drop{1}(x))
 

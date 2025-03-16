@@ -10,14 +10,14 @@ enum N n a =
 
 //  Pattern matching
 
-c1 e =
+c1(e) =
   case e of
     A -> 1 : [8]
     B -> 2
     C -> 3
 
 c2 : {n} (n>=2) => N n [n] -> [n]
-c2 e =
+c2(e) =
   case e of
     X a -> a
     Y b -> zero # b

@@ -1,7 +1,7 @@
 enum Maybe a = Nothing | Just a
 
 maybeEqual : {a} (Eq a) => Maybe a -> Maybe a -> Bit
-maybeEqual m1 m2 =
+maybeEqual(m1, m2) =
   case m1 of
     Just x1 ->
       case m2 of
@@ -13,21 +13,21 @@ maybeEqual m1 m2 =
         Nothing -> True
 
 maybeMap : {a, b} (a -> b) -> Maybe a -> Maybe b
-maybeMap f m =
+maybeMap(f, m) =
   case m of
     Just x  -> Just(f(x))
     Nothing -> Nothing
 
 maybeMapProp : Maybe [8] -> Bit
-property maybeMapProp m =
+property maybeMapProp(m) =
   maybeEqual
-    (maybeMap(\x -> x + 1, maybeMap(\x -> x + 1, m)),
-     maybeMap(\x -> x + 2, m))
+    (maybeMap(\(x) -> x + 1, maybeMap(\(x) -> x + 1, m)),
+     maybeMap(\(x) -> x + 2, m))
 
 enum Either a b = Left a | Right b
 
 eitherEqual : {a, b} (Eq a, Eq b) => Either a b -> Either a b -> Bit
-eitherEqual e1 e2 =
+eitherEqual(e1, e2) =
   case e1 of
     Left x1 ->
       case e2 of
@@ -39,33 +39,33 @@ eitherEqual e1 e2 =
         Right y2 -> y1 == y2
 
 eitherMapLeft : {a, a', b} (a -> a') -> Either a b -> Either a' b
-eitherMapLeft f e =
+eitherMapLeft(f, e) =
   case e of
     Left x  -> Left(f(x))
     Right y -> Right(y)
 
 eitherMapRight : {a, b, b'} (b -> b') -> Either a b -> Either a b'
-eitherMapRight g e =
+eitherMapRight(g, e) =
   case e of
     Left x  -> Left(x)
     Right y -> Right(g(y))
 
 eitherMapBoth : {a, a', b, b'} (a -> a') -> (b -> b') -> Either a b -> Either a' b'
-eitherMapBoth f g e =
+eitherMapBoth(f, g, e) =
   case e of
     Left x  -> Left(f(x))
     Right y -> Right(g(y))
 
 eitherMapProp : Either [8] [8] -> Bit
-property eitherMapProp e =
+property eitherMapProp(e) =
   eitherEqual
-    (eitherMapLeft(\x -> x + 1, eitherMapRight(\y -> y + 1, e)),
-     eitherMapBoth(\x -> x + 1, \y -> y + 1, e))
+    (eitherMapLeft(\(x) -> x + 1, eitherMapRight(\(y) -> y + 1, e)),
+     eitherMapBoth(\(x) -> x + 1, \(y) -> y + 1, e))
 
 enum Foo a = Bar | Baz | Quux | Fred [8] a
 
 fooEqual : {a} (Eq a) => Foo a -> Foo a -> Bit
-fooEqual f1 f2 =
+fooEqual(f1, f2) =
   case f1 of
     Bar ->
       case f2 of
@@ -93,7 +93,7 @@ fooEqual f1 f2 =
         Fred y1 y2 -> (x1 == y1) /\ (x2 == y2)
 
 fooMap : {a, b} (a -> b) -> Foo a -> Foo b
-fooMap f ff =
+fooMap(f, ff) =
   case ff of
     Bar      -> Bar
     Baz      -> Baz
@@ -101,15 +101,15 @@ fooMap f ff =
     Fred x y -> Fred(x, f(y))
 
 fooMapProp : Foo [8] -> Bit
-property fooMapProp f =
+property fooMapProp(f) =
   fooEqual
-    (fooMap(\x -> x + 1, fooMap(\x -> x + 1, f)),
-     fooMap(\x -> x + 2, f))
+    (fooMap(\(x) -> x + 1, fooMap(\(x) -> x + 1, f)),
+     fooMap(\(x) -> x + 2, f))
 
 enum Letter = A | B | C
 
 letterEqual : Letter -> Letter -> Bit
-letterEqual l1 l2 =
+letterEqual(l1, l2) =
   case l1 of
     A ->
       case l2 of
@@ -128,12 +128,12 @@ letterEqual l1 l2 =
         C -> True
 
 letterRotate : Letter -> Letter
-letterRotate l =
+letterRotate(l) =
   case l of
     A -> B
     B -> C
     C -> A
 
 letterRotateProp : Letter -> Bit
-property letterRotateProp l =
+property letterRotateProp(l) =
   letterEqual(l, letterRotate(letterRotate(letterRotate(l))))

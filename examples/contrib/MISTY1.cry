@@ -12,7 +12,7 @@ module MISTY1 where
 //
 
 keySchedule : [16][8] -> [32][16]
-keySchedule K = EK_1 # EK_2 # EK_3 # EK_4
+keySchedule(K) = EK_1 # EK_2 # EK_3 # EK_4
     where EK_1 = split(join(K))
           EK_2 = [ FI(ek_1, ek_1_shifted)
                  | ek_1         <- EK_1
@@ -26,27 +26,27 @@ keySchedule K = EK_1 # EK_2 # EK_3 # EK_4
 //
 
 FO : [32] -> [8] -> [32][16] -> [32]
-FO FO_IN k EK = (FO_OUT ! 0).1 # (FO_OUT ! 0).0
+FO(FO_IN, k, EK) = (FO_OUT ! 0).1 # (FO_OUT ! 0).0
     where FO_OUT = [(take(FO_IN), drop(FO_IN))] # [ f(t0, t1)
                                                   | f        <- funcs
                                                   | (t0, t1) <- FO_OUT
                                                   ]
           // t0, t1 as 16-bit integers
           funcs : [_]([16] -> [16] -> ([16], [16]))
-          funcs = [\t0 t1 -> (t0 ^ (EK @ k), t1),
-                   \t0 t1 -> (FI(t0, EK @ ((k + 5) % 8 + 8)), t1),
-                   \t0 t1 -> (t0 ^ t1, t1),
-                   \t0 t1 -> (t0, t1 ^ (EK @ ((k + 2) % 8))),
-                   \t0 t1 -> (t0, FI(t1, EK @ ((k + 1) % 8 + 8))),
-                   \t0 t1 -> (t0, t1 ^ t0),
-                   \t0 t1 -> (t0 ^ EK @ ((k + 7) % 8), t1),
-                   \t0 t1 -> (FI(t0, EK @ ((k + 3) % 8 + 8)), t1),
-                   \t0 t1 -> (t0 ^ t1, t1),
-                   \t0 t1 -> (t0, t1 ^ EK @ ((k + 4) % 8))
+          funcs = [\(t0, t1) -> (t0 ^ (EK @ k), t1),
+                   \(t0, t1) -> (FI(t0, EK @ ((k + 5) % 8 + 8)), t1),
+                   \(t0, t1) -> (t0 ^ t1, t1),
+                   \(t0, t1) -> (t0, t1 ^ (EK @ ((k + 2) % 8))),
+                   \(t0, t1) -> (t0, FI(t1, EK @ ((k + 1) % 8 + 8))),
+                   \(t0, t1) -> (t0, t1 ^ t0),
+                   \(t0, t1) -> (t0 ^ EK @ ((k + 7) % 8), t1),
+                   \(t0, t1) -> (FI(t0, EK @ ((k + 3) % 8 + 8)), t1),
+                   \(t0, t1) -> (t0 ^ t1, t1),
+                   \(t0, t1) -> (t0, t1 ^ EK @ ((k + 4) % 8))
                   ]
 
 FI : [16] -> [16] -> [16]
-FI FI_IN FI_KEY = (FI_OUT ! 0).1 # (FI_OUT ! 0).0
+FI(FI_IN, FI_KEY) = (FI_OUT ! 0).1 # (FI_OUT ! 0).0
     where FI_OUT = [(take(FI_IN), drop(FI_IN))] # [ f(d9, d7)
                                                   | f        <- funcs
                                                   | (d9, d7) <- FI_OUT
@@ -54,11 +54,11 @@ FI FI_IN FI_KEY = (FI_OUT ! 0).1 # (FI_OUT ! 0).0
           // d9 as 9-bit integer
           // d7 as 7-bit integer
           funcs : [_]([9] -> [7] -> ([9], [7]))
-          funcs = [\d9 d7 -> ((S9 @ d9) ^ extend(d7), d7),
-                   \d9 d7 -> (d9, drop (extend (S7 @ d7) ^ d9)),
-                   \d9 d7 -> (d9, d7 ^ drop (FI_KEY >> 9)),
-                   \d9 d7 -> (d9 ^ drop(FI_KEY), d7),
-                   \d9 d7 -> ((S9 @ d9) ^ extend(d7), d7)
+          funcs = [\(d9, d7) -> ((S9 @ d9) ^ extend(d7), d7),
+                   \(d9, d7) -> (d9, drop (extend (S7 @ d7) ^ d9)),
+                   \(d9, d7) -> (d9, d7 ^ drop (FI_KEY >> 9)),
+                   \(d9, d7) -> (d9 ^ drop(FI_KEY), d7),
+                   \(d9, d7) -> ((S9 @ d9) ^ extend(d7), d7)
                   ]
 
 S7 : [_][7]
@@ -116,7 +116,7 @@ S9 = [451, 203, 339, 415, 483, 233, 251,  53, 385, 185, 279, 491, 307,
       508, 278, 348,  76, 450]
 
 FL : [32] -> [8] -> [32][16] -> [32]
-FL FL_IN k EK =
+FL(FL_IN, k, EK) =
     if isEven(k) then
         d0_even # d1_even
         where d1_even = d1 ^ (d0 && (EK @ (k / 2)))
@@ -133,7 +133,7 @@ FL FL_IN k EK =
         d1 = drop(FL_IN)
 
 FLINV : [32] -> [8] -> [32][16] -> [32]
-FLINV FL_IN k EK =
+FLINV(FL_IN, k, EK) =
     if isEven(k) then
         d0_even # d1_even
         where d0_even = d0 ^ (d1 || (EK @ ((k / 2 + 6) % 8 + 8)))
@@ -154,7 +154,7 @@ FLINV FL_IN k EK =
 //
 
 misty1Encrypt : [64] -> [32][16] -> [64]
-misty1Encrypt P EK = (C ! 0).1 # (C ! 0).0
+misty1Encrypt(P, EK) = (C ! 0).1 # (C ! 0).0
     where
         // 64-bit plaintext P is divided into the leftmost 32-bit D0 and the
         // rightmost 32-bit D1
@@ -164,59 +164,59 @@ misty1Encrypt P EK = (C ! 0).1 # (C ! 0).0
                                    ]
         funcs : [_]([32] -> [32] -> ([32], [32]))
         funcs = [// 0 round
-                 \D0 D1 -> (FL(D0, 0, EK), D1),
-                 \D0 D1 -> (D0, FL(D1, 1, EK)),
-                 \D0 D1 -> (D0, D1 ^ FO(D0, 0, EK)),
+                 \(D0, D1) -> (FL(D0, 0, EK), D1),
+                 \(D0, D1) -> (D0, FL(D1, 1, EK)),
+                 \(D0, D1) -> (D0, D1 ^ FO(D0, 0, EK)),
                  // 1 round
-                 \D0 D1 -> (D0 ^ FO(D1, 1, EK), D1),
+                 \(D0, D1) -> (D0 ^ FO(D1, 1, EK), D1),
                  // 2 round
-                 \D0 D1 -> (FL(D0, 2, EK), D1),
-                 \D0 D1 -> (D0, FL(D1, 3, EK)),
-                 \D0 D1 -> (D0, D1 ^ FO(D0, 2, EK)),
+                 \(D0, D1) -> (FL(D0, 2, EK), D1),
+                 \(D0, D1) -> (D0, FL(D1, 3, EK)),
+                 \(D0, D1) -> (D0, D1 ^ FO(D0, 2, EK)),
                  // 3 round
-                 \D0 D1 -> (D0 ^ FO(D1, 3, EK), D1),
+                 \(D0, D1) -> (D0 ^ FO(D1, 3, EK), D1),
                  // 4 round
-                 \D0 D1 -> (FL(D0, 4, EK), D1),
-                 \D0 D1 -> (D0, FL(D1, 5, EK)),
-                 \D0 D1 -> (D0, D1 ^ FO(D0, 4, EK)),
+                 \(D0, D1) -> (FL(D0, 4, EK), D1),
+                 \(D0, D1) -> (D0, FL(D1, 5, EK)),
+                 \(D0, D1) -> (D0, D1 ^ FO(D0, 4, EK)),
                  // 5 round
-                 \D0 D1 -> (D0 ^ FO(D1, 5, EK), D1),
+                 \(D0, D1) -> (D0 ^ FO(D1, 5, EK), D1),
                  // 6 round
-                 \D0 D1 -> (FL(D0, 6, EK), D1),
-                 \D0 D1 -> (D0, FL(D1, 7, EK)),
-                 \D0 D1 -> (D0, D1 ^ FO(D0, 6, EK)),
+                 \(D0, D1) -> (FL(D0, 6, EK), D1),
+                 \(D0, D1) -> (D0, FL(D1, 7, EK)),
+                 \(D0, D1) -> (D0, D1 ^ FO(D0, 6, EK)),
                  // 7 round
-                 \D0 D1 -> (D0 ^ FO(D1, 7, EK), D1),
+                 \(D0, D1) -> (D0 ^ FO(D1, 7, EK), D1),
                  // final
-                 \D0 D1 -> (FL(D0, 8, EK), D1),
-                 \D0 D1 -> (D0, FL(D1, 9, EK))
+                 \(D0, D1) -> (FL(D0, 8, EK), D1),
+                 \(D0, D1) -> (D0, FL(D1, 9, EK))
                 ]
 
 misty1Decrypt : [64] -> [32][16] -> [64]
-misty1Decrypt C EK = (P ! 0).0 # (P ! 0).1
+misty1Decrypt(C, EK) = (P ! 0).0 # (P ! 0).1
     where P = [(drop(C), take(C))] # [ f(D0, D1)
                                      | f        <- funcs
                                      | (D0, D1) <- P
                                      ]
           funcs : [_]([32] -> [32] -> ([32], [32]))
-          funcs = [\D0 D1 -> (FLINV(D0, 8, EK), D1),
-                   \D0 D1 -> (D0, FLINV(D1, 9, EK)),
-                   \D0 D1 -> (D0 ^ FO(D1, 7, EK), D1),
-                   \D0 D1 -> (D0, D1 ^ FO(D0, 6, EK)),
-                   \D0 D1 -> (FLINV(D0, 6, EK), D1),
-                   \D0 D1 -> (D0, FLINV(D1, 7, EK)),
-                   \D0 D1 -> (D0 ^ FO(D1, 5, EK), D1),
-                   \D0 D1 -> (D0, D1 ^ FO(D0, 4, EK)),
-                   \D0 D1 -> (FLINV(D0, 4, EK), D1),
-                   \D0 D1 -> (D0, FLINV(D1, 5, EK)),
-                   \D0 D1 -> (D0 ^ FO(D1, 3, EK), D1),
-                   \D0 D1 -> (D0, D1 ^ FO(D0, 2, EK)),
-                   \D0 D1 -> (FLINV(D0, 2, EK), D1),
-                   \D0 D1 -> (D0, FLINV(D1, 3, EK)),
-                   \D0 D1 -> (D0 ^ FO(D1, 1, EK), D1),
-                   \D0 D1 -> (D0, D1 ^ FO(D0, 0, EK)),
-                   \D0 D1 -> (FLINV(D0, 0, EK), D1),
-                   \D0 D1 -> (D0, FLINV(D1, 1, EK))
+          funcs = [\(D0, D1) -> (FLINV(D0, 8, EK), D1),
+                   \(D0, D1) -> (D0, FLINV(D1, 9, EK)),
+                   \(D0, D1) -> (D0 ^ FO(D1, 7, EK), D1),
+                   \(D0, D1) -> (D0, D1 ^ FO(D0, 6, EK)),
+                   \(D0, D1) -> (FLINV(D0, 6, EK), D1),
+                   \(D0, D1) -> (D0, FLINV(D1, 7, EK)),
+                   \(D0, D1) -> (D0 ^ FO(D1, 5, EK), D1),
+                   \(D0, D1) -> (D0, D1 ^ FO(D0, 4, EK)),
+                   \(D0, D1) -> (FLINV(D0, 4, EK), D1),
+                   \(D0, D1) -> (D0, FLINV(D1, 5, EK)),
+                   \(D0, D1) -> (D0 ^ FO(D1, 3, EK), D1),
+                   \(D0, D1) -> (D0, D1 ^ FO(D0, 2, EK)),
+                   \(D0, D1) -> (FLINV(D0, 2, EK), D1),
+                   \(D0, D1) -> (D0, FLINV(D1, 3, EK)),
+                   \(D0, D1) -> (D0 ^ FO(D1, 1, EK), D1),
+                   \(D0, D1) -> (D0, D1 ^ FO(D0, 0, EK)),
+                   \(D0, D1) -> (FLINV(D0, 0, EK), D1),
+                   \(D0, D1) -> (D0, FLINV(D1, 1, EK))
                   ]
 
 //
@@ -224,10 +224,10 @@ misty1Decrypt C EK = (P ! 0).0 # (P ! 0).1
 //
 
 extend : {total, n} (total >= n) => [n] -> [total]
-extend n = zero # n
+extend(n) = zero # n
 
 isEven : {a} [a] -> Bool
-isEven n = ~(n ! 0)
+isEven(n) = ~(n ! 0)
 
 //
 // Examples
@@ -241,5 +241,5 @@ property testMisty1Encrypt = [ misty1Encrypt(block, EK)
           plaintext  = [0x0123456789abcdef, 0xfedcba9876543210]
           ciphertext = [0x8b1da5f56ab3d07c, 0x04b68240b13be95d]
 
-property misty1Correct pt key = misty1Decrypt(misty1Encrypt (pt, EK), EK) == pt
+property misty1Correct(pt, key) = misty1Decrypt(misty1Encrypt (pt, EK), EK) == pt
     where EK = keySchedule(key)

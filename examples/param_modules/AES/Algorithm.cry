@@ -36,7 +36,7 @@ type KeySchedule = (RoundKey, [Nr-1]RoundKey, RoundKey)
 /** AES Encryption with an expanded key.
 This is useful if many things will be encrypted with the same key. */
 encrypt : KeySchedule -> [128] -> [128]
-encrypt (kInit,ks,kFinal) pt =
+encrypt((kInit,ks,kFinal), pt) =
                             stateToMsg(AESFinalRound(kFinal, rounds ! 0))
   where
   state0 = kInit ^ msgToState(pt)
@@ -45,7 +45,7 @@ encrypt (kInit,ks,kFinal) pt =
 /** AES decryption with an expanded key.
 This is useful if many things will be decrypted with the same key. */
 decrypt : KeySchedule -> [128] -> [128]
-decrypt (kInit, ks, kFinal) ct =
+decrypt((kInit, ks, kFinal), ct) =
                           stateToMsg(AESFinalInvRound(kFinal, rounds ! 0))
   where
   state0 = kInit ^ msgToState(ct)

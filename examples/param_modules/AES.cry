@@ -22,10 +22,10 @@ type DecKey = AES::KeySchedule
 
 
 encrypt : [k] -> [128] -> [128]
-encrypt k = encryptWithSchedule(expandKeyEnc(k))
+encrypt(k) = encryptWithSchedule(expandKeyEnc(k))
 
 decrypt : [k] -> [128] -> [128]
-decrypt k = decryptWithSchedule(expandKeyDec(k))
+decrypt(k) = decryptWithSchedule(expandKeyDec(k))
 
 
 expandKeyEnc : [k] -> EncKey
@@ -37,11 +37,11 @@ encryptWithSchedule = AES::encrypt
 
 
 expandKeyDec : [k] -> EncKey
-expandKeyDec k = makeDecKey(expandKey(k))
+expandKeyDec(k) = makeDecKey(expandKey(k))
 
 decryptWithSchedule : DecKey -> [128] -> [128]
 decryptWithSchedule = AES::decrypt
 
 
-property test k pt = decrypt(k, encrypt(k, pt)) == pt
+property test(k, pt) = decrypt(k, encrypt(k, pt)) == pt
 

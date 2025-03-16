@@ -1,6 +1,6 @@
 
 f : {n} _
-f x = ()
+f(x) = ()
   where
   nested : Bit
   nested

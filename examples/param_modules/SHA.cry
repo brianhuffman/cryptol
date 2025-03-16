@@ -26,7 +26,7 @@ sha256tests =
 
   where
   go : {n} (64 >= width (8 * n)) => [n][8] -> [256]
-  go x = sha256(join(x))
+  go(x) = sha256(join(x))
 
 
 

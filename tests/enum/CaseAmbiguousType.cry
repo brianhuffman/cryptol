@@ -1,7 +1,7 @@
-f e =
+f(e) =
   case e of
     _ -> ()
 
-g e =
+g(e) =
   case e : Integer of
     _ -> ()

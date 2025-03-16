@@ -23,58 +23,58 @@ fox     = 0x8
 // :sat solutionInNmoves : [6]BankState -> Bit
 
 solutionInNmoves : {n} [n] BankState -> Bit
-property solutionInNmoves states = validMoveSequence ([startState] # states # [doneState])
+property solutionInNmoves(states) = validMoveSequence ([startState] # states # [doneState])
 
 validMoveSequence : {n} (n >= 1) => [n] BankState -> Bit
-validMoveSequence states = all([validMove(a, b)
-                               | a <- states
-                               | b <- drop{1}(states)])
+validMoveSequence(states) = all([validMove(a, b)
+                                | a <- states
+                                | b <- drop{1}(states)])
 
 // Two states represent a valid move if they are both valid states (no carnage)
 // and that whatever moved followed the rules
 validMove : BankState -> BankState -> Bit
-validMove b b' = validState(b) && validState(b')
+validMove(b, b') = validState(b) && validState(b')
                  && stuffOnlyMovedWithFarmer(b, b')
 
 stuffOnlyMovedWithFarmer : BankState -> BankState -> Bit
-stuffOnlyMovedWithFarmer b b' =
+stuffOnlyMovedWithFarmer(b, b') =
     if farmerHere(b.left)
     then farmerHere(b'.right) && moveFollowsRules(b.left, b'.right, b'.right - b.right)
     else farmerHere(b'.left)  && moveFollowsRules(b.right, b'.left, b'.left - b.left)
 
 // things can't move without the farmer, and the farmer can carry at most one thing
-moveFollowsRules fromBank toBank whatMoved = farmerMoved && atMostOneObjectMoved where
+moveFollowsRules(fromBank, toBank, whatMoved) = farmerMoved && atMostOneObjectMoved where
     farmerMoved = (whatMoved && farmer) == farmer
     atMostOneObjectMoved = popCount (whatMoved && ~farmer) <= 1
 
 // "conservation of items" rule - nothing spontaneously disappears
 completeState : BankState -> Bit
-completeState b = (b.left ^ b.right) == 0xf
+completeState(b) = (b.left ^ b.right) == 0xf
 
 // both banks are "carnage-free"
 validState : BankState -> Bit
-validState bs = completeState(bs) && validBank(bs.left)
+validState(bs) = completeState(bs) && validBank(bs.left)
                 && validBank(bs.right) && completeState(bs)
 
 validBank : OneBank -> Bit
-validBank b = farmerHere(b) || (~foxWithChicken(b) && ~chickenWithCorn(b))
+validBank(b) = farmerHere(b) || (~foxWithChicken(b) && ~chickenWithCorn(b))
 
 farmerHere : OneBank -> Bit
-farmerHere b = (b && farmer) > 0
+farmerHere(b) = (b && farmer) > 0
 
 chickenWithCorn : OneBank -> Bit
-chickenWithCorn b = (b && (corn || chicken)) == (corn || chicken)
+chickenWithCorn(b) = (b && (corn || chicken)) == (corn || chicken)
 
 foxWithChicken : OneBank -> Bit
-foxWithChicken b = (b && (fox || chicken)) == (fox || chicken)
+foxWithChicken(b) = (b && (fox || chicken)) == (fox || chicken)
 
 // utilities
 all : {n} [n] -> Bit
-all xs = xs == ~zero
+all(xs) = xs == ~zero
 
 // "population count" - how many bits are on
 popCount : {a} (a >= 1) => [a] -> [width a]
-popCount bs = ic ! 0 where
+popCount(bs) = ic ! 0 where
     ic = [0] # [ if elt then prev + 1 else prev | elt <- bs | prev <- ic]
 
 // pretty printing
@@ -89,19 +89,19 @@ noString      = "       "
 ppArray = [farmerString, chickenString, cornString, foxString]
 
 ppBits : [4] -> [4]StringRep
-ppBits s =  [ if b then ppArray!i else noString
-            | b <- s
-            | i <- [0..3]:[4][4] ]
+ppBits(s) =  [ if b then ppArray!i else noString
+             | b <- s
+             | i <- [0..3]:[4][4] ]
 
 // takes a sequence of states and derives what moved, and in which direction for each transition
 extractMoves : {a} [a+1]BankState -> [a](DirRep, [4]StringRep)
-extractMoves bankStates = [ getMove(b, b') | b <- bankStates | b' <- drop{1}(bankStates) ] where
-    getMove start end = ( dirString, thingsString(thingsMoved) ) where
+extractMoves(bankStates) = [ getMove(b, b') | b <- bankStates | b' <- drop{1}(bankStates) ] where
+    getMove(start, end) = ( dirString, thingsString(thingsMoved) ) where
         dirString = if farmerHere(start.left) then " --> " else " <-- "
         thingsMoved = if farmerHere(start.left)
                       then end.right - start.right
                       else end.left - start.left
-        thingsString bits = ppBits(bits)
+        thingsString(bits) = ppBits(bits)
 
 // fcc> :sat solutionInNmoves : [6]BankState -> Bit
 // solutionInNmoves : [6]BankState -> Bit [{left = 12, right = 3},

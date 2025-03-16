@@ -8,7 +8,7 @@ Loading module Cryptol
 Loading module ChaCha20
 [warning] at ChaChaPolyCryptolIETF.md:1983:5--1983:15
     This binding for `cypherText` shadows the existing binding at
-    ChaChaPolyCryptolIETF.md:1981:24--1981:34
+    ChaChaPolyCryptolIETF.md:1981:26--1981:36
 [warning] at ChaChaPolyCryptolIETF.md:2061:20--2061:27
     This binding for `AeadAAD` shadows the existing binding at
     ChaChaPolyCryptolIETF.md:1148:1--1148:8

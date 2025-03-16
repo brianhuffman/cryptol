@@ -505,17 +505,17 @@ Internet-Draft                  cfrgcurve                     March 2015
 ```
 // Decode little endian bytes into Curve25519
 decodeLittleEndian : {a} (a >= 1) => [a][8] -> [a*8]
-decodeLittleEndian bytes = s ! 0
+decodeLittleEndian(bytes) = s ! 0
   where s = [zero] # [(acc<<8) + (zero#byte) | acc <- s | byte <- reverse(bytes)]
 
 decodeUCoordinate25519 : [32][8] -> [256]
-decodeUCoordinate25519 u = decodeLittleEndian ((u @@ ([0..30] : [_][5])) # [((u@31) && 127)])
+decodeUCoordinate25519(u) = decodeLittleEndian ((u @@ ([0..30] : [_][5])) # [((u@31) && 127)])
 
 decodeUCoordinate448 : [448/8][8] -> [448]
-decodeUCoordinate448 u = decodeLittleEndian(u)
+decodeUCoordinate448(u) = decodeLittleEndian(u)
 
 encodeUCoordinate : {a} [a*8] -> [a*8] -> [a][8]
-encodeUCoordinate p u = reverse(split{each=8}(u'))
+encodeUCoordinate(p, u) = reverse(split{each=8}(u'))
  where u' = u % p
 ```
 
@@ -562,10 +562,10 @@ Internet-Draft                  cfrgcurve                     March 2015
 
 ```cryptol
 decodeScalar25519 : [256/8][8] -> [256]
-decodeScalar25519 k = decodeLittleEndian ([(k@0) && 248] # (k @@ ([1..30] : [_][5])) # [((k@31) && 127) || 64])
+decodeScalar25519(k) = decodeLittleEndian ([(k@0) && 248] # (k @@ ([1..30] : [_][5])) # [((k@31) && 127) || 64])
 
 decodeScalar448 : [448/8][8] -> [448]
-decodeScalar448 k = decodeLittleEndian ([(k@0) && 252] # (k @@ ([1..54] : [_][6])) # [(k@55) || 128])
+decodeScalar448(k) = decodeLittleEndian ([(k@0) && 252] # (k @@ ([1..54] : [_][6])) # [(k@55) || 128])
 ```
 
    To implement the "curve25519(k, u)" and "curve448(k, u)" functions
@@ -660,7 +660,7 @@ Internet-Draft                  cfrgcurve                     March 2015
 ```cryptol
 // curveX private public prime == public
 curveX : {a} (9 >= width a, 9 >= width (a-2), 9 >= width (a-1), a>=2) => [a] -> [a] -> [a] -> [a] -> [a]
-curveX a24 p s x = mul(p, x2F, power(p, z2F, p - 2))
+curveX(a24, p, s, x) = mul(p, x2F, power(p, z2F, p - 2))
  where
  X1  = x
  X2  = 1
@@ -672,7 +672,7 @@ curveX a24 p s x = mul(p, x2F, power(p, z2F, p - 2))
 
 // curveX' : {a} (10 >= width (a-1)) => [a] -> [a] -> Bit -> [a] -> [a] -> [a] -> [a] -> [a] ->
 //          ([a],[a],[a],[a])
-curveX' a24 p st x1 x2 x3 z2 z3 = (x2F,x3F,z2F,z3F)
+curveX'(a24, p, st, x1, x2, x3, z2, z3) = (x2F,x3F,z2F,z3F)
   where
   (x2',x3') = cswap(st, x2, x3)
   (z2',z3') = cswap(st, z2, z3)
@@ -698,10 +698,10 @@ curveX' a24 p st x1 x2 x3 z2 z3 = (x2F,x3F,z2F,z3F)
 
 ```cryptol
 Curve25519 : Private25519 -> Public25519 -> Public25519
-Curve25519 priv pub = encodeUCoordinate(pCurve25519, curveX(a24Curve25519, pCurve25519, decodeScalar25519(priv), decodeUCoordinate25519(pub)))
+Curve25519(priv, pub) = encodeUCoordinate(pCurve25519, curveX(a24Curve25519, pCurve25519, decodeScalar25519(priv), decodeUCoordinate25519(pub)))
 
 Curve448 : Private448 -> Public448 -> Public448
-Curve448 priv pub = encodeUCoordinate(pCurve448, curveX(a24Curve448, pCurve448, decodeScalar448(priv), decodeUCoordinate448(pub)))
+Curve448(priv, pub) = encodeUCoordinate(pCurve448, curveX(a24Curve448, pCurve448, decodeScalar448(priv), decodeUCoordinate448(pub)))
 
 // basePoints are not discussed, but a DH section exists - I suggest revision.
 basePoint25519 = reverse(split(9))
@@ -743,7 +743,7 @@ Internet-Draft                  cfrgcurve                     March 2015
 
 ```cryptol
 cswap : {a} (a >= 1,10 >= width (a-1)) => Bit -> [a] -> [a] -> ([a] , [a])
-cswap st x2 x3 = (x2 ^ dummy ,x3 ^ dummy)
+cswap(st, x2, x3) = (x2 ^ dummy ,x3 ^ dummy)
   where dummy = [st | _ <- [0..a-1] : [_][10] ] && (x2 ^ x3)
 ```
 
@@ -952,12 +952,12 @@ separate file.
 
 ```cryptol
 mul, add, sub, power,div : {a} (a>=1) => [a] -> [a] -> [a] -> [a]
-power p a b = mod_pow((p, a, b))
-mul p a b = mod_mul((p, a, b))
-add p a b = mod_add((p, a, b))
-sub p a b = mod_sub((p, a, b))
-div p x y   = mod_div((p,x,y))
-square p a  = mul(p, a, a)
+power(p, a, b) = mod_pow(p, a, b)
+mul(p, a, b) = mod_mul(p, a, b)
+add(p, a, b) = mod_add(p, a, b)
+sub(p, a, b) = mod_sub(p, a, b)
+div(p, x, y) = mod_div(p, x, y)
+square(p, a) = mul(p, a, a)
 ```
 
 

@@ -9,7 +9,7 @@ import PBKDF2
 
 // SCrypt paper page 10: BlockMix specialized to Salsa20
 BlockMix : {r} (r >= 1) =>  [2*r][64*8] -> [2*r][64*8]
-BlockMix B = ys @@ ([0,2..2*r-2] # [1,3..2*r-1])
+BlockMix(B) = ys @@ ([0,2..2*r-2] # [1,3..2*r-1])
  where
   rs = [B!0] # [ join(Salsa20{r=8}(split(X ^ bi))) | X <- rs | bi <- B ]
   ys = drop{1}(rs)
@@ -21,7 +21,7 @@ SMix : {N,r} ( r >= 1
              , 512 >= width N
              , 1 + width N >= width (N-1)
              ) => [128 * 8 * r] -> [128 * 8 * r]
-SMix B = join (Xs ! 0)
+SMix(B) = join (Xs ! 0)
  where
   Vs = [split(B)] # [ BlockMix(x) | x <- Vs | _ <- [0..N-1] : [_][width N + 1]]
   V  = take{front=N}(Vs)
@@ -33,7 +33,7 @@ SMix B = join (Xs ! 0)
                             x' = BlockMix(T))
                         | x <- Xs | _ <- [0..N-1] : [_][width N + 1] ]
 
-  integerify w = (join (reverse (split {each=8} (w!0)))) % `N
+  integerify(w) = (join (reverse (split {each=8} (w!0)))) % `N
 
 // SCrypt paper, page 11: MFCrypt specialized to sha256 (see the 'pbkdf2' function)
 // p = 1
@@ -48,7 +48,7 @@ MFcrypt : { pwBytes, saltBytes, dkLen, r, N }
           , N >= 1
           )
         => [pwBytes][8] -> [saltBytes][8] -> [dkLen][8]
-MFcrypt P S = split(DK)
+MFcrypt(P, S) = split(DK)
  where
   B  = pbkdf2{C=1}(P, S)
   B' = SMix{N=N,r=r}(B)
@@ -65,7 +65,7 @@ SCrypt : {pwBytes, saltBytes, dkBytes, r, N}
          , N >= 1
          )
       => [pwBytes][8] -> [saltBytes][8] -> [dkBytes][8]
-SCrypt P S = MFcrypt{r=r,N=N}(P, S)
+SCrypt(P, S) = MFcrypt{r=r,N=N}(P, S)
 
 property kats_pass = ~zero ==
     [ SCrypt{N=2^^4,r=1}("", "") ==

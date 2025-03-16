@@ -12,22 +12,22 @@ import Test
 // DEStest> des_evktest DES
 // DEStest> des_evttest DES
 // DEStest> des_ekatest DES
-des_evktest cipher = evktest((cipher, vk, zero : [64]))
-des_evttest cipher = evttest((cipher, 0x0101010101010101 : [64], vt))
-des_ekatest cipher = ekatest((cipher, ka))
+des_evktest(cipher) = evktest(cipher, vk, zero : [64])
+des_evttest(cipher) = evttest(cipher, 0x0101010101010101 : [64], vt)
+des_ekatest(cipher) = ekatest(cipher, ka)
 
-vktest cipher
+vktest(cipher)
   = [ (a, b, e /\ d)
-    | (a, e) <- evktest((cipher, vk, zero : [64]))
-    | (b, d) <- dvktest((cipher, vk, zero : [64])) ]
-vttest cipher
+    | (a, e) <- evktest(cipher, vk, zero : [64])
+    | (b, d) <- dvktest(cipher, vk, zero : [64]) ]
+vttest(cipher)
   = [ (a, b, e /\ d)
-    | (a, e) <- evttest((cipher, 0x0101010101010101 : [64], vt))
-    | (b, d) <- dvttest((cipher, 0x0101010101010101 : [64], vt)) ]
-katest cipher
+    | (a, e) <- evttest(cipher, 0x0101010101010101 : [64], vt)
+    | (b, d) <- dvttest(cipher, 0x0101010101010101 : [64], vt) ]
+katest(cipher)
   = [ (a, b, e /\ d)
-    | (a, e) <- ekatest((cipher, ka))
-    | (b, d) <- dkatest((cipher, ka)) ]
+    | (a, e) <- ekatest(cipher, ka)
+    | (b, d) <- dkatest(cipher, ka) ]
 
 // Test vectors from NIST 800-17
 

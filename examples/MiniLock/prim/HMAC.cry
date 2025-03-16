@@ -22,7 +22,7 @@ hmac : { msgBytes, pwBytes, digest, blockLength }
     -> [pwBytes][8]
     -> [msgBytes][8]
     -> [digest*8]
-hmac hash hash2 hash3 key message = hash2 (okey # internal)
+hmac(hash, hash2, hash3, key, message) = hash2 (okey # internal)
  where
  ks : [blockLength][8]
  ks   = if `pwBytes > (`blockLength : [max (width pwBytes) (width blockLength)])

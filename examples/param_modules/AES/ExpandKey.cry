@@ -14,20 +14,20 @@ parameter
   type constraint (8 >= width Nr, Nr >= 2)
 
 expandKey : [32 * Nk] -> (RoundKey, [Nr-1]RoundKey, RoundKey)
-expandKey key = ( keys @ 0
-                , keys @@ ([1 .. (Nr - 1)] : [_][8])
-                , keys @ (`Nr : [8])
-                )
+expandKey(key) = ( keys @ 0
+                 , keys @@ ([1 .. (Nr - 1)] : [_][8])
+                 , keys @ (`Nr : [8])
+                 )
   where   seed : [Nk][4][8]
           seed = split(split(key))
           keys = expandKeyForever(seed)
 
 
 expandKeyForever : {n} [Nk][4][8] -> [n]RoundKey
-expandKeyForever seed = [ transpose(g) | g <- split(keyWS(seed)) ]
+expandKeyForever(seed) = [ transpose(g) | g <- split(keyWS(seed)) ]
 
 keyWS : {n} [Nk][4][8] -> [n][4][8]
-keyWS seed    = take{n}(xs)
+keyWS(seed)   = take{n}(xs)
      where xs : [Nk+n][4][8]
            xs = seed # [ NextWord(i, prev, old)
                        | i    <- [ `Nk ... ] : [n]_
@@ -37,16 +37,16 @@ keyWS seed    = take{n}(xs)
 
 // Key expansion
 Rcon : [8] -> [4]GF28
-Rcon i = [ gf28Pow(2, i-1), 0, 0, 0]
+Rcon(i) = [ gf28Pow(2, i-1), 0, 0, 0]
 
 SubWord : [4]GF28 -> [4]GF28
-SubWord bs = [ SubByte(b) | b <- bs ]
+SubWord(bs) = [ SubByte(b) | b <- bs ]
 
 RotWord : [4]GF28 -> [4]GF28
-RotWord [a0, a1, a2, a3] = [a1, a2, a3, a0]
+RotWord([a0, a1, a2, a3]) = [a1, a2, a3, a0]
 
 NextWord : [8] ->[4][8] -> [4][8] -> [4][8]
-NextWord i prev old = old ^ mask
+NextWord(i, prev, old) = old ^ mask
    where mask = if i % nk == 0
                 then SubWord(RotWord(prev)) ^ Rcon (i / `Nk)
                 else if (nk > 6) && (i % nk == 4)

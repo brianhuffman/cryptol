@@ -7,7 +7,7 @@ submodule M where
 import submodule M
 
 // Local declarations shadow imports
-f x =
+f(x) =
   case x of
     X -> ()
     Y -> ()

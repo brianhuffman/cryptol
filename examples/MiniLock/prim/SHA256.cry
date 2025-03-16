@@ -18,22 +18,22 @@ module SHA256 where
  */
 
 Ch : [32] -> [32] -> [32] -> [32]
-Ch x y z = (x && y) ^ (~x && z)
+Ch(x, y, z) = (x && y) ^ (~x && z)
 
 Maj : [32] -> [32] -> [32] -> [32]
-Maj x y z = (x && y) ^ (x && z) ^ (y && z)
+Maj(x, y, z) = (x && y) ^ (x && z) ^ (y && z)
 
 S0 : [32] -> [32]
-S0 x = (x >>> 2) ^ (x >>> 13) ^ (x >>> 22)
+S0(x) = (x >>> 2) ^ (x >>> 13) ^ (x >>> 22)
 
 S1 : [32] -> [32]
-S1 x = (x >>> 6) ^ (x >>> 11) ^ (x >>> 25)
+S1(x) = (x >>> 6) ^ (x >>> 11) ^ (x >>> 25)
 
 s0 : [32] -> [32]
-s0 x = (x >>> 7) ^ (x >>> 18) ^ (x >> 3)
+s0(x) = (x >>> 7) ^ (x >>> 18) ^ (x >> 3)
 
 s1 : [32] -> [32]
-s1 x = (x >>> 17) ^ (x >>> 19) ^ (x >> 10)
+s1(x) = (x >>> 17) ^ (x >>> 19) ^ (x >> 10)
 
 /*
  * SHA256 Constants : Section 4.2.2
@@ -57,7 +57,7 @@ preprocess : {msgLen}
      ( 64 >= width msgLen                              // message width fits in a word
      )
      => [msgLen] -> [(msgLen + 65) /^ 512][512]
-preprocess msg = split (msg # [True] # (zero:[(msgLen + 65) %^ 512]) # (`msgLen:[64]))
+preprocess(msg) = split (msg # [True] # (zero:[(msgLen + 65) %^ 512]) # (`msgLen:[64]))
 
 /*
  * SHA256 Initial Hash Value :  Section 5.3.3
@@ -75,11 +75,11 @@ H0 = [ 0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a,
  */
 
 SHA256MessageSchedule : [16][32] -> [64][32]
-SHA256MessageSchedule M = W where
+SHA256MessageSchedule(M) = W where
     W = M # [ s1 (W@(j-2)) + (W@(j-7)) + s0 (W@(j-15)) + (W@(j-16)) | j <- [16 .. 63]:[_][8] ]
 
 SHA256Compress : [8][32] -> [64][32] -> [8][32]
-SHA256Compress H W = [as!0 + H@0, bs!0 + H@1, cs!0 + H@2, ds!0 + H@3, es!0 + H@4, fs!0 + H@5, gs!0 + H@6, hs!0 + H@7] where
+SHA256Compress(H, W) = [as!0 + H@0, bs!0 + H@1, cs!0 + H@2, ds!0 + H@3, es!0 + H@4, fs!0 + H@5, gs!0 + H@6, hs!0 + H@7] where
     T1 = [h + S1(e) + Ch(e,f,g) + k + w | h <- hs | e <- es | f <- fs | g <- gs | k <- K | w <- W]
     T2 = [S0(a)  + Maj(a,b,c) | a <- as | b <- bs | c <- cs]
     hs = take{65}([H@7] # gs)
@@ -99,11 +99,11 @@ SHA256Compress H W = [as!0 + H@0, bs!0 + H@1, cs!0 + H@2, ds!0 + H@3, es!0 + H@4
  */
 
 SHA256' : {a} [a][16][32] -> [8][32]
-SHA256' blocks = hash!0 where
+SHA256'(blocks) = hash!0 where
     hash = [H0] # [SHA256Compress(h, SHA256MessageSchedule(b)) | h <- hash | b <- blocks]
 
 SHA256 : {a} (64 >= width (8*a)) => [a][8] -> [256]
-SHA256 msg = join(SHA256'([ split(x) | x <- preprocess(join(msg))]))
+SHA256(msg) = join(SHA256'([ split(x) | x <- preprocess(join(msg))]))
 
 property katsPass = ~zero == [test == kat | (test,kat) <- kats ]
 

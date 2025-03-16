@@ -111,7 +111,7 @@ The operation is as follows:
 
 ```cryptol
 ChaChaQuarterround : [4][32] -> [4][32]
-ChaChaQuarterround [a, b, c, d] = [a'', b'', c'', d''] where
+ChaChaQuarterround([a, b, c, d]) = [a'', b'', c'', d''] where
     a' = a + b
     d' = (d ^ a') <<< 16
     c' = c + d'
@@ -280,7 +280,7 @@ property FirstRow_correct = groupBy{8}(join([ littleendian(split(w)) | w <- Firs
 
 ```cryptol
 KeyToRows : ChaChaKey -> [8][32]
-KeyToRows key = [littleendian(split(words)) | words <- split(key)]
+KeyToRows(key) = [littleendian(split(words)) | words <- split(key)]
 ```
 
  * Word 12 is a block counter.  Since each block is 64-byte,
@@ -303,12 +303,12 @@ c=constant k=key b=blockcount n=nonce
 
 ```cryptol
 NonceToRow : [96] -> [32] -> [4][32]
-NonceToRow n i = [i] # [ littleendian(split(words)) | words <- groupBy{32}(n) ]
+NonceToRow(n, i) = [i] # [ littleendian(split(words)) | words <- groupBy{32}(n) ]
 ```
 
 ```cryptol
 BuildState : ChaChaKey -> [96] -> [32] -> [16][32]
-BuildState key nonce i = split(join(FirstRow # KeyToRows(key) # NonceToRow(nonce, i)))
+BuildState(key, nonce, i) = split(join(FirstRow # KeyToRows(key) # NonceToRow(nonce, i)))
 ```
 
 ChaCha20 runs 20 rounds, alternating between "column" and "diagonal"
@@ -345,7 +345,7 @@ ChaChaTwoRounds (xs:ChaChaState) = xs'' where
     xs'' = join([ChaChaQuarterround(x) | x <- groupBy{4}(xs'@@diags ) ]) @@ invDiags
 
 ChaCha : ChaChaState -> [8] -> ChaChaState
-ChaCha s n = chain@n where
+ChaCha(s, n) = chain@n where
     chain = [s] # [ ChaChaTwoRounds(ci) | ci <- chain | i <- [0 .. 9] ]
 ```
 
@@ -355,7 +355,7 @@ one-by-one in little-endian order.
 
 ```cryptol
 // ChaCha20Block : ChaChaKey -> [96] -> [32] -> ChaChaState (repeated from above)
-ChaCha20Block key nonce i = zipWith((+), ChaCha(initialState, 10), initialState) where
+ChaCha20Block(key, nonce, i) = zipWith((+), ChaCha(initialState, 10), initialState) where
     initialState = BuildState(key, nonce, i)
 ```
 
@@ -461,16 +461,16 @@ The output is an encrypted message of the same length.
 ```cryptol
 // TODO: reorder args below, and get rid of this wrapper
 ChaCha20Encrypt : {a} ChaChaKey -> [32] -> [96] -> [a][8] -> [a][8]
-ChaCha20Encrypt k i n msg = ChaCha20EncryptBytes(msg, k, n, i)
+ChaCha20Encrypt(k, i, n, msg) = ChaCha20EncryptBytes(msg, k, n, i)
 
 ChaCha20EncryptBytes : {a} [a][8] -> ChaChaKey -> [96] -> [32] -> [a][8]
-ChaCha20EncryptBytes msg k n i= [ m ^ kb | m <- msg | kb <- keystream ] where
+ChaCha20EncryptBytes(msg, k, n, i) = [ m ^ kb | m <- msg | kb <- keystream ] where
     keystream = groupBy{8}(join(join(ChaCha20ExpandKey{a/^64}(k, n, i))))
 
 ChaCha20ExpandKey : {l} ChaChaKey -> [96] -> [32] -> [l]ChaChaState
-ChaCha20ExpandKey k n i = [ ToLittleEndian(ChaCha20Block(k, n, j))
-                          | j <- ([i ...]:[_][32])
-                          ]
+ChaCha20ExpandKey(k, n, i) = [ ToLittleEndian(ChaCha20Block(k, n, j))
+                             | j <- ([i ...]:[_][32])
+                             ]
 
 ```
 
@@ -663,7 +663,7 @@ PolyMasks = [ nm, nm, nm, Om,  // 0-3
               Em, nm, nm, Om ] // 12-15
 
 Poly1305_clamp : [16][8] -> [16][8]
-Poly1305_clamp r = [ re && mask | re <- r | mask <- PolyMasks ]
+Poly1305_clamp(r) = [ re && mask | re <- r | mask <- PolyMasks ]
 ```
 
 The "s" should be unpredictable, but it is perfectly acceptable to
@@ -693,7 +693,7 @@ P = 2^^130 - 5
 First, the "r" value should be clamped.
 
 ```cryptol
-Poly1305 key msg = result where
+Poly1305(key, msg) = result where
     type floorBlocks = m / 16
     type rem = m - floorBlocks*16
     [ru, su] = split(key)
@@ -753,7 +753,7 @@ order to form the tag.
 
 // Compute ((a + b) * r ) % P being pedantic about bit-widths
 computeElt : [136] -> [136] -> [136] -> [136] -> [136]
-computeElt a b r p = drop{137}(bigResult) where
+computeElt(a, b, r, p) = drop{137}(bigResult) where
     bigResult : [273]
     aPlusB : [137]
     aPlusB = (0b0#a) + (0b0#b)                        // make room for carry
@@ -810,7 +810,7 @@ values of the accumulator:
 AccumBlocks : {m, floorBlocks, rem} (floorBlocks == m/16, rem == m - floorBlocks*16)
               => [256] -> [m][8] -> ([_][136], [136])
 
-AccumBlocks key msg = (accum, lastAccum) where
+AccumBlocks(key, msg) = (accum, lastAccum) where
     [ru, su] = split(key)
     r : [136] // internal arithmetic on (128+8)-bit numbers
     r = littleendian((Poly1305_clamp(split(ru))) # [0x00])
@@ -978,8 +978,8 @@ PolyOutput = join (parseHexString (
     "8a d5 a0 8b 90 5f 81 cc 81 50 40 27 4a b2 94 71 " #
     "a8 33 b6 37 e3 fd 0d a5 08 db b8 e2 fd d1 a6 46 "))
 
-GeneratePolyKeyUsingChaCha k n i = join([ littleendian(groupBy{8}(b))
-                                        | b <- take{8}(ChaCha20Block(k, n, i)) ])
+GeneratePolyKeyUsingChaCha(k, n, i) = join([ littleendian(groupBy{8}(b))
+                                           | b <- take{8}(ChaCha20Block(k, n, i)) ])
 
 property Poly_passes_test = GeneratePolyKeyUsingChaCha(PolyKeyTest, PolyNonceTest, 0) == PolyOutput
 ```
@@ -1024,7 +1024,7 @@ AEAD_CHACHA20_POLY1305 : {m, n}
                        => [256] -> [96] -> [m][8] -> [n][8]
                        -> [m+16][8]
 
-AEAD_CHACHA20_POLY1305 k nonce p aad = (ct # tag) where
+AEAD_CHACHA20_POLY1305(k, nonce, p, aad) = (ct # tag) where
 ```
 
 Some protocols may have unique per-invocation inputs that are not 96-
@@ -1078,7 +1078,7 @@ takes a 256-bit key and 96-bit nonce as follows:
     tag = Poly1305(PolyKey, AeadConstruction(aad, ct))
 
 //ct in this function has tag removed
-AeadConstruction (AAD : [n][8]) (CT : [m][8]) = (AAD # padding1 # CT # padding2 # adlen # ptlen) where
+AeadConstruction (AAD : [n][8], CT : [m][8]) = (AAD # padding1 # CT # padding2 # adlen # ptlen) where
 	padding1 = (zero:[n %^ 16][8])
 	padding2 = (zero:[m %^ 16][8])
 	adlen : [8][8]
@@ -1100,7 +1100,7 @@ AEAD_CHACHA20_POLY1305_DECRYPT : {m, n} (64 >= width m, 64 >= width n)
                                  => [256] -> [96]
                                     -> [m+16][8] -> [n][8]
                                     -> ([m][8], Bit)
-AEAD_CHACHA20_POLY1305_DECRYPT k nonce ct ad = (pt, valid) where
+AEAD_CHACHA20_POLY1305_DECRYPT(k, nonce, ct, ad) = (pt, valid) where
     inTag = drop{m}(ct)
     inCt = take{m}(ct)
     PolyKey = GeneratePolyKeyUsingChaCha(k, nonce, 0)
@@ -1456,12 +1456,12 @@ Email: dylan@galois.com
 
 ```cryptol
 // helper macros for higher-up properties
-TV_block_correct key nonce blockcounter result = ChaCha20Block(key, nonce, blockcounter) == result
+TV_block_correct(key, nonce, blockcounter, result) = ChaCha20Block(key, nonce, blockcounter) == result
 
-TV_block_Keystream_correct key nonce blockcounter keystream =
+TV_block_Keystream_correct(key, nonce, blockcounter, keystream) =
 	take{0x40}(groupBy{8}(join(join(ChaCha20ExpandKey(key, nonce, blockcounter))))) == keystream
 
-ChaCha20_block_correct key nonce blockcounter result keystream =
+ChaCha20_block_correct(key, nonce, blockcounter, result, keystream) =
 	TV_block_correct(key, nonce, blockcounter, result) /\
 	TV_block_Keystream_correct(key, nonce, blockcounter, keystream)
 ```
@@ -1592,7 +1592,7 @@ property all_block_tests_correct =
 ## ChaCha20 Encryption
 
 ```cryptol
-ChaCha20_enc_correct key nonce blockcounter plaintext cyphertext = ChaCha20EncryptBytes(plaintext, key, nonce, blockcounter) == cyphertext
+ChaCha20_enc_correct(key, nonce, blockcounter, plaintext, cyphertext) = ChaCha20EncryptBytes(plaintext, key, nonce, blockcounter) == cyphertext
 ```
 
 ### Test Vector #1
@@ -1723,7 +1723,7 @@ property all_enc_tests_correct =
 ## Poly1305 Message Authentication Code
 
 ```cryptol
-poly1305_MAC_correct key text tag = Poly1305(key, text) == tag
+poly1305_MAC_correct(key, text, tag) = Poly1305(key, text) == tag
 ```
 
 ### Test Vector #1
@@ -1920,7 +1920,7 @@ property all_MAC_tests_correct =
 ## Poly1305 Key Generation Using ChaCha20
 
 ```cryptol
-Poly1305_key_correct key nonce otk = GeneratePolyKeyUsingChaCha(key, nonce, 0) == otk
+Poly1305_key_correct(key, nonce, otk) = GeneratePolyKeyUsingChaCha(key, nonce, 0) == otk
 ```
 
 ### Test Vector #1
@@ -1978,7 +1978,7 @@ particular protocol, we’ll assume that there is no padding of the
 plaintext.
 
 ```cryptol
-AEAD_correct key nonce cypherText tag AAD = ptMatches /\ isValid where
+AEAD_correct(key, nonce, cypherText, tag, AAD) = ptMatches /\ isValid where
     (pt,isValid) = AEAD_CHACHA20_POLY1305_DECRYPT(key, nonce, cypherText, AAD)
     cypherText   = AEAD_CHACHA20_POLY1305(key, nonce, AeadPt, AAD)
     ptMatches    = tag == pt
@@ -2058,7 +2058,7 @@ Next, we construct the AEAD buffer
 
 ```cryptol
 // Helper macros for further properties
-poly_input_correct AeadAAD cypherText result = AeadConstruction(AeadAAD, cypherText) == result
+poly_input_correct(AeadAAD, cypherText, result) = AeadConstruction(AeadAAD, cypherText) == result
 
 property TV1_poly_input_correct = poly_input_correct(TV1_AEAD_AAD, TV1_AEAD_cypherText, TV1_AEAD_Poly_input)
 ```
@@ -2113,7 +2113,7 @@ property all_test_vectors_correct =
 # Appendix: Utility functions
 
 ```cryptol
-indexOf e (xs:[a+1]b) = ixs ! 0 where
+indexOf(e, xs:[a+1]b) = ixs ! 0 where
     ixs = [ 0 ] #
                  [ if ix == e then j else old
                  | ix <- xs
@@ -2122,22 +2122,22 @@ indexOf e (xs:[a+1]b) = ixs ! 0 where
                  ]
 
 ToLittleEndian : ChaChaState -> ChaChaState
-ToLittleEndian s = [littleendian(split(words)) | words <- s]
+ToLittleEndian(s) = [littleendian(split(words)) | words <- s]
 
 // Takes a finite sequence of bytes, and turns them into a word via
 // a little-endian interpretation
 littleendian : {a} [a][8] -> [a*8]
-littleendian b = join(reverse(b))
+littleendian(b) = join(reverse(b))
 
 // Converts a bytestring encoded like "fe:ed:fa:ce." into a sequence of bytes
 // Note: the trailing punctuation is needed
 parseHexString : {n} [3*n][8] -> [n][8]
-parseHexString hexString = [ charsToByte(take{2}(cs)) | cs <- groupBy{3}(hexString) ] where
+parseHexString(hexString) = [ charsToByte(take{2}(cs)) | cs <- groupBy{3}(hexString) ] where
     charsToByte : [2][8] -> [8]
-    charsToByte [ ub, lb ] = charToByte(ub) << 4 || charToByte(lb)
-    charToByte c = if c >= '0' /\ c <= '9' then c-'0' else
-                   if c >= 'a' /\ c <= 'f' then 10+(c-'a')
-                   else 0     // error case
+    charsToByte([ ub, lb ]) = charToByte(ub) << 4 || charToByte(lb)
+    charToByte(c) = if c >= '0' /\ c <= '9' then c-'0' else
+                    if c >= 'a' /\ c <= 'f' then 10+(c-'a')
+                    else 0     // error case
 
 property parseHexString_check =
     join (parseHexString

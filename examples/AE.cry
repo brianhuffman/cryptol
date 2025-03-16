@@ -59,7 +59,7 @@ type Int = [64]
 
 encrypt :
   {m} K -> Nonce -> A -> [m * (p * n)] -> [m * (p * n) + tagAmount]
-encrypt key nonce state inputMsg = encMsg # tag
+encrypt(key, nonce, state, inputMsg) = encMsg # tag
 
   where
   encMsg = join(rest.0.message)
@@ -80,5 +80,5 @@ encrypt key nonce state inputMsg = encMsg # tag
   chunks = split(inputMsg)
 
   tweak : Int -> Tweak
-  tweak v = { nonce = nonce, state = state, z = v }
+  tweak(v) = { nonce = nonce, state = state, z = v }
 

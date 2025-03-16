@@ -1,6 +1,6 @@
 // assumes that `xs` is sorted
 insert : {n, a} (Cmp a) => a -> [n]a -> [n+1]a
-insert x' xs 
+insert(x', xs)
   | n == 0         => [x']
   | n == 1         => if x' <= x then [x', x] else [x, x']
                       where [x] = xs

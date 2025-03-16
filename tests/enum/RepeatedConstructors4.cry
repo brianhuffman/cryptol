@@ -4,7 +4,7 @@ enum A = X | Y
 submodule M where
   enum B = X | Y
 
-f x =
+f(x) =
   case x of
     X -> ()
     Y -> ()

@@ -762,16 +762,16 @@ iapats                         :: { [Pattern PName] }
   : '(' pats ')'                  {% traverse mkIPat $2 }
 
 indices                 :: { [Pattern PName] }
-  : '@' indices1           { $2 }
+  : '[' indices1           {% traverse mkIPat $2 }
   | {- empty -}            { [] }
 
 indices1                :: { [Pattern PName] }
-  : iapat                  { [$1] }
-  | indices1 '@' apat      { $3 : $1 }
+  : pat ']'                { [$1] }
+  | indices1 '[' pat ']'   { $3 : $1 }
 
 iapats_indices          :: { ([Pattern PName], [Pattern PName]) }
   : iapats indices         { ($1, $2) }
-  | '@' indices1           { ([], $2) }
+  | '[' indices1           { ([], $2) }
 
 opt_iapats_indices      :: { ([Pattern PName], [Pattern PName]) }
   : {- empty -}            { ([],[]) }

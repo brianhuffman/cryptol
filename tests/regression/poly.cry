@@ -18,7 +18,7 @@ polyMul : {n1, n2, a} (Ring a) =>
 polyMul(p1, p2) = foldl(polyAdd, polyConst(zero), ps)
   where
     ps : [n1+1](Poly (n1+n2) a)
-    ps@i = Poly({ coeffs = scaleAndShift(i) })
+    ps[i] = Poly({ coeffs = scaleAndShift(i) })
 
     scaleAndShift(i) =
       ([ p1.coeffs@i * c | c <- p2.coeffs ] # zero) >>> i

@@ -527,6 +527,15 @@ a ==> b = if a then b else True
 primitive at : {n, a, ix} (Integral ix) => [n]a -> ix -> a
 
 /**
+ * Produce a sequence using a generating function.
+ * Satisfies 'generate(f)[i] i == f(i)' for all 'i' between '0' and 'n-1'.
+ *
+ * Declarations of the form 'x[i] = e' are syntactic sugar for
+ * 'x = generate (\i -> e)'.
+ */
+primitive generate : {n, a, ix} (Integral ix, LiteralLessThan n ix) => (ix -> a) -> [n]a
+
+/**
  * Concatenates two sequences.  On bitvectors, the most-significant bits
  * are in the left argument, and the least-significant bits are in the right.
  */
@@ -627,7 +636,7 @@ primitive (>>>) : {n, ix, a} (Integral ix) => [n]a -> ix -> [n]a
  * is a sequence of the zero-based indices of the elements to select.
  */
 (@@) : {n, k, ix, a} (Integral ix) => [n]a -> [k]ix -> [k]a
-xs @@ is = [ xs[i] | i <- is ]
+xs @@ is = ys where ys[i] = xs[is[i]]
 
 /**
  * Reverse index operator.  The first argument is a finite sequence.  The second
@@ -642,7 +651,7 @@ primitive (!) : {n, a, ix} (Integral ix) => [n]a -> ix -> a
  * select, starting from the end of the sequence.
  */
 (!!) : {n, k, ix, a} (Integral ix) => [n]a -> [k]ix -> [k]a
-xs !! is = [ xs ! i | i <- is ]
+xs !! is = ys where ys[i] = xs ! is[i]
 
 /**
  * Update the given sequence with new value at the given index position.
@@ -685,16 +694,6 @@ updatesEnd : {n, k, ix, a} (Integral ix) => [n]a -> [k]ix -> [k]a -> [n]a
 updatesEnd(xs0, idxs, vals) = foldl(upd, xs0, zip(idxs, vals))
   where
     upd(xs, (i,b)) = updateEnd(xs, i, b)
-
-/**
- * Produce a sequence using a generating function.
- * Satisfies 'generate(f)[i] i == f(i)' for all 'i' between '0' and 'n-1'.
- *
- * Declarations of the form 'x[i] = e' are syntactic sugar for
- * 'x = generate (\i -> e)'.
- */
-primitive generate : {n, a, ix} (Integral ix, LiteralLessThan n ix) => (ix -> a) -> [n]a
-
 
 /**
  * Sort a sequence of elements. Equivalent to 'sortBy (<=)'.
@@ -960,7 +959,7 @@ any(f, xs) = foldl'((\/), False, map(f, xs))
  * Map a function over a sequence.
  */
 map : {n, a, b} (a -> b) -> [n]a -> [n]b
-map(f, xs) = [f(x) | x <- xs]
+map(f, xs) = ys where ys[i] = f(xs[i])
 
 /**
  * Functional left fold.
@@ -1024,7 +1023,7 @@ scanr(f, acc, xs) = reverse (scanl (\(a, b) -> f(b, a), acc, reverse(xs)))
  * Repeat a value.
  */
 repeat : {n, a} a -> [n]a
-repeat(x) = [ x | _ <- zero : [n] ]
+repeat(x) = ys where ys[i] = x
 
 /**
  * 'elem x xs' returns true if x is equal to a value in xs.
@@ -1036,13 +1035,13 @@ elem(a, xs) = any(\(x) -> x == a, xs)
  * Create a list of tuples from two lists.
  */
 zip : {n, a, b} [n]a -> [n]b -> [n](a, b)
-zip(xs, ys) = [(x,y) | x <- xs | y <- ys]
+zip(xs, ys) = zs where zs[i] = (xs[i], ys[i])
 
 /**
  * Create a list by applying the function to each pair of elements in the input.
  */
 zipWith : {n, a, b, c} (a -> b -> c) -> [n]a -> [n]b -> [n]c
-zipWith(f, xs, ys) = [f(x, y) | x <- xs | y <- ys]
+zipWith(f, xs, ys) = zs where zs[i] = f(xs[i], ys[i])
 
 /**
  * Transform a function into uncurried form.

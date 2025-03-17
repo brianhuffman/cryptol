@@ -1,7 +1,5 @@
 Loading module Cryptol
 Loading module Cryptol
-{n, a, b, c} n == min n n
 {a, n} n == n * (1 * (1 * 1))
 {a, n} n / 2 == n - n /^ 2
-{n, a, b} n == min n n
 Loading module Main

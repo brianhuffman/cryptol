@@ -846,6 +846,26 @@ transposeV sym a b c xs
           Nat na -> VSeq na
 
 
+{-# INLINE generateV #-}
+
+generateV ::
+  Backend sym =>
+  sym ->
+  Integer ->
+  TValue ->
+  TValue ->
+  GenValue sym ->
+  SEval sym (GenValue sym)
+generateV sym n a ix f =
+  case a of
+    TVBit ->
+      fmap (VWord n) $ bitmapWordVal sym n $ indexSeqMap $ \i ->
+         fromVBit <$> fromVFun sym f (mkLit sym ix i)
+    _ ->
+      pure $ VSeq n $ indexSeqMap $ \i ->
+        fromVFun sym f (mkLit sym ix i)
+
+
 {-# INLINE ccatV #-}
 
 ccatV ::
@@ -1688,6 +1708,13 @@ genericPrimTable sym getEOpts =
                     PTyPoly  \c ->
                     PFun     \xs ->
                     PPrim $ transposeV sym a b c =<< xs)
+
+  , ("generate"   , {-# SCC "Prelude::generate" #-}
+                    PFinPoly \n ->
+                    PTyPoly  \a ->
+                    PTyPoly  \ix ->
+                    PFun     \f ->
+                    PPrim $ generateV sym n a ix =<< f)
 
     -- Shifts and rotates
   , ("<<"         , {-# SCC "Prelude::(<<)" #-}

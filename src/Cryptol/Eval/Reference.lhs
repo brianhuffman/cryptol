@@ -693,6 +693,14 @@ by corresponding type classes:
 >                     VFun $ \v ->
 >                       vWord n <$> appOp1 lg2Wrap (fromVWord =<< v)
 >   -- Sequences
+>   , "generate"   ~> vFinPoly $ \n -> pure $
+>                     VPoly $ \_a -> pure $
+>                     VPoly $ \ix -> pure $
+>                     VFun $ \f ->
+>                       pure $ generateV (Nat n) $ \i ->
+>                         do f' <- f
+>                            fromVFun f' (literal i ix)
+>
 >   , "#"          ~> vFinPoly $ \front -> pure $
 >                     VNumPoly $ \back  -> pure $
 >                     VPoly $ \_elty  -> pure $

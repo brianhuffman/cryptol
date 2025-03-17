@@ -8,9 +8,9 @@ Loading module Main
     we need to show that
       for any type k
       the following constraints hold:
-        • k == n`888
+        • k == n`883
             arising from
             matching types
             at issue723.cry:7:18--7:20
   where
-  n`888 is signature variable 'n' at issue723.cry:1:6--1:7
+  n`883 is signature variable 'n' at issue723.cry:1:6--1:7

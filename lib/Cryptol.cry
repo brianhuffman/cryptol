@@ -693,8 +693,7 @@ updatesEnd(xs0, idxs, vals) = foldl(upd, xs0, zip(idxs, vals))
  * Declarations of the form 'x[i] = e' are syntactic sugar for
  * 'x = generate (\i -> e)'.
  */
-generate : {n, a, ix} (Integral ix, LiteralLessThan n ix) => (ix -> a) -> [n]a
-generate(f) = [ f(i) | i <- [0 .. <n] ]
+primitive generate : {n, a, ix} (Integral ix, LiteralLessThan n ix) => (ix -> a) -> [n]a
 
 
 /**

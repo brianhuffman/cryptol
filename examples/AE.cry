@@ -62,7 +62,7 @@ encrypt :
 encrypt(key, nonce, state, inputMsg) = encMsg # tag
 
   where
-  encMsg = join(rest.0.message)
+  encMsg = join([ r.0.message | r <- rest ])
 
   tag = take{tagAmount}(Tag(key, tweak(1 - final.1), final.0.state))
 

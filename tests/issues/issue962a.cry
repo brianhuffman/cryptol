@@ -3,11 +3,3 @@ f(x) = (True, x)
 
 g : {a,b} [a]b -> [a]b
 g(x) = (f{a=a}(x)).1
-
-h = f.1
-
-i : {a} [a] -> [a]
-i = f{a=a}.1
-
-j : {a} [a]{ fld : Integer } -> [a]Integer
-j = f{a=a,b={fld : Integer}}.1.fld

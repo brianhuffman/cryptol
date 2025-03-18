@@ -707,7 +707,7 @@ sort = sortBy((<=))
  * pair of elements that are equivalent according to the order relation.
  */
 sortBy : {a, n} (a -> a -> Bit) -> [n]a -> [n]a
-sortBy(le, ((xs : [n/2]a) # (ys : [n/^2]a))) = zs.0
+sortBy(le, ((xs : [n/2]a) # (ys : [n/^2]a))) = [ z.0 | z <- zs ]
   where
     xs' = if number{n/2} == 1 then xs else sortBy(le, xs)
     ys' = if number{n/^2} == 1 then ys else sortBy(le, ys)

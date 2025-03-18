@@ -81,8 +81,6 @@ solveSelector sel outerT =
             Enum {} -> pure Nothing
             Abstract -> pure Nothing
 
-        TCon (TC TCSeq) [len,el] -> liftSeq len el
-        TCon (TC TCFun) [t1,t2]  -> liftFun t1 t2
         _ -> return Nothing
 
     (TupleSel n _, ty) ->
@@ -91,9 +89,6 @@ solveSelector sel outerT =
         TCon (TC (TCTuple m)) ts ->
           return $ do guard (0 <= n && n < m)
                       return $ ts !! n
-
-        TCon (TC TCSeq) [len,el] -> liftSeq len el
-        TCon (TC TCFun) [t1,t2]  -> liftFun t1 t2
 
         _ -> return Nothing
 
@@ -105,18 +100,6 @@ solveSelector sel outerT =
           return (Just t)
 
     _ -> return Nothing
-
-  where
-  liftSeq len el =
-    do mb <- solveSelector sel (tNoUser el)
-       return $ do el' <- mb
-                   return (TCon (TC TCSeq) [len,el'])
-
-  liftFun t1 t2 =
-    do mb <- solveSelector sel (tNoUser t2)
-       return $ do t2' <- mb
-                   return (TCon (TC TCFun) [t1,t2'])
-
 
 -- | Solve has-constraints.
 tryHasGoal :: HasGoal -> InferM (Bool, Bool) -- ^ changes, solved
@@ -153,60 +136,5 @@ and functions.
 Assumes types are zonked. -}
 mkSelSln :: Selector -> Type -> Type -> InferM HasGoalSln
 mkSelSln s outerT innerT =
-  case tNoUser outerT of
-    TCon (TC TCSeq) [len,el]
-      | TupleSel {} <- s  -> liftSeq len el
-      | RecordSel {} <- s -> liftSeq len el
-
-    TCon (TC TCFun) [t1,t2]
-      | TupleSel {} <- s -> liftFun t1 t2
-      | RecordSel {} <- s -> liftFun t1 t2
-
-    _ -> return HasGoalSln { hasDoSelect = \e -> ESel e s
-                           , hasDoSet    = \e v -> ESet outerT e s v }
-
-  where
-  -- Has s a t => Has s ([n]a) ([n]t)
-  -- xs.s             ~~> [ x.s           | x <- xs ]
-  -- { xs | s = ys }  ~~> [ { x | s = y } | x <- xs | y <- ys ]
-  liftSeq len el =
-    do x1 <- newLocalName NSValue (packIdent "x")
-       x2 <- newLocalName NSValue (packIdent "x")
-       y2 <- newLocalName NSValue (packIdent "y")
-       case tNoUser innerT of
-         TCon _ [_,eli] ->
-           do d <- mkSelSln s el eli
-              pure HasGoalSln
-                { hasDoSelect = \e ->
-                    EComp len eli (hasDoSelect d (EVar x1))
-                                  [[ From x1 len el e ]]
-                , hasDoSet = \e v ->
-                    EComp len el  (hasDoSet d (EVar x2) (EVar y2))
-                                  [ [ From x2 len el  e ]
-                                  , [ From y2 len eli v ]
-                                  ]
-                }
-
-
-         _ -> panic "mkSelSln" [ "Unexpected inner seq type.", show innerT ]
-
-  -- Has s b t => Has s (a -> b) (a -> t)
-  -- f.s            ~~> \x -> (f x).s
-  -- { f | s = g }  ~~> \x -> { f x | s = g x }
-  liftFun t1 t2 =
-    do x1 <- newLocalName NSValue (packIdent "x")
-       x2 <- newLocalName NSValue (packIdent "x")
-       case tNoUser innerT of
-         TCon _ [_,inT] ->
-           do d <- mkSelSln s t2 inT
-              pure HasGoalSln
-                { hasDoSelect = \e ->
-                    EAbs x1 t1 (hasDoSelect d (EApp e (EVar x1)))
-                , hasDoSet = \e v ->
-                    EAbs x2 t1 (hasDoSet d (EApp e (EVar x2))
-                                           (EApp v (EVar x2))) }
-         _ -> panic "mkSelSln" [ "Unexpected inner fun type", show innerT ]
-
-
-
-
+  return HasGoalSln { hasDoSelect = \e -> ESel e s
+                    , hasDoSet    = \e v -> ESet outerT e s v }

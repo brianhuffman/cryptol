@@ -6,7 +6,5 @@ Showing a specific instance of polymorphic result:
 3
 Loading module Cryptol
 Loading module Main
-i : {a} [a] -> [a]
-j : {a} [a]{fld : Integer} -> [a]Integer
 Loading module Cryptol
 Loading module Main

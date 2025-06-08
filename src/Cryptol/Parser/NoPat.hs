@@ -444,7 +444,6 @@ annotTopDs tds =
         -- XXX: we may want to add pragmas to newtypes and enums?
         TDNewtype {} -> (d :) <$> annotTopDs ds
         TDEnum {}    -> (d :) <$> annotTopDs ds
-        Include {}   -> (d :) <$> annotTopDs ds
 
         DModule m ->
           case removePatterns (tlValue m) of

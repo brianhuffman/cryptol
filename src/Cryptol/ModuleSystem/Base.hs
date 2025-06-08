@@ -69,7 +69,6 @@ import Cryptol.Parser.AST as P
 import Cryptol.Parser.NoPat (RemovePatterns(removePatterns))
 import qualified Cryptol.Parser.ExpandPropGuards as ExpandPropGuards 
   ( expandPropGuards, runExpandPropGuardsM )
-import Cryptol.Parser.NoInclude (removeIncludesModule)
 import Cryptol.Parser.Position (HasLoc(..), Range, emptyRange)
 import qualified Cryptol.TypeCheck     as T
 import qualified Cryptol.TypeCheck.AST as T
@@ -136,11 +135,10 @@ expandPropGuards a =
 
 -- Parsing ---------------------------------------------------------------------
 
--- | Parse a module and expand includes
--- Returns a fingerprint of the module, and a set of dependencies due
--- to `include` directives.
+-- | Parse a module.
+-- Returns a fingerprint of the module.
 parseModule ::
-  ModulePath -> ModuleM (Fingerprint, Set FilePath, [P.Module PName])
+  ModulePath -> ModuleM (Fingerprint, [P.Module PName])
 parseModule path = do
   getBytes <- getByteReader
 
@@ -174,32 +172,7 @@ parseModule path = do
   case P.parseModule cfg txt of
     Right pms ->
       do let fp = fingerprint bytes
-         (pm1,deps) <-
-           case path of
-             InFile p ->
-               do r <- getByteReader
-                  (mo,d) <- unzip <$>
-                    forM pms \pm ->
-                    do mb <- io (removeIncludesModule r p pm)
-                       case mb of
-                         Right ok -> pure ok
-                         Left err -> noIncludeErrors err
-                  pure (mo, Set.unions d)
-
-             {- We don't do "include" resolution for in-memory files
-                because at the moment the include resolution pass requires
-                the path to the file to be known---this is used when
-                looking for other inlcude files.  This could be
-                generalized, but we can do it once we have a concrete use
-                case as it would help guide the design. -}
-             InMem {} -> pure (pms, Set.empty)
-
-{-
-         case path of
-           InFile {} -> io $ print (T.vcat (map T.pp pm1))
-           InMem {} -> pure ()
---}
-         fp `seq` return (fp, deps, pm1)
+         fp `seq` return (fp, pms)
 
     Left err -> moduleParseError path err
 
@@ -214,7 +187,7 @@ loadModuleByPath ::
 loadModuleByPath eval path = withPrependedSearchPath [ takeDirectory path ] $ do
   let fileName = takeFileName path
   foundPath <- findFile fileName
-  (fp, deps, pms) <- parseModule (InFile foundPath)
+  (fp, pms) <- parseModule (InFile foundPath)
   last <$>
     forM pms \pm ->
     do let n = thing (P.mName pm)
@@ -229,7 +202,7 @@ loadModuleByPath eval path = withPrependedSearchPath [ takeDirectory path ] $ do
        case lookupTCEntity n env of
          -- loadModule will calculate the canonical path again
          Nothing ->
-           doLoadModule eval False (FromModule n) (InFile foundPath) fp deps pm
+           doLoadModule eval False (FromModule n) (InFile foundPath) fp pm
          Just lm
           | path' == loaded -> return (lmData lm)
           | otherwise       -> duplicateModuleName n path' loaded
@@ -247,8 +220,8 @@ loadModuleFrom quiet isrc =
        Nothing ->
          do path <- findModule n
             errorInFile path $
-              do (fp, deps, pms) <- parseModule path
-                 ms <- mapM (doLoadModule True quiet isrc path fp deps) pms
+              do (fp, pms) <- parseModule path
+                 ms <- mapM (doLoadModule True quiet isrc path fp) pms
                  return (path,last ms)
 
 -- | Load dependencies, typecheck, and add to the eval environment.
@@ -258,10 +231,9 @@ doLoadModule ::
   ImportSource ->
   ModulePath ->
   Fingerprint ->
-  Set FilePath {- ^ `include` dependencies -} ->
   P.Module PName ->
   ModuleM T.TCTopEntity
-doLoadModule eval quiet isrc path fp incDeps pm0 =
+doLoadModule eval quiet isrc path fp pm0 =
   loading isrc $
   do let pm = addPrelude pm0
      impDeps <- loadDeps pm
@@ -293,7 +265,7 @@ doLoadModule eval quiet isrc path fp incDeps pm0 =
                            pure fsrc
                       Nothing -> pure Nothing
 
-     let fi = fileInfo fp incDeps impDeps foreignSrc
+     let fi = fileInfo fp impDeps foreignSrc
      loadedModule path fi nameEnv foreignSrc tcm
 
      return tcm
@@ -444,7 +416,7 @@ findDepsOfModule m =
 
 findDepsOf :: ModulePath -> ModuleM (ModulePath, FileInfo)
 findDepsOf mpath =
-  do (fp, incs, ms) <- parseModule mpath
+  do (fp, ms) <- parseModule mpath
      let (anyF,imps) = mconcat (map (findDeps' . addPrelude) ms)
      fdeps <- if getAny anyF
                 then do mb <- io case mpath of
@@ -459,7 +431,6 @@ findDepsOf mpath =
        ( mpath
        , FileInfo
            { fiFingerprint = fp
-           , fiIncludeDeps = incs
            , fiImportDeps  = Set.fromList (map importedModule (appEndo imps []))
            , fiForeignDeps = fdeps
            }

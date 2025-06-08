@@ -29,7 +29,6 @@ data Config = Config
   , cfgStart       :: !Position     -- ^ Starting position for the parser
   , cfgLayout      :: !Layout       -- ^ Settings for layout processing
   , cfgPreProc     :: PreProc       -- ^ Preprocessor settings
-  , cfgAutoInclude :: [FilePath]    -- ^ Implicit includes
   , cfgModuleScope :: Bool          -- ^ When we do layout processing
                                     -- should we add a vCurly (i.e., are
                                     -- we parsing a list of things).
@@ -41,7 +40,6 @@ defaultConfig  = Config
   , cfgStart       = start
   , cfgLayout      = Layout
   , cfgPreProc     = None
-  , cfgAutoInclude = []
   , cfgModuleScope = True
   }
 

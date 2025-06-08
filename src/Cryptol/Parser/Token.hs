@@ -26,7 +26,6 @@ data TokenKW  = KW_else
               | KW_case
               | KW_of
               | KW_private
-              | KW_include
               | KW_inf
               | KW_lg2
               | KW_lengthFromThen

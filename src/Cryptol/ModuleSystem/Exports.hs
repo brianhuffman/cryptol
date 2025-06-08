@@ -28,7 +28,6 @@ exportedNames decl =
                       map exportCon (names namesNT nt)
       TDEnum en -> map exportType (names tnamesEnum en)
                 ++ map exportCon (names namesEnum en)
-      Include {}  -> []
       DImport {} -> []
       DParamDecl {} -> []
       DInterfaceConstraint {} -> []

@@ -1822,7 +1822,6 @@ moduleInfoCmd isFile name
                        mapM_ (\j -> rPutStrLn ("     , " ++ f j)) is
                        rPutStrLn "     ]"
 
-       depList show               "includes" (Set.toList (M.fiIncludeDeps fi))
        depList (show . show . pp) "imports"  (Set.toList (M.fiImportDeps  fi))
        depList show               "foreign"  (Map.toList (M.fiForeignDeps fi))
 

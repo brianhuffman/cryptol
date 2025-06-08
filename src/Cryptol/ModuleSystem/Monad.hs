@@ -31,7 +31,6 @@ import qualified Cryptol.Parser.AST as P
 import           Cryptol.Utils.Panic (panic)
 import qualified Cryptol.Parser.NoPat as NoPat
 import qualified Cryptol.Parser.ExpandPropGuards as ExpandPropGuards
-import qualified Cryptol.Parser.NoInclude as NoInc
 import qualified Cryptol.TypeCheck as T
 import qualified Cryptol.TypeCheck.AST as T
 import qualified Cryptol.TypeCheck.Solver.SMT as SMT
@@ -108,8 +107,6 @@ data ModuleError
     -- ^ Problems during the NoPat phase
   | ExpandPropGuardsError ImportSource ExpandPropGuards.Error
     -- ^ Problems during the ExpandPropGuards phase
-  | NoIncludeErrors ImportSource [NoInc.IncludeError]
-    -- ^ Problems during the NoInclude phase
   | TypeCheckingFailed ImportSource T.NameMap [(Range,T.Error)]
     -- ^ Problems during type checking
   | OtherFailure String
@@ -139,7 +136,6 @@ instance NFData ModuleError where
     RenamerErrors src errs               -> src `deepseq` errs `deepseq` ()
     NoPatErrors src errs                 -> src `deepseq` errs `deepseq` ()
     ExpandPropGuardsError src err        -> src `deepseq` err `deepseq` ()
-    NoIncludeErrors src errs             -> src `deepseq` errs `deepseq` ()
     TypeCheckingFailed nm src errs       -> nm `deepseq` src `deepseq` errs `deepseq` ()
     ModuleNameMismatch expected found    ->
       expected `deepseq` found `deepseq` ()
@@ -185,8 +181,6 @@ instance PP ModuleError where
     NoPatErrors _src errs -> vcat (map pp errs)
 
     ExpandPropGuardsError _src err -> pp err
-
-    NoIncludeErrors _src errs -> vcat (map NoInc.ppIncludeError errs)
 
     TypeCheckingFailed _src nm errs -> vcat (map (T.ppNamedError nm) errs)
 
@@ -244,11 +238,6 @@ expandPropGuardsError :: ExpandPropGuards.Error -> ModuleM a
 expandPropGuardsError err = do
   src <- getImportSource
   ModuleT (raise (ExpandPropGuardsError src err))
-
-noIncludeErrors :: [NoInc.IncludeError] -> ModuleM a
-noIncludeErrors errs = do
-  src <- getImportSource
-  ModuleT (raise (NoIncludeErrors src errs))
 
 typeCheckingFailed :: T.NameMap -> [(Range,T.Error)] -> ModuleM a
 typeCheckingFailed nameMap errs = do

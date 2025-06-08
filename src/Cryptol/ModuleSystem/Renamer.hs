@@ -541,7 +541,6 @@ renameTopDecls' ds =
         where NestedModule m = tlValue tl
       DImport {}              -> False
       DModParam {}            -> False    -- no definitions here
-      Include {}              -> bad "Include"
 
   isValDecl d =
     case d of
@@ -598,7 +597,6 @@ topDeclName topDecl =
     DModParam m             -> special (ModParamName (srcRange (mpSignature m))
                                                      (mpName m))
 
-    Include {}              -> bad "Include"
     DParamDecl {}           -> bad "DParamDecl"
   where
   noName    = Left topDecl
@@ -714,7 +712,6 @@ instance Rename TopDecl where
       DPrimType d       -> DPrimType <$> traverse rename d
       TDNewtype n       -> TDNewtype <$> traverse rename n
       TDEnum n          -> TDEnum    <$> traverse rename n
-      Include n         -> return (Include n)
       DModule m  -> DModule <$> traverse rename m
       DImport li -> DImport <$> renI li
       DModParam mp -> DModParam <$> rename mp

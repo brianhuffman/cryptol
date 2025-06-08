@@ -1522,7 +1522,6 @@ checkTopDecls = mapM_ checkTopDecl
            addModParam param
 
       P.DImport {}        -> pure ()
-      P.Include {}        -> bad "Include"
       P.DParamDecl {}     -> bad "DParamDecl"
 
 

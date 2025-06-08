@@ -562,7 +562,6 @@ removeLoadedModule rm lm =
 
 data FileInfo = FileInfo
   { fiFingerprint :: Fingerprint
-  , fiIncludeDeps :: Set FilePath
   , fiImportDeps  :: Set ModName
   , fiForeignDeps :: Map FilePath Bool
   } deriving (Show,Generic,NFData)
@@ -570,14 +569,12 @@ data FileInfo = FileInfo
 
 fileInfo ::
   Fingerprint ->
-  Set FilePath ->
   Set ModName ->
   Maybe ForeignSrc ->
   FileInfo
-fileInfo fp incDeps impDeps fsrc =
+fileInfo fp impDeps fsrc =
   FileInfo
     { fiFingerprint = fp
-    , fiIncludeDeps = incDeps
     , fiImportDeps  = impDeps
     , fiForeignDeps = fromMaybe Map.empty
                       do src <- fsrc

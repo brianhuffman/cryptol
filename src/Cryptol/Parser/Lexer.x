@@ -101,7 +101,6 @@ $white+                   { emit $ White Space }
 "case"                    { emit $ KW KW_case }
 "of"                      { emit $ KW KW_of }
 "private"                 { emit $ KW KW_private }
-"include"                 { emit $ KW KW_include }
 "module"                  { emit $ KW KW_module }
 "submodule"               { emit $ KW KW_submodule }
 "interface"               { emit $ KW KW_interface }

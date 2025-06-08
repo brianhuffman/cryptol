@@ -95,7 +95,6 @@ import qualified Cryptol.ModuleSystem.Env as M
 import qualified Cryptol.ModuleSystem.Name as M
 import qualified Cryptol.ModuleSystem.NamingEnv as M
 import Cryptol.Parser (ParseError,ppError)
-import Cryptol.Parser.NoInclude (IncludeError,ppIncludeError)
 import Cryptol.Parser.NoPat (Error)
 import Cryptol.Parser.Position (emptyRange, Range(from))
 import qualified Cryptol.TypeCheck.AST as T
@@ -335,7 +334,6 @@ data REPLException
   | FileNotFound FilePath
   | DirectoryNotFound FilePath
   | NoPatError [Error]
-  | NoIncludeError [IncludeError]
   | EvalError EvalErrorEx
   | TooWide WordTooWide
   | Unsupported Unsupported
@@ -364,7 +362,6 @@ instance PP REPLException where
                                   , text"not found or not a directory"
                                   ]
     NoPatError es        -> vcat (map pp es)
-    NoIncludeError es    -> vcat (map ppIncludeError es)
     ModuleSystemError ns me -> fixNameDisp ns (pp me)
     EvalError e          -> pp e
     Unsupported e        -> pp e

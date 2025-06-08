@@ -253,7 +253,6 @@ data TopDecl name =
   | DPrimType (TopLevel (PrimType name))
   | TDNewtype (TopLevel (Newtype name)) -- ^ @newtype T as = t
   | TDEnum (TopLevel (EnumDecl name))   -- ^ @enum T as = cons@
-  | Include (Located FilePath)          -- ^ @include File@ (until NoInclude)
 
   | DParamDecl Range (Signature name)   -- ^ @parameter ...@ (parser only)
 
@@ -793,7 +792,6 @@ instance HasLoc (TopDecl name) where
       DPrimType pt -> getLoc pt
       TDNewtype n -> getLoc n
       TDEnum n -> getLoc n
-      Include lfp -> getLoc lfp
       DModule d -> getLoc d
       DImport d -> getLoc d
       DModParam d -> getLoc d
@@ -953,7 +951,6 @@ instance (Show name, PPName name) => PP (TopDecl name) where
       DPrimType p -> pp p
       TDNewtype n -> pp n
       TDEnum n -> pp n
-      Include l   -> text "include" <+> text (show (thing l))
       DModule d -> pp d
       DImport i -> pp (thing i)
       DModParam s -> pp s
@@ -1456,7 +1453,6 @@ instance NoPos (TopDecl name) where
       DPrimType t -> DPrimType (noPos t)
       TDNewtype n -> TDNewtype(noPos n)
       TDEnum n -> TDEnum (noPos n)
-      Include x   -> Include  (noPos x)
       DModule d -> DModule (noPos d)
       DImport d -> DImport (noPos d)
       DModParam d -> DModParam (noPos d)

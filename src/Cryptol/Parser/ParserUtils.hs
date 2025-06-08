@@ -471,7 +471,6 @@ changeExport e = map change
       TDEnum n                -> TDEnum    n { tlExport = e }
       DModule m               -> DModule   m { tlExport = e }
       DModParam {}            -> decl
-      Include{}               -> decl
       DImport{}               -> decl
       DParamDecl{}            -> decl
       DInterfaceConstraint {} -> decl

@@ -573,6 +573,9 @@ checkDocs f ds@(d:_) = do recordError $ MultipleDocs f (map srcRange ds)
 toSig :: Decl PName -> [(PName, [Located (Schema PName)])]
 toSig (DLocated d _)      = toSig d
 toSig (DSignature xs s)   = [ (thing x,[Located (srcRange x) s]) | x <- xs ]
+toSig (DBind b)           = case bSignature b of
+                              Nothing -> []
+                              Just s -> [(thing (bName b), [Located (srcRange (bName b)) s])]
 toSig _                   = []
 
 -- | Does this declaration provide some signatures?

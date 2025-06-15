@@ -369,7 +369,11 @@ decl                    :: { Decl PName }
   | var propguards_cases
                            {% mkConstantPropGuardsDecl $1 $2 }
   | var iapats_indices '=' expr
-                           { at ($1,$4) $ mkIndexedDecl $1 $2 $4 }
+                           { at ($1,$4) $ mkIndexedDecl $1 $2 Nothing $4 }
+  | var iapats ':' type '=' expr
+                           { at ($1,$6) $ mkTypedDecl $1 ([], []) $2 $4 $6 }
+  | var tparams_props iapats ':' type '=' expr
+                           { at ($1,$7) $ mkTypedDecl $1 $2 $3 $5 $7 }
 
   | iapat pat_op iapat '=' expr
                            { at ($1,$5) $
@@ -399,7 +403,7 @@ let_decls               :: { [Decl PName] }
 
 let_decl                :: { Decl PName }
   : 'let' ipat '=' expr               { at ($2,$4) $ DPatBind $2 $4                    }
-  | 'let' var iapats_indices '=' expr  { at ($2,$5) $ mkIndexedDecl $2 $3 $5 }
+  | 'let' var iapats_indices '=' expr  { at ($2,$5) $ mkIndexedDecl $2 $3 Nothing $5 }
   | 'let' '(' op ')' '=' expr         { at ($2,$6) $ DPatBind (PVar $3) $6             }
   | 'let' iapat pat_op iapat '=' expr
                            { at ($2,$6) $
@@ -782,6 +786,16 @@ schema                         :: { Schema PName }
   | schema_quals type             { at ($1,$2) $ mkSchema [] (thing $1) $2 }
   | schema_vars schema_quals type { at ($1,$3) $ mkSchema (thing $1)
                                                           (thing $2) $3 }
+
+tparams_props                  :: { {- Located -} ([TParam PName], [Prop PName]) }
+  : '{' '}'                       { {- Located (rComb $1 $2) -} ([], []) }
+  | '{' schema_params '}'         { {- Located (rComb $1 $3) -} (reverse $2, []) }
+  | '{' schema_params ';' props '}'
+                                  { {- Located (rComb $1 $5) -} (reverse $2, thing $4) }
+
+props                          :: { Located [Prop PName] }
+  : type                          {% mkProp $1 }
+  | tuple_types                   {% mkProp (TTuple (reverse $1)) }
 
 schema_vars                    :: { Located [TParam PName] }
   : '{' '}'                       { Located (rComb $1 $2) [] }

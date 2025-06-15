@@ -660,13 +660,41 @@ mkProperty f ps e = at (f,e) $
                                }
 
 -- NOTE: The lists of patterns are reversed!
+mkTypedDecl ::
+  LPName ->
+  ([TParam PName], [Prop PName]) ->
+  [Pattern PName] ->
+  Type PName -> Expr PName -> Decl PName
+mkTypedDecl f (tps, props) ps t0 e =
+  DBind Bind { bName       = f
+             , bParams     = reverse ps
+             , bDef        = at e (Located emptyRange (exprDef e))
+             , bSignature  = Just s
+             , bPragmas    = []
+             , bMono       = False
+             , bInfix      = False
+             , bFixity     = Nothing
+             , bDoc        = Nothing
+             , bExport     = Public
+             }
+  where
+    s :: Schema PName
+    s = Forall tps props (foldl (\t p -> TFun (patType p) t) t0 ps) Nothing
+    patType :: Pattern PName -> Type PName
+    patType (PTyped _ t) = t
+    patType (PLocated p _) = patType p
+    patType _ = TWild
+
+-- NOTE: The lists of patterns are reversed!
 mkIndexedDecl ::
-  LPName -> ([Pattern PName], [Pattern PName]) -> Expr PName -> Decl PName
-mkIndexedDecl f (ps, ixs) e =
+  LPName ->
+  ([Pattern PName], [Pattern PName]) ->
+  Maybe (Schema PName) -> Expr PName -> Decl PName
+mkIndexedDecl f (ps, ixs) s e =
   DBind Bind { bName       = f
              , bParams     = reverse ps
              , bDef        = at e (Located emptyRange (exprDef rhs))
-             , bSignature  = Nothing
+             , bSignature  = s
              , bPragmas    = []
              , bMono       = False
              , bInfix      = False

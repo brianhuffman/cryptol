@@ -65,10 +65,10 @@ fromBitsLE bs = foldl' f (literalSWord 0 0) bs
   where f w b = svJoin (svToWord1 b) w
 
 packSBV :: [SBit SBV] -> SWord SBV
-packSBV bs = fromBitsLE (reverse bs)
+packSBV bs = fromBitsLE bs
 
 unpackSBV :: SWord SBV -> [SBit SBV]
-unpackSBV x = [ svTestBit x i | i <- reverse [0 .. intSizeOf x - 1] ]
+unpackSBV x = [ svTestBit x i | i <- [0 .. intSizeOf x - 1] ]
 
 literalSWord :: Int -> Integer -> SWord SBV
 literalSWord w i = svInteger (KBounded False w) i
@@ -223,11 +223,11 @@ instance Backend SBV where
   bitXor _ x y = pure $! svXOr x y
   bitComplement _ x = pure $! svNot x
 
-  wordBit _ x idx = pure $! svTestBit x (intSizeOf x - 1 - fromInteger idx)
+  wordBit _ x idx = pure $! svTestBit x (fromInteger idx)
 
   wordUpdate _ x idx b = pure $! svSymbolicMerge (kindOf x) False b wtrue wfalse
     where
-     i' = intSizeOf x - 1 - fromInteger idx
+     i' = fromInteger idx
      wtrue  = x `svOr`  svInteger (kindOf x) (bit i' :: Integer)
      wfalse = x `svAnd` svInteger (kindOf x) (complement (bit i' :: Integer))
 
@@ -242,11 +242,11 @@ instance Backend SBV where
     where sx = svSign x
           sy = svSign y
 
-  joinWord _ x y = pure $! svJoin x y
+  joinWord _ x y = pure $! svJoin y x
 
-  splitWord _ _leftW rightW w = pure
-    ( svExtract (intSizeOf w - 1) (fromInteger rightW) w
-    , svExtract (fromInteger rightW - 1) 0 w
+  splitWord _ leftW _rightW w = pure
+    ( svExtract (fromInteger leftW - 1) 0 w
+    , svExtract (intSizeOf w - 1) (fromInteger leftW) w
     )
 
   extractWord _ len start w =

@@ -8,7 +8,7 @@ xys = join([ [ (x, y) | y <- [ 2 .. 5 ] ] | x <- [ 1 .. 10 ] ])
 
 check26b = [ fst(ixy) | ixy <- xys ] ==
 	   join([ [ x | y <- [ 2 .. 5 ] ] | x <- [ 1 .. 10 ] ])
-// endianness difference
-check26c = [ fst(ixy) == snd(ixy) | ixy <- xys ] == reverse(0x0000084210)
+
+check26c = [ fst(ixy) == snd(ixy) | ixy <- xys ] == 0x0000084210
 
 check26 = check26a /\ check26b /\ check26c

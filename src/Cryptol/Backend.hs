@@ -52,7 +52,7 @@ enumerateIntBits' :: Backend sym =>
 enumerateIntBits' sym n idx =
   do let width = widthInteger n
      w <- wordFromInt sym width idx
-     bs <- unpackWord sym w
+     bs <- reverse <$> unpackWord sym w
      pure (width, bs)
 
 -- | Compute the list of bits in an integer in big-endian order.
@@ -180,8 +180,8 @@ class MonadIO (SEval sym) => Backend sym where
 
   -- | Extract the numbered bit from the word.
   --
-  --   NOTE: this assumes that the sequence of bits is big-endian and finite, so the
-  --   bit numbered 0 is the most significant bit.
+  --   NOTE: this assumes that the sequence of bits is little-endian, so the
+  --   bit numbered 0 is the least significant bit.
   wordBit ::
     sym ->
     SWord sym ->
@@ -190,8 +190,8 @@ class MonadIO (SEval sym) => Backend sym where
 
   -- | Update the numbered bit in the word.
   --
-  --   NOTE: this assumes that the sequence of bits is big-endian and finite, so the
-  --   bit numbered 0 is the most significant bit.
+  --   NOTE: this assumes that the sequence of bits is little-endian, so the
+  --   bit numbered 0 is the least significant bit.
   wordUpdate ::
     sym ->
     SWord sym ->
@@ -200,16 +200,16 @@ class MonadIO (SEval sym) => Backend sym where
     SEval sym (SWord sym)
 
   -- | Construct a word value from a finite sequence of bits.
-  --   NOTE: this assumes that the sequence of bits is big-endian and finite, so the
-  --   first element of the list will be the most significant bit.
+  --   NOTE: this assumes that the sequence of bits is little-endian, so the
+  --   first element of the list will be the least significant bit.
   packWord ::
     sym ->
     [SBit sym] ->
     SEval sym (SWord sym)
 
   -- | Deconstruct a packed word value in to a finite sequence of bits.
-  --   NOTE: this produces a list of bits that represent a big-endian word, so
-  --   the most significant bit is the first element of the list.
+  --   NOTE: this produces a list of bits that represent a little-endian word, so
+  --   the least significant bit is the first element of the list.
   unpackWord ::
     sym ->
     SWord sym ->
@@ -223,15 +223,15 @@ class MonadIO (SEval sym) => Backend sym where
     SEval sym (SWord sym)
 
   -- | Concatenate the two given word values.
-  --   NOTE: the first argument represents the more-significant bits
+  --   NOTE: the first argument represents the less-significant bits
   joinWord ::
     sym ->
     SWord sym ->
     SWord sym ->
     SEval sym (SWord sym)
 
-  -- | Take the most-significant bits, and return
-  --   those bits and the remainder.  The first element
+  -- | Split a word into its least-significant bits and
+  --   the most-significant bits.  The first element
   --   of the pair is the most significant bits.
   --   The two integer sizes must sum to the length of the given word value.
   splitWord ::

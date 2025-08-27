@@ -12,4 +12,4 @@ property mwe'' = r == (r << i)
 bitget : [12] -> [436][8] -> Bit
 property bitget(i, r) = i < 3488 ==> bit_gf == if bit_bit then 0x0001 else 0x0000
   where bit_gf = zext((r[i/8] >> (i%8)) & 1)
-        bit_bit = join(map(reverse,r))[i]
+        bit_bit = join(r)[i]

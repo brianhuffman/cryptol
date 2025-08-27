@@ -406,7 +406,7 @@ asBitsMap sym (ThunkWordVal _ m)  =
        lookupSeqMap mp i
 
 -- | Turn a word value into a sequence of bits, forcing each bit.
---   The sequence is returned in big-endian order.
+--   The sequence is returned in little-endian order.
 enumerateWordValue :: Backend sym => sym -> WordValue sym -> SEval sym [SBit sym]
 enumerateWordValue sym (WordVal w) = unpackWord sym w
 enumerateWordValue sym (ThunkWordVal _ m) = enumerateWordValue sym =<< m
@@ -414,7 +414,7 @@ enumerateWordValue sym (ThunkWordVal _ m) = enumerateWordValue sym =<< m
 enumerateWordValue _ (BitmapVal n _ xs) = sequence (enumerateSeqMap n xs)
 
 -- | Turn a word value into a sequence of bits, forcing each bit.
---   The sequence is returned in reverse of the usual order, which is little-endian order.
+--   The sequence is returned in reverse of the usual order, which is big-endian order.
 enumerateWordValueRev :: Backend sym => sym -> WordValue sym -> SEval sym [SBit sym]
 enumerateWordValueRev sym (WordVal w)  = reverse <$> unpackWord sym w
 enumerateWordValueRev sym (ThunkWordVal _ m)  = enumerateWordValueRev sym =<< m
@@ -613,11 +613,11 @@ updateWordByWord sym dir w0 idx bitval =
          b <- bitval
          msk <- case dir of
                   IndexForward ->
-                    do highbit <- wordLit sym sz (bit (fromInteger (sz-1)))
-                       wordShiftRight sym highbit =<< asWordVal sym idx
-                  IndexBackward ->
                     do lowbit <- wordLit sym sz 1
                        wordShiftLeft sym lowbit =<< asWordVal sym idx
+                  IndexBackward ->
+                    do highbit <- wordLit sym sz (bit (fromInteger (sz-1)))
+                       wordShiftRight sym highbit =<< asWordVal sym idx
          case bitAsLit sym b of
            Just True  -> wordOr  sym wv msk
            Just False -> wordAnd sym wv =<< wordComplement sym msk
@@ -646,7 +646,7 @@ shiftSeqByWord sym merge reindex zro sz xs idx =
   wordValAsLit sym idx >>= \case
     Just j -> shiftOp xs j
     Nothing ->
-      do idx_segs <- enumerateIndexSegments sym idx
+      do idx_segs <- reverse <$> enumerateIndexSegments sym idx
          barrelShifter sym merge shiftOp sz xs idx_bits idx_segs
   where
    idx_bits = wordValueSize sym idx

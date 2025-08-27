@@ -1096,7 +1096,7 @@ readFileCmd fp = do
          let expr = T.EApp f x
          void $ bindItVariable (E.TVSeq (toInteger len) (E.TVSeq 8 E.TVBit)) expr
 
--- | Convert a 'ByteString' (big-endian) of length @n@ to an 'Integer'
+-- | Convert a 'ByteString' (little-endian) of length @n@ to an 'Integer'
 -- with @8*n@ bits. This function uses a balanced binary fold to
 -- achieve /O(n log n)/ total memory allocation and run-time, in
 -- contrast to the /O(n^2)/ that would be required by a naive
@@ -1106,11 +1106,10 @@ byteStringToInteger :: BS.ByteString -> Integer
 byteStringToInteger bs
   | l == 0 = 0
   | l == 1 = toInteger (BS.head bs)
-  | otherwise = x1 `shiftL` (l2 * 8) .|. x2
+  | otherwise = x1 .|. x2 `shiftL` (l1 * 8)
   where
     l = BS.length bs
     l1 = l `div` 2
-    l2 = l - l1
     (bs1, bs2) = BS.splitAt l1 bs
     x1 = byteStringToInteger bs1
     x2 = byteStringToInteger bs2

@@ -4,7 +4,7 @@ pad : {msgLen, padding, contentLen, chunks}
     , 64 >= width msgLen
     , padding == (512 - contentLen % 512) % 512
     ) => [msgLen] -> [chunks * 512]
-pad(msg) = msg # [True] # (zero:[padding]) # sz  //or: (`msgLen:[64])
+pad(msg) = sz # (zero:[padding]) # [True] # msg  //or: (`msgLen:[64])
       where  sz : [64]
              sz = length(msg):[64]
 

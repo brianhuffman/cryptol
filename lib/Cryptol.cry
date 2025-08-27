@@ -772,7 +772,7 @@ carry(x, y) = (x + y) < x
  * Most significant bit.  Returns true if the highest-value bit in the word
  * is set.
  */
-msb{n; n >= 1}(x : [n]) : Bit = head(x)
+msb{n; n >= 1}(x : [n]) : Bit = last(x)
 
 /**
  * Signed carry.  Returns true if the 2's complement signed addition of the
@@ -797,13 +797,13 @@ sborrow(x, y) = ( x <$ (x-y) ) ^ msb(y)
  * Zero extension of a bitvector.
  */
 zext : {m, n} (m >= n) => [n] -> [m]
-zext(x) = zero # x
+zext(x) = x # zero
 
 /**
  * Sign extension of a bitvector.
  */
 sext : {m, n} (m >= n, n >= 1) => [n] -> [m]
-sext(x) = newbits # x
+sext(x) = x # newbits
   where newbits = if x[0] then ~zero else zero
 
 /**

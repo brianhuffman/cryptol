@@ -386,7 +386,7 @@ expV sym =
               Nothing -> liftIO (X.throw (UnsupportedSymbolicOp "integer exponentiation"))
 
           TVSeq _w el | isTBit el ->
-            do ebits <- enumerateWordValue sym (fromWordVal "(^^)" e)
+            do ebits <- enumerateWordValueRev sym (fromWordVal "(^^)" e)
                computeExponent sym aty a ebits
 
           _ -> evalPanic "expV" [show ety ++ " not int class `Integral`"]
@@ -395,6 +395,7 @@ expV sym =
 {-# SPECIALIZE computeExponent ::
       Concrete -> TValue -> GenValue Concrete -> [SBit Concrete] -> SEval Concrete (GenValue Concrete)
   #-}
+-- | The exponent is provided as a list of bits in big-endian order.
 computeExponent :: Backend sym =>
   sym -> TValue -> GenValue sym -> [SBit sym] -> SEval sym (GenValue sym)
 computeExponent sym aty a bs0 =
@@ -781,7 +782,7 @@ splitV sym parts each a val =
        (Nat p, e) | isTBit a -> do
           val' <- sDelay sym (fromWordVal "splitV" <$> val)
           return $ VSeq p $ indexSeqMap $ \i ->
-            VWord e <$> (extractWordVal sym e ((p-i-1)*e) =<< val')
+            VWord e <$> (extractWordVal sym e (i*e) =<< val')
        (Nat p, e) -> do
           val' <- sDelay sym (fromSeq "splitV" =<< val)
           return $ VSeq p $ indexSeqMap $ \i ->
@@ -1225,27 +1226,27 @@ infFromThenV sym =
 
 {-# INLINE shiftLeftReindex #-}
 shiftLeftReindex :: Nat -> Integer -> Integer -> Maybe Integer
-shiftLeftReindex sz i shft =
-   case sz of
-     Nat n | i+shft >= n -> Nothing
-     _                   -> Just (i+shft)
+shiftLeftReindex _sz i shft =
+   if i-shft < 0 then Nothing else Just (i-shft)
 
 {-# INLINE shiftRightReindex #-}
 shiftRightReindex :: Nat -> Integer -> Integer -> Maybe Integer
-shiftRightReindex _sz i shft =
-   if i-shft < 0 then Nothing else Just (i-shft)
+shiftRightReindex sz i shft =
+   case sz of
+     Nat n | i+shft >= n -> Nothing
+     _                   -> Just (i+shft)
 
 {-# INLINE rotateLeftReindex #-}
 rotateLeftReindex :: Nat -> Integer -> Integer -> Maybe Integer
 rotateLeftReindex sz i shft =
    case sz of
-     Nat n -> Just ((i+shft) `mod` n)
+     Nat n -> Just ((i+n-shft) `mod` n)
 
 {-# INLINE rotateRightReindex #-}
 rotateRightReindex :: Nat -> Integer -> Integer -> Maybe Integer
 rotateRightReindex sz i shft =
    case sz of
-     Nat n -> Just ((i+n-shft) `mod` n)
+     Nat n -> Just ((i+shft) `mod` n)
 
 
 {-# INLINE logicShift #-}

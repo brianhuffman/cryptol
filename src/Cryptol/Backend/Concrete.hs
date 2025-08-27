@@ -140,10 +140,10 @@ instance Backend Concrete where
   wordLen _ (BV w _) = w
   wordAsChar _ (BV _ x) = Just $! integerToChar x
 
-  wordBit _ (BV w x) idx = pure $! testBit x (fromInteger (w - 1 - idx))
+  wordBit _ (BV _w x) idx = pure $! testBit x (fromInteger idx)
 
-  wordUpdate _ (BV w x) idx True  = pure $! BV w (setBit   x (fromInteger (w - 1 - idx)))
-  wordUpdate _ (BV w x) idx False = pure $! BV w (clearBit x (fromInteger (w - 1 - idx)))
+  wordUpdate _ (BV w x) idx True  = pure $! BV w (setBit   x (fromInteger idx))
+  wordUpdate _ (BV w x) idx False = pure $! BV w (clearBit x (fromInteger idx))
 
   isReady _ = maybeReady
 
@@ -185,19 +185,19 @@ instance Backend Concrete where
       w = case length bits of
             len | toInteger len >= Arch.maxBigIntWidth -> wordTooWide (toInteger len)
                 | otherwise                  -> len
-      a = foldl setb 0 (zip [w - 1, w - 2 .. 0] bits)
+      a = foldl setb 0 (zip [0 .. w - 1] bits)
       setb acc (n,b) | b         = setBit acc n
                      | otherwise = acc
 
-  unpackWord _ (BV w a) = pure [ testBit a n | n <- [w' - 1, w' - 2 .. 0] ]
+  unpackWord _ (BV w a) = pure [ testBit a n | n <- [0 .. w' - 1] ]
     where
       w' = fromInteger w
 
   joinWord _ (BV i x) (BV j y) =
-    pure $! BV (i + j) (shiftL x (fromInteger j) + y)
+    pure $! BV (i + j) (x + shiftL y (fromInteger i))
 
   splitWord _ leftW rightW (BV _ x) =
-    pure ( BV leftW (x `shiftR` (fromInteger rightW)), mkBv rightW x )
+    pure ( mkBv leftW x, BV rightW (x `shiftR` (fromInteger leftW)) )
 
   extractWord _ n i (BV _ x) = pure $! mkBv n (x `shiftR` (fromInteger i))
 

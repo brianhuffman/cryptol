@@ -7,24 +7,24 @@ module Cryptol::Reference where
 pmult : {u, v} [1 + u] -> [1 + v] -> [1 + u + v]
 pmult(x, y) = last(zs)
   where
-    zs = [0] # [ (z << 1) ^ (if yi then 0 # x else 0) | yi <- y | z <- zs ]
+    zs = [0] # [ (z << 1) ^ (if yi then zext(x) else 0) | yi <- reverse(y) | z <- zs ]
 
 /**
  * Performs division of polynomials over GF(2).
  * Reference implementation.
  */
 pdiv : {u, v} [u] -> [v] -> [u]
-pdiv(x, y) = [ z ! degree | z <- zs ]
+pdiv(x, y) = [ z[degree] | z <- reverse(zs) ]
   where
     degree : [width v]
-    degree = last (ds : [1 + v]_)
-      where ds = [0/0] # [if yi then i else d | yi <- reverse(y) | i <- [0..v] | d <- ds ]
+    degree = last(ds : [1 + v]_)
+      where ds = [0/0] # [if yi then i else d | yi <- y | i <- [0..v] | d <- ds ]
 
     reduce : [v] -> [v]
-    reduce(u) = if u ! degree then u ^ y else u
+    reduce(u) = if u[degree] then u ^ y else u
 
     zs : [u][v]
-    zs = [ tail (reduce(z) # [xi]) | z <- [0] # zs | xi <- x ]
+    zs = [ take([xi] # reduce(z)) | z <- [0] # zs | xi <- reverse(x) ]
 
 /**
  * Performs modulus of polynomials over GF(2).
@@ -35,15 +35,15 @@ pmod(x, y) = if y == 0 then 0/0 else last(zs)
   where
     degree : [width v]
     degree = last (ds : [2 + v]_)
-      where ds = [0/0] # [if yi then i else d | yi <- reverse(y) | i <- [0..v] | d <- ds ]
+      where ds = [0/0] # [if yi then i else d | yi <- y | i <- [0..v] | d <- ds ]
 
     reduce : [1 + v] -> [1 + v]
-    reduce(u) = if u ! degree then u ^ y else u
+    reduce(u) = if u[degree] then u ^ y else u
 
     powers : [u][1 + v]
     powers = take{u}([reduce(1)] # [ reduce(p << 1) | p <- powers ])
 
-    zs = [0] # [ z ^ (if xi then tail(p) else 0) | xi <- reverse(x) | p <- powers | z <- zs ]
+    zs = [0] # [ z ^ (if xi then take{v}(p) else 0) | xi <- x | p <- powers | z <- zs ]
 
 /**
  * Functional left fold.

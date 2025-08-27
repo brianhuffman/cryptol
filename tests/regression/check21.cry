@@ -1,6 +1,6 @@
 irred : [8]
 irred = 0x1b
-// endianness difference from Cryptol-1 test
+
 xtimes(a) = (if msb(a) then a' ^ irred else a')
   where a' = a << 1
 

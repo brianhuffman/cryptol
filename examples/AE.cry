@@ -57,9 +57,9 @@ property
 
 type Int = [64]
 
-encrypt :
-  {m} K -> Nonce -> A -> [m * (p * n)] -> [m * (p * n) + tagAmount]
-encrypt(key, nonce, state, inputMsg) = encMsg # tag
+encrypt{m}(key : K, nonce : Nonce, state : A, inputMsg : [m * (p * n)])
+  : [m * (p * n) + tagAmount]
+  = encMsg # tag
 
   where
   encMsg = join([ r.0.message | r <- rest ])

@@ -204,6 +204,7 @@ Symbols
     map : {n, a, b} (a -> b) -> [n]a -> [n]b
     max : {a} (Cmp a) => a -> a -> a
     min : {a} (Cmp a) => a -> a -> a
+    msb : {n} (n >= 1) => [n] -> Bit
     negate : {a} (Ring a) => a -> a
     number : {val, rep} (Literal val rep) => rep
     or : {n} [n] -> Bit

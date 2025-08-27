@@ -769,6 +769,12 @@ carry : {n} [n] -> [n] -> Bit
 carry(x, y) = (x + y) < x
 
 /**
+ * Most significant bit.  Returns true if the highest-value bit in the word
+ * is set.
+ */
+msb{n; n >= 1}(x : [n]) : Bit = head(x)
+
+/**
  * Signed carry.  Returns true if the 2's complement signed addition of the
  * given bitvector arguments would result in a signed overflow.
  */
@@ -785,7 +791,7 @@ scarry(x, y) = (sx == sy) /\ (sx != sz)
  * given bitvector arguments would result in a signed overflow.
  */
 sborrow : {n} (n >= 1) => [n] -> [n] -> Bit
-sborrow(x, y) = ( x <$ (x-y) ) ^ y[0]
+sborrow(x, y) = ( x <$ (x-y) ) ^ msb(y)
 
 /**
  * Zero extension of a bitvector.

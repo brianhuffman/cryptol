@@ -55,8 +55,6 @@ data TokenKW  = KW_else
               | KW_interface
               | KW_foreign
               | KW_Prop
-              | KW_by
-              | KW_down
                 deriving (Eq, Show, Generic, NFData)
 
 -- | The named operators are a special case for parsing types, and 'Other' is
@@ -77,13 +75,12 @@ data TokenSym = Bar
               | DotDot
               | DotDotDot
               | DotDotLt
-              | DotDotGt
               | Colon
               | BackTick
               | ParenL   | ParenR
               | BracketL | BracketR
               | CurlyL   | CurlyR
-              | Lt | Gt
+              | Lt
               | Underscore
                 deriving (Eq, Show, Generic, NFData)
 

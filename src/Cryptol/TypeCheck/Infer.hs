@@ -179,8 +179,6 @@ appTys expr ts tGoal =
     P.EIndex    {} -> mono
     P.EList     {} -> mono
     P.EFromTo   {} -> mono
-    P.EFromToBy {} -> mono
-    P.EFromToDownBy {} -> mono
     P.EFromToLessThan {} -> mono
     P.EInfFrom  {} -> mono
     P.EComp     {} -> mono
@@ -290,58 +288,6 @@ checkE expr tGoal =
          let checkElem e = checkE e (WithSource a TypeOfSeqElement (getLoc e))
          es' <- mapM checkElem es
          return (EList es' a)
-
-    P.EFromToBy isStrict t1 t2 t3 mety
-      | isStrict ->
-        do l <- curRange
-           let fs = [("first",t1),("bound",t2),("stride",t3)] ++
-                    case mety of
-                      Just ety -> [("a",ety)]
-                      Nothing  -> []
-           prim <- mkPrim "fromToByLessThan"
-           let e' = P.EAppT prim
-                    [ P.NamedInst P.Named{ name = Located l (packIdent x), value = y }
-                    | (x,y) <- fs
-                    ]
-           checkE e' tGoal
-      | otherwise ->
-        do l <- curRange
-           let fs = [("first",t1),("last",t2),("stride",t3)] ++
-                    case mety of
-                      Just ety -> [("a",ety)]
-                      Nothing  -> []
-           prim <- mkPrim "fromToBy"
-           let e' = P.EAppT prim
-                    [ P.NamedInst P.Named{ name = Located l (packIdent x), value = y }
-                    | (x,y) <- fs
-                    ]
-           checkE e' tGoal
-
-    P.EFromToDownBy isStrict t1 t2 t3 mety
-      | isStrict ->
-        do l <- curRange
-           let fs = [("first",t1),("bound",t2),("stride",t3)] ++
-                    case mety of
-                      Just ety -> [("a",ety)]
-                      Nothing  -> []
-           prim <- mkPrim "fromToDownByGreaterThan"
-           let e' = P.EAppT prim
-                    [ P.NamedInst P.Named{ name = Located l (packIdent x), value = y }
-                    | (x,y) <- fs
-                    ]
-           checkE e' tGoal
-      | otherwise ->
-        do l <- curRange
-           let fs = [("first",t1),("last",t2),("stride",t3)] ++
-                    case mety of
-                      Just ety -> [("a",ety)]
-                      Nothing  -> []
-           prim <- mkPrim "fromToDownBy"
-           let e' = P.EAppT prim
-                    [ P.NamedInst P.Named{ name = Located l (packIdent x), value = y }
-                    | (x,y) <- fs
-                    ]
-           checkE e' tGoal
 
     P.EFromToLessThan t1 t2 mety ->
       do l <- curRange

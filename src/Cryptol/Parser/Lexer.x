@@ -116,8 +116,6 @@ $white+                   { emit $ White Space }
 "import"                  { emit $ KW KW_import }
 "as"                      { emit $ KW KW_as }
 "hiding"                  { emit $ KW KW_hiding }
-"down"                    { emit $ KW KW_down }
-"by"                      { emit $ KW KW_by }
 
 "infixl"                  { emit $ KW KW_infixl }
 "infixr"                  { emit $ KW KW_infixr }
@@ -149,7 +147,6 @@ $white+                   { emit $ White Space }
 ".."                      { emit $ Sym DotDot }
 "..."                     { emit $ Sym DotDotDot }
 "..<"                     { emit $ Sym DotDotLt  }
-"..>"                     { emit $ Sym DotDotGt  }
 "|"                       { emit $ Sym Bar }
 "("                       { emit $ Sym ParenL }
 ")"                       { emit $ Sym ParenR }
@@ -169,9 +166,6 @@ $white+                   { emit $ White Space }
 
 -- < can appear in the enumeration syntax `[ x .. < y ]
 "<"                       { emit $ Sym Lt }
-
--- > can appear in the enumeration syntax `[ x .. > y down by n ]
-">"                       { emit $ Sym Gt }
 
 -- hash is used as a kind, and as a pattern
 "#"                       { emit  (Op   Hash ) }

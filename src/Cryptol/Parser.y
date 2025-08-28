@@ -86,8 +86,6 @@ import Paths_cryptol
   'of'        { Located $$ (Token (KW KW_of) _)}
   'interface' { Located $$ (Token (KW KW_interface) _)}
   'x'         { Located $$ (Token (KW KW_x)       _)}
-  'down'      { Located $$ (Token (KW KW_down)    _)}
-  'by'        { Located $$ (Token (KW KW_by)      _)}
 
   'primitive' { Located $$ (Token (KW KW_primitive) _)}
   'constraint'{ Located $$ (Token (KW KW_constraint) _)}
@@ -100,10 +98,8 @@ import Paths_cryptol
   '..'        { Located $$ (Token (Sym DotDot  ) _)}
   '...'       { Located $$ (Token (Sym DotDotDot) _)}
   '..<'       { Located $$ (Token (Sym DotDotLt) _)}
-  '..>'       { Located $$ (Token (Sym DotDotGt) _)}
   '|'         { Located $$ (Token (Sym Bar     ) _)}
   '<'         { Located $$ (Token (Sym Lt      ) _)}
-  '>'         { Located $$ (Token (Sym Gt      ) _)}
 
   '('         { Located $$ (Token (Sym ParenL  ) _)}
   ')'         { Located $$ (Token (Sym ParenR  ) _)}
@@ -516,7 +512,6 @@ pat_op                           :: { LPName }
   | '~'                             { Located $1 $ mkUnqual $ mkInfix "~" }
   | '^^'                            { Located $1 $ mkUnqual $ mkInfix "^^" }
   | '<'                             { Located $1 $ mkUnqual $ mkInfix "<" }
-  | '>'                             { Located $1 $ mkUnqual $ mkInfix ">" }
 
 other_op                         :: { LPName }
   : OP                              { let Token (Op (Other [] str)) _ = thing $1
@@ -680,14 +675,6 @@ list_expr                      :: { Expr PName }
 
   | expr '..' '<' expr            {% eFromToLessThan $2 $1 $4   }
   | expr '..<'    expr            {% eFromToLessThan $2 $1 $3   }
-
-  | expr '..' expr 'by' expr      {% eFromToBy $2 $1 $3 $5 False }
-  | expr '..' '<' expr 'by' expr  {% eFromToBy $2 $1 $4 $6 True }
-  | expr '..<' expr 'by' expr     {% eFromToBy $2 $1 $3 $5 True }
-
-  | expr '..' expr 'down' 'by' expr     {% eFromToDownBy $2 $1 $3 $6 False }
-  | expr '..' '>' expr 'down' 'by' expr {% eFromToDownBy $2 $1 $4 $7 True }
-  | expr '..>' expr 'down' 'by' expr    {% eFromToDownBy $2 $1 $3 $6 True }
 
   | expr '...'                    { EInfFrom $1 Nothing         }
   | expr ',' expr '...'           { EInfFrom $1 (Just $3)       }

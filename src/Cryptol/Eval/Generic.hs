@@ -1136,60 +1136,6 @@ fromToLessThanV sym =
     in case bound of
          Nat bound' -> mkSeq sym (Nat (bound' - first)) ty ss
 
-{-# INLINE fromToByV #-}
--- @[ 0 .. 10 by 2 ]@
-fromToByV :: Backend sym => sym -> Prim sym
-fromToByV sym =
-  PFinPoly \first ->
-  PFinPoly \lst ->
-  PFinPoly \stride ->
-  PTyPoly  \ty ->
-  PPrim
-    let !f = mkLit sym ty
-        ss = indexSeqMap $ \i -> f (first + i*stride)
-     in mkSeq sym (Nat (1 + ((lst - first) `div` stride))) ty ss
-
-{-# INLINE fromToByLessThanV #-}
--- @[ 0 .. <10 by 2 ]@
-fromToByLessThanV :: Backend sym => sym -> Prim sym
-fromToByLessThanV sym =
-  PFinPoly \first ->
-  PNumPoly \bound ->
-  PFinPoly \stride ->
-  PTyPoly  \ty ->
-  PPrim
-    let !f = mkLit sym ty
-        ss = indexSeqMap $ \i -> f (first + i*stride)
-     in case bound of
-          Nat bound' -> mkSeq sym (Nat ((bound' - first + stride - 1) `div` stride)) ty ss
-
-
-{-# INLINE fromToDownByV #-}
--- @[ 10 .. 0 down by 2 ]@
-fromToDownByV :: Backend sym => sym -> Prim sym
-fromToDownByV sym =
-  PFinPoly \first ->
-  PFinPoly \lst ->
-  PFinPoly \stride ->
-  PTyPoly  \ty ->
-  PPrim
-    let !f = mkLit sym ty
-        ss = indexSeqMap $ \i -> f (first - i*stride)
-     in mkSeq sym (Nat (1 + ((first - lst) `div` stride))) ty ss
-
-{-# INLINE fromToDownByGreaterThanV #-}
--- @[ 10 .. >0 down by 2 ]@
-fromToDownByGreaterThanV :: Backend sym => sym -> Prim sym
-fromToDownByGreaterThanV sym =
-  PFinPoly \first ->
-  PFinPoly \bound ->
-  PFinPoly \stride ->
-  PTyPoly  \ty ->
-  PPrim
-    let !f = mkLit sym ty
-        ss = indexSeqMap $ \i -> f (first - i*stride)
-     in mkSeq sym (Nat ((first - bound + stride - 1) `div` stride)) ty ss
-
 {-# INLINE infFromV #-}
 infFromV :: Backend sym => sym -> Prim sym
 infFromV sym =
@@ -1637,20 +1583,6 @@ genericPrimTable sym getEOpts =
   , ("fromToLessThan"
                   , {-# SCC "Prelude::fromToLessThan" #-}
                     fromToLessThanV sym)
-
-  , ("fromToBy"   , {-# SCC "Prelude::fromToBy" #-}
-                    fromToByV sym)
-
-  , ("fromToByLessThan",
-                    {-# SCC "Prelude::fromToByLessThan" #-}
-                    fromToByLessThanV sym)
-
-  , ("fromToDownBy", {-# SCC "Prelude::fromToDownBy" #-}
-                     fromToDownByV sym)
-
-  , ("fromToDownByGreaterThan"
-                  , {-# SCC "Prelude::fromToDownByGreaterThan" #-}
-                    fromToDownByGreaterThanV sym)
 
     -- Sequence manipulations
   , ("#"          , {-# SCC "Prelude::(#)" #-}

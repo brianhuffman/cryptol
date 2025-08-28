@@ -600,8 +600,7 @@ by corresponding type classes:
 
 * Indexing: `@`, `@@`, `!`, `!!`, `update`, `updateEnd`
 
-* Enumerations: `fromTo`, `fromThenTo`, `fromToLessThan`, `fromToBy`,
-                `fromToByLessThan`, `fromToDownBy`, `fromToDownByGreaterThan`,
+* Enumerations: `fromTo`, `fromThenTo`, `fromToLessThan`,
                 `infFrom`, `infFromThen`
 
 * Polynomials: `pmult`, `pdiv`, `pmod`
@@ -794,47 +793,6 @@ by corresponding type classes:
 >                       Nat bound' ->
 >                         let len = bound' - first in
 >                         VList (Nat len) (map f (genericTake len [first ..]))
->
->   , "fromToBy"   ~> vFinPoly $ \first  -> pure $
->                     vFinPoly $ \lst    -> pure $
->                     vFinPoly $ \stride -> pure $
->                     VPoly    $ \ty     -> pure $
->                     let f i = literal i ty in
->                     let vs  = [ f (first + i*stride) | i <- [0..] ] in
->                     let len = 1 + ((lst-first) `div` stride) in
->                     VList (Nat len) (genericTake len vs)
->
->   , "fromToByLessThan" ~>
->                     vFinPoly $ \first  -> pure $
->                     VNumPoly $ \bound  -> pure $
->                     vFinPoly $ \stride -> pure $
->                     VPoly    $ \ty     -> pure $
->                     let f i = literal i ty in
->                     let vs  = [ f (first + i*stride) | i <- [0..] ] in
->                     case bound of
->                       Nat bound' ->
->                         let len = (bound'-first+stride-1) `div` stride in
->                         VList (Nat len) (genericTake len vs)
->
->   , "fromToDownBy" ~>
->                     vFinPoly $ \first  -> pure $
->                     vFinPoly $ \lst    -> pure $
->                     vFinPoly $ \stride -> pure $
->                     VPoly    $ \ty     -> pure $
->                     let f i = literal i ty in
->                     let vs  = [ f (first - i*stride) | i <- [0..] ] in
->                     let len = 1 + ((first-lst) `div` stride) in
->                     VList (Nat len) (genericTake len vs)
->
->   , "fromToDownByGreaterThan" ~>
->                     vFinPoly $ \first  -> pure $
->                     vFinPoly $ \lst    -> pure $
->                     vFinPoly $ \stride -> pure $
->                     VPoly    $ \ty     -> pure $
->                     let f i = literal i ty in
->                     let vs  = [ f (first - i*stride) | i <- [0..] ] in
->                     let len = (first-lst+stride-1) `div` stride in
->                     VList (Nat len) (genericTake len vs)
 >
 >   , "fromThenTo" ~> vFinPoly $ \first -> pure $
 >                     vFinPoly $ \next  -> pure $

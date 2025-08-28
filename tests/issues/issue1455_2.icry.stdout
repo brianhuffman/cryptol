@@ -157,22 +157,6 @@ Symbols
         [len]a
     fromTo :
       {first, last, a} (last >= first, Literal last a) => [1 + (last - first)]a
-    fromToBy :
-      {first, last, stride, a}
-        (stride >= 1, last >= first, Literal last a) =>
-        [1 + (last - first) / stride]a
-    fromToByLessThan :
-      {first, bound, stride, a}
-        (stride >= 1, bound >= first, LiteralLessThan bound a) =>
-        [(bound - first) /^ stride]a
-    fromToDownBy :
-      {first, last, stride, a}
-        (stride >= 1, first >= last, Literal first a) =>
-        [1 + (first - last) / stride]a
-    fromToDownByGreaterThan :
-      {first, bound, stride, a}
-        (stride >= 1, first >= bound, Literal first a) =>
-        [(first - bound) /^ stride]a
     fromToLessThan :
       {first, bound, a}
         (bound >= first, LiteralLessThan bound a) =>

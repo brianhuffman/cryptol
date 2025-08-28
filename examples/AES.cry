@@ -83,12 +83,11 @@ InvSubByte(b : GF28) : GF28 = gf28Inverse(xformByte'(b))
 InvSubBytes(state : State) : State = [ [ InvSubByte(b) | b <- row ] | row <- state ]
 
 // The ShiftRows transform and its inverse
-ShiftRows(state : State) : State = [ row <<< shiftAmount | row <- state
-                                         | shiftAmount <- [0 .. 3]
-                   ]
+ShiftRows(s : State) : State = s'
+  where s'[r][c] = s[r][(c+r)%4]
 
-InvShiftRows(state : State) : State
-  = [ row >>> shiftAmount | row <- state | shiftAmount <- [0 .. 3] ]
+InvShiftRows(s : State) : State = s'
+  where s'[r][c] = s[r][(c-r)%4]
 
 // The MixColumns transform and its inverse
 MixColumns(state : State) : State = gf28MatrixMult(m, state)

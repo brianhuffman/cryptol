@@ -608,28 +608,28 @@ groupBy : {each, parts, a} [parts * each]a -> [parts][each]a
 groupBy = split{parts=parts}
 
 /**
- * Left shift.  The first argument is the sequence to shift, the second is the
+ * Left shift.  The first argument is the bitvector to shift, the second is the
  * number of positions to shift by.
  */
 primitive (<<) : {n, ix} (Integral ix) => [n] -> ix -> [n]
 
 /**
- * Right shift.  The first argument is the sequence to shift, the second is the
+ * Right shift.  The first argument is the bitvector to shift, the second is the
  * number of positions to shift by.
  */
 primitive (>>) : {n, ix} (Integral ix) => [n] -> ix -> [n]
 
 /**
- * Left rotate.  The first argument is the sequence to rotate, the second is the
+ * Left rotate.  The first argument is the bitvector to rotate, the second is the
  * number of positions to rotate by.
  */
-primitive (<<<) : {n, ix, a} (Integral ix) => [n]a -> ix -> [n]a
+primitive (<<<) : {n, ix} (Integral ix) => [n] -> ix -> [n]
 
 /**
- * Right rotate.  The first argument is the sequence to rotate, the second is
+ * Right rotate.  The first argument is the bitvector to rotate, the second is
  * the number of positions to rotate by.
  */
-primitive (>>>) : {n, ix, a} (Integral ix) => [n]a -> ix -> [n]a
+primitive (>>>) : {n, ix} (Integral ix) => [n] -> ix -> [n]
 
 /**
  * Bulk index operator.  The first argument is a sequence.  The second argument

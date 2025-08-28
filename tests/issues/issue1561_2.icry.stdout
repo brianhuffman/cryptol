@@ -140,10 +140,10 @@ Symbols
     (&) : {a} (Logic a) => a -> a -> a
     (#) : {front, back, a} [front]a -> [back]a -> [front + back]a
     (<<) : {n, ix} (Integral ix) => [n] -> ix -> [n]
-    (<<<) : {n, ix, a} (Integral ix) => [n]a -> ix -> [n]a
+    (<<<) : {n, ix} (Integral ix) => [n] -> ix -> [n]
     (>>) : {n, ix} (Integral ix) => [n] -> ix -> [n]
     (>>$) : {n, ix} (n >= 1, Integral ix) => [n] -> ix -> [n]
-    (>>>) : {n, ix, a} (Integral ix) => [n]a -> ix -> [n]a
+    (>>>) : {n, ix} (Integral ix) => [n] -> ix -> [n]
     (+) : {a} (Ring a) => a -> a -> a
     (-) : {a} (Ring a) => a -> a -> a
     (%) : {a} (Integral a) => a -> a -> a

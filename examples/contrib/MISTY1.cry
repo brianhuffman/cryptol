@@ -16,7 +16,7 @@ keySchedule(K) = EK_1 # EK_2 # EK_3 # EK_4
     where EK_1 = split(join(K))
           EK_2 = [ FI(ek_1, ek_1_shifted)
                  | ek_1         <- EK_1
-                 | ek_1_shifted <- EK_1 <<< 1
+                 | ek_1_shifted <- tail(EK_1) # [head(EK_1)]
                  ]
           EK_3 = [extend(drop{7}(ek_2)) | ek_2 <- EK_2]
           EK_4 = [extend(take{7}(ek_2)) | ek_2 <- EK_2]

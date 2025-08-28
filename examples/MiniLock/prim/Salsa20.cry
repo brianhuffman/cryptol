@@ -55,7 +55,13 @@ property rowround_passes_tests =
 
 
 rowround_opt : [16][32] -> [16][32]
-rowround_opt(ys) = join([ (quarterround (yi<<<i))>>>i | yi <- split(ys) | i <- [0 .. 3] : [_][8] ])
+rowround_opt(ys) = join(y4)
+  where
+    y1, y2, y3, y4 : [4][4][32]
+    y1 = split(ys)
+    y2[i][j:[2]] = y1[i][j+i]
+    y3[i] = quarterround(y2[i])
+    y4[i][j:[2]] = y3[i][j-i]
 
 property rowround_opt_is_rowround(ys) = rowround(ys) == rowround_opt(ys)
 
@@ -88,7 +94,13 @@ property columnround_passes_tests =
 
 
 columnround_opt : [16][32] -> [16][32]
-columnround_opt(xs) = join(transpose([ (quarterround(xi<<<i))>>>i | xi <- transpose(split(xs)) | i <- [0 .. 3] : [_][8] ]))
+columnround_opt(xs) = join(transpose(x4))
+  where
+    x1, x2, x3, x4 : [4][4][32]
+    x1 = transpose(split(xs))
+    x2[i][j:[2]] = x1[i][j+i]
+    x3[i] = quarterround(x2[i])
+    x4[i][j:[2]] = x3[i][j-i]
 
 columnround_opt_is_columnround(xs) = columnround(xs) == columnround_opt(xs)
 

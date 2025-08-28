@@ -82,15 +82,11 @@ InvSubBytes : State -> State
 InvSubBytes(state) =[ [ InvSubByte(b) | b <- row ] | row <- state ]
 
 // The ShiftRows transform and its inverse
-ShiftRows : State -> State
-ShiftRows(state) = [ row <<< shiftAmount | row <- state
-                                        | shiftAmount <- [0 .. 3]
-                  ]
+ShiftRows(s : State) : State = s'
+  where s'[r][c] = s[r][(c+r)%4]
 
-InvShiftRows : State -> State
-InvShiftRows(state) = [ row >>> shiftAmount | row <- state
-                                            | shiftAmount <- [0 .. 3]
-                      ]
+InvShiftRows(s : State) : State = s'
+  where s'[r][c] = s[r][(c-r)%4]
 
 // The MixColumns transform and its inverse
 MixColumns : State -> State

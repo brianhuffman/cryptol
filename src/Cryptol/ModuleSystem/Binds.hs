@@ -2,6 +2,7 @@
 {-# Language RecordWildCards #-}
 {-# Language FlexibleInstances #-}
 {-# LANGUAGE DeriveTraversable #-}
+{-# OPTIONS_GHC -Wno-incomplete-uni-patterns #-}
 module Cryptol.ModuleSystem.Binds
   ( BindsNames
   , TopDef(..)

@@ -27,6 +27,8 @@ This restriction allows us to add implicit imports before doing the
 `Imports` pass.
 -}
 
+{-# OPTIONS_GHC -Wno-incomplete-uni-patterns #-}
+
 module Cryptol.ModuleSystem.Renamer.ImplicitImports
   ( addImplicitNestedImports
   ) where

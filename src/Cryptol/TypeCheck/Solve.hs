@@ -38,7 +38,6 @@ import           Cryptol.Utils.Patterns(matchMaybe)
 import           Control.Applicative ((<|>))
 import           Control.Monad(mzero)
 import           Data.Containers.ListUtils (nubOrd)
-import           Data.Map (Map)
 import qualified Data.Map as Map
 import           Data.Set ( Set )
 import qualified Data.Set as Set

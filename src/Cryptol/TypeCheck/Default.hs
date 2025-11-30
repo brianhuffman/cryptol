@@ -3,7 +3,6 @@
 module Cryptol.TypeCheck.Default where
 
 import qualified Data.Set as Set
-import           Data.Map (Map)
 import qualified Data.Map as Map
 import Data.Maybe(mapMaybe, isJust)
 import Data.List((\\))

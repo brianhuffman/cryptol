@@ -10,6 +10,7 @@
 {-# LANGUAGE TupleSections       #-}
 {-# LANGUAGE TypeApplications    #-}
 {-# LANGUAGE ViewPatterns        #-}
+{-# OPTIONS_GHC -Wno-incomplete-patterns #-}
 
 -- | Evaluation of foreign functions.
 module Cryptol.Eval.FFI

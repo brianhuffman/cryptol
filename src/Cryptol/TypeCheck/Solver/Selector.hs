@@ -13,10 +13,9 @@ import Cryptol.TypeCheck.AST
 import Cryptol.TypeCheck.InferTypes
 import Cryptol.TypeCheck.Monad( InferM, unify, newGoals
                               , newType, applySubst, solveHasGoal
-                              , newLocalName
                               )
 import Cryptol.TypeCheck.Subst (listParamSubst, apSubst)
-import Cryptol.Utils.Ident (Ident, packIdent,Namespace(..))
+import Cryptol.Utils.Ident (Ident)
 import Cryptol.Utils.Panic(panic)
 import Cryptol.Utils.RecordMap
 
@@ -135,6 +134,6 @@ and functions.
 
 Assumes types are zonked. -}
 mkSelSln :: Selector -> Type -> Type -> InferM HasGoalSln
-mkSelSln s outerT innerT =
+mkSelSln s outerT _innerT =
   return HasGoalSln { hasDoSelect = \e -> ESel e s
                     , hasDoSet    = \e v -> ESet outerT e s v }

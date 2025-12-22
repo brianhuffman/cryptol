@@ -183,7 +183,7 @@ pickNames xs = snd (mapAccumL add Set.empty xs)
   add known x =
     let y      = simplify x
         ys     = y : [ y ++ show i | i <- [ 0 :: Int .. ] ]
-        y' : _ = dropWhile (`Set.member` known) ys
+        y'     = head (dropWhile (`Set.member` known) ys)
     in (Set.insert y' known, y')
 
   simplify x = case x of

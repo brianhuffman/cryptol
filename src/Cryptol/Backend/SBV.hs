@@ -37,8 +37,6 @@ import           Control.Monad.IO.Class (MonadIO(..))
 import           Data.Bits (bit, complement)
 import           Data.List (foldl')
 
-import qualified GHC.Num.Compat as Integer
-
 import Data.SBV.Dynamic as SBV
 import qualified Data.SBV.Internals as SBV
 

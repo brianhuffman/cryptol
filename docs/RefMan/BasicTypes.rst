@@ -183,12 +183,10 @@ expressions.
   +------------------------------+---------------------------------------------+
   |   ``@@`` ``!!``              | Access sub-sequence (front, back)           |
   +------------------------------+---------------------------------------------+
-  |   ``update`` ``updateEnd``   | Update the value of a sequence at           |
+  |   ``update``                 | Update the value of a sequence at           |
   |                              | a location                                  |
-  |                              | (front, back)                               |
   +------------------------------+---------------------------------------------+
-  |   ``updates`` ``updatesEnd`` | Update multiple values of a sequence        |
-  |                              | (front, back)                               |
+  |   ``updates``                | Update multiple values of a sequence        |
   +------------------------------+---------------------------------------------+
 
 

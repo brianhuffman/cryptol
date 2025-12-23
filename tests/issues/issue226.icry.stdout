@@ -183,9 +183,7 @@ Symbols
     uncurry : {a, b, c} (a -> b -> c) -> (a, b) -> c
     undefined : {a} a
     update : {n, a, ix} (Integral ix) => [n]a -> ix -> a -> [n]a
-    updateEnd : {n, a, ix} (Integral ix) => [n]a -> ix -> a -> [n]a
     updates : {n, k, ix, a} (Integral ix) => [n]a -> [k]ix -> [k]a -> [n]a
-    updatesEnd : {n, k, ix, a} (Integral ix) => [n]a -> [k]ix -> [k]a -> [n]a
     zero : {a} (Zero a) => a
     zext : {m, n} (m >= n) => [n] -> [m]
     zip : {n, a, b} [n]a -> [n]b -> [n](a, b)

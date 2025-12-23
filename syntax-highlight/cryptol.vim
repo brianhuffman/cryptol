@@ -51,7 +51,7 @@ syn keyword cryKeywordFun   carry scarry sborrow zext sext ratio
 syn keyword cryKeywordFun   splitAt join split groupBy
 syn keyword cryKeywordFun   reverse transpose take drop
 syn keyword cryKeywordFun   head tail last
-syn keyword cryKeywordFun   update updates updateEnd updatesEnd
+syn keyword cryKeywordFun   update updates
 syn keyword cryKeywordFun   generate
 syn keyword cryKeywordFun   sort sortBy
 syn keyword cryKeywordFun   pmult pdiv pmod

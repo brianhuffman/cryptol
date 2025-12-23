@@ -72,9 +72,7 @@ primsPlaceHolder=1;
     @@      : {n, k, ix, a} (Integral ix) => [n]a -> [k]ix -> [k]a
     !!      : {n, k, ix, a} (fin n, Integral ix) => [n]a -> [k]ix -> [k]a
     update     : {n, a, ix} (fin ix) => [n]a -> [ix] -> a -> [n]a
-    updateEnd  : {n, a, ix} (fin n, Integral ix) => [n]a -> ix -> a -> [n]a
     updates    : {n, k, ix, a} (Integral ix, fin k) => [n]a -> [k]ix -> [k]a -> [n]a
-    updatesEnd : {n, k, ix, a} (fin n, Integral ix, fin k) => [n]a -> [k]ix -> [k]a -> [n]a
 \end{Verbatim}
 \paragraph*{Shifting, rotating}
 \begin{Verbatim}

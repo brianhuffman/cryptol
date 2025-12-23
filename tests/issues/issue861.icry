@@ -7,20 +7,8 @@ xs[2]
 xs[3]
 xs[-1]
 
-reverse(xs)[0]
-reverse(xs)[1]
-reverse(xs)[2]
-reverse(xs)[3]
-reverse(xs)[-1]
-
 update(xs, 0, 5)
 update(xs, 1, 5)
 update(xs, 2, 5)
 update(xs, 3, 5)
 update(xs, -1, 5)
-
-updateEnd(xs, 0, 5)
-updateEnd(xs, 1, 5)
-updateEnd(xs, 2, 5)
-updateEnd(xs, 3, 5)
-updateEnd(xs, -1, 5)

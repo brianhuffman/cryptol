@@ -303,9 +303,7 @@ Sequences
     (!)        : {n,a,ix}   (fin n, Integral ix) => [n]a -> ix    -> a
     (!!)       : {n,k,ix,a} (fin n, Integral ix) => [n]a -> [k]ix -> [k]a
     update     : {n,a,ix}   (Integral ix)        => [n]a -> ix -> a -> [n]a
-    updateEnd  : {n,a,ix}   (fin n, Integral ix) => [n]a -> ix -> a -> [n]a
     updates    : {n,k,ix,a} (Integral ix, fin k) => [n]a -> [k]ix -> [k]a -> [n]a
-    updatesEnd : {n,k,ix,d} (fin n, Integral ix, fin k) => [n]a -> [k]ix -> [k]a -> [n]a
 
     take       : {front,back,elem} [front + back]elem -> [front]elem
     drop       : {front,back,elem} (fin front) => [front + back]elem -> [back]elem

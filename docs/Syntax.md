@@ -470,8 +470,8 @@ Operator                       Description
   `>>$`                        Arithmetic right shift (on bitvectors only)
   `@` `!`                      Access elements (front, back)
   `@@` `!!`                    Access sub-sequence (front, back)
-  `update` `updateEnd`         Update the value of a sequence at a location (front, back)
-  `updates` `updatesEnd`       Update multiple values of a sequence (front, back)
+  `update`                     Update the value of a sequence at a location
+  `updates`                    Update multiple values of a sequence
 
 Table: Sequence operations.
 

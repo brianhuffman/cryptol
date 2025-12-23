@@ -16,7 +16,7 @@ pmult(x, y) = last(zs)
 pdiv : {u, v} [u] -> [v] -> [u]
 pdiv(x, y) = [ z[degree] | z <- reverse(zs) ]
   where
-    degree : [width v]
+    degree : [width{v}]
     degree = last(ds : [1 + v]_)
       where ds = [0/0] # [if yi then i else d | yi <- y | i <- [0..v] | d <- ds ]
 
@@ -33,7 +33,7 @@ pdiv(x, y) = [ z[degree] | z <- reverse(zs) ]
 pmod : {u, v} [u] -> [1 + v] -> [v]
 pmod(x, y) = if y == 0 then 0/0 else last(zs)
   where
-    degree : [width v]
+    degree : [width{v}]
     degree = last (ds : [2 + v]_)
       where ds = [0/0] # [if yi then i else d | yi <- y | i <- [0..v] | d <- ds ]
 

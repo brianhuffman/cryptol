@@ -30,9 +30,9 @@ primitive type Bit : *
 primitive type Integer : *
 
 type Bool = Bit
-type Word n = [n]
+type Word{n} = [n]
 type Char = [8]
-type String n = [n]Char
+type String{n} = [n]Char
 
 // Numeric operators and constraints ----------------------------------------------
 
@@ -77,9 +77,9 @@ primitive type width : # -> #
 
 /**
  * The ceiling of the base-2 logarithm of a numeric type.
- * We define 'lg2 n = width (n - 1)' for nonzero n, and 'lg2 0 = 0'.
+ * We define 'lg2{n} = width{n - 1}' for nonzero n, and 'lg2{0} = 0'.
  */
-type lg2 n = width (max n 1 - 1)
+type lg2{n} = width{max{n, 1} - 1}
 
 /** The smaller of two numeric types. */
 primitive type min : # -> # -> #
@@ -103,7 +103,7 @@ primitive type
 primitive type
   { start : #, next : #, last : # }
   (start != next) =>
-  lengthFromThenTo start next last : #
+  lengthFromThenTo{start, next, last} : #
 
 /**
  * Assert that the first numeric type is less than or equal to the second.
@@ -136,19 +136,19 @@ primitive type LiteralLessThan : # -> * -> Prop
 /**
  * The value corresponding to a numeric type.
  */
-primitive number : {val, rep} Literal val rep => rep
+primitive number : {val, rep} Literal{val, rep} => rep
 
 /**
  * An alternative name for 'number', present for backward compatibility.
  */
-demote : {val, rep} Literal val rep => rep
+demote : {val, rep} Literal{val, rep} => rep
 demote = number{val}
 
 /**
  * Return the length of a sequence.  Note that the result depends only
  * on the type of the argument, not its value.
  */
-length : {n, a, b} (Literal n b) => [n]a -> b
+length : {n, a, b} Literal{n, b} => [n]a -> b
 length(_) = number{n}
 
 /**
@@ -157,7 +157,7 @@ length(_) = number{n}
  * '[x .. y]' is syntactic sugar for 'fromTo{first=x,last=y}'.
  */
 primitive fromTo : {first, last, a}
-  (last >= first, Literal last a) =>
+  (last >= first, Literal{last, a}) =>
   [1 + (last - first)]a
 
 /**
@@ -169,7 +169,7 @@ primitive fromTo : {first, last, a}
  * then the sequence will be infinite, and will eventually wrap around for bounded types.
  */
 primitive fromToLessThan :
-  {first, bound, a} (bound >= first, LiteralLessThan bound a) =>
+  {first, bound, a} (bound >= first, LiteralLessThan{bound, a}) =>
   [bound - first]a
 
 /**
@@ -179,9 +179,9 @@ primitive fromToLessThan :
  * '[x,y..z]' is syntactic sugar for 'fromThenTo{first=x,next=y,last=z}'.
  */
 primitive fromThenTo : {first, next, last, a, len}
-                       ( Literal first a, Literal next a, Literal last a
+                       ( Literal{first, a}, Literal{next, a}, Literal{last, a}
                        , first != next
-                       , lengthFromThenTo first next last == len) => [len]a
+                       , lengthFromThenTo{first, next, last} == len) => [len]a
 
 // The Zero class -------------------------------------------------------
 
@@ -192,7 +192,7 @@ primitive type Zero : * -> Prop
  * Gives an arbitrary shaped value whose bits are all False.
  * ~zero likewise gives an arbitrary shaped value whose bits are all True.
  */
-primitive zero : {a} (Zero a) => a
+primitive zero : {a} Zero{a} => a
 
 
 // The Logic class ------------------------------------------------------
@@ -203,23 +203,23 @@ primitive type Logic : * -> Prop
 /**
  * Logical 'and' over bits. Extends element-wise over sequences, tuples.
  */
-primitive (&) : {a} (Logic a) => a -> a -> a
+primitive (&) : {a} Logic{a} => a -> a -> a
 
 /**
  * Logical 'or' over bits. Extends element-wise over sequences, tuples.
  */
-primitive (||) : {a} (Logic a) => a -> a -> a
+primitive (||) : {a} Logic{a} => a -> a -> a
 
 /**
  * Logical 'exclusive or' over bits. Extends element-wise over sequences, tuples.
  */
-primitive (^) : {a} (Logic a) => a -> a -> a
+primitive (^) : {a} Logic{a} => a -> a -> a
 
 /**
  * Bitwise complement. The prefix notation '~ x'
  * is syntactic sugar for 'complement x'.
  */
-primitive complement : {a} (Logic a) => a -> a
+primitive complement : {a} Logic{a} => a -> a
 
 
 // The Ring class -------------------------------------------------------
@@ -242,14 +242,14 @@ primitive type Ring : * -> Prop
  *   * functions:
  *     a constant function returning `fromInteger` on the result type
  */
-primitive fromInteger : {a} (Ring a) => Integer -> a
+primitive fromInteger : {a} Ring{a} => Integer -> a
 
 /**
  * Add two values.
  *  * For type [n], addition is modulo 2^^n.
  *  * Structured values are added element-wise.
  */
-primitive (+) : {a} (Ring a) => a -> a -> a
+primitive (+) : {a} Ring{a} => a -> a -> a
 
 /**
  * Subtract two values.
@@ -258,14 +258,14 @@ primitive (+) : {a} (Ring a) => a -> a -> a
  *  * Satisfies 'a - b = a + negate b'.
  * See also: 'negate'.
  */
-primitive (-) : {a} (Ring a) => a -> a -> a
+primitive (-) : {a} Ring{a} => a -> a -> a
 
 /**
  * Multiply two values.
  *  * For type [n], multiplication is modulo 2^^n.
  *  * Structured values are multiplied element-wise.
  */
-primitive (*) : {a} (Ring a) => a -> a -> a
+primitive (*) : {a} Ring{a} => a -> a -> a
 
 /**
  * Returns the additive inverse of its argument.
@@ -276,7 +276,7 @@ primitive (*) : {a} (Ring a) => a -> a -> a
  * Satisfies 'a + negate a = 0'.
  * Satisfies 'negate a = ~a + 1' for bitvector values.
  */
-primitive negate : {a} (Ring a) => a -> a
+primitive negate : {a} Ring{a} => a -> a
 
 
 // The Integral class -------------------------------------------------
@@ -293,7 +293,7 @@ primitive type Integral : * -> Prop
  *  * For type [n], the arguments are treated as unsigned.
  *  * Division by zero is undefined.
  */
-primitive (/) : {a} (Integral a) => a -> a -> a
+primitive (/) : {a} Integral{a} => a -> a -> a
 
 /**
  * Compute the remainder from dividing two values.
@@ -301,12 +301,12 @@ primitive (/) : {a} (Integral a) => a -> a -> a
  *  * Remainder of division by zero is undefined.
  *  * Satisfies 'x % y == x - (x / y) * y'.
  */
-primitive (%) : {a} (Integral a) => a -> a -> a
+primitive (%) : {a} Integral{a} => a -> a -> a
 
 /**
  * Converts a value of an integral type to an integer.
  */
-primitive toInteger : {a} (Integral a) => a -> Integer
+primitive toInteger : {a} Integral{a} => a -> Integer
 
 /**
  * Compute the exponentiation of a value in a ring.
@@ -315,19 +315,19 @@ primitive toInteger : {a} (Integral a) => a -> Integer
  *  * Satisfies: 'x ^^ 0 == fromInteger 1'
  *  * Satisfies: 'x ^^ e == x * x ^^ (e-1)' when 'e > 0'.
  */
-primitive (^^) : {a, e} (Ring a, Integral e) => a -> e -> a
+primitive (^^) : {a, e} (Ring{a}, Integral{e}) => a -> e -> a
 
 /**
  * An infinite sequence counting up from the given starting value.
  * '[x...]' is syntactic sugar for 'infFrom x'.
  */
-primitive infFrom : {a, n} (Integral a) => a -> [n]a
+primitive infFrom : {a, n} (Integral{a}) => a -> [n]a
 
 /**
  * An infinite arithmetic sequence starting with the given two values.
  * '[x,y...]' is syntactic sugar for 'infFromThen x y'.
  */
-primitive infFromThen : {a, n} (Integral a) => a -> a -> [n]a
+primitive infFromThen : {a, n} (Integral{a}) => a -> a -> [n]a
 
 
 // The Eq class ----------------------------------------------------
@@ -338,23 +338,23 @@ primitive type Eq : * -> Prop
 /**
  * Compares any two values of the same type for equality.
  */
-primitive (==) : {a} (Eq a) => a -> a -> Bit
+primitive (==) : {a} Eq{a} => a -> a -> Bit
 
 /**
  * Compares any two values of the same type for inequality.
  */
-primitive (!=) : {a} (Eq a) => a -> a -> Bit
+primitive (!=) : {a} Eq{a} => a -> a -> Bit
 
 /**
  * Compare the outputs of two functions for equality.
  */
-(===) : {a, b} (Eq b) => (a -> b) -> (a -> b) -> (a -> Bit)
+(===) : {a, b} Eq{b} => (a -> b) -> (a -> b) -> (a -> Bit)
 f === g = \(x) -> f(x) == g(x)
 
 /**
  * Compare the outputs of two functions for inequality.
  */
-(!==) : {a, b} (Eq b) => (a -> b) -> (a -> b) -> (a -> Bit)
+(!==) : {a, b} Eq{b} => (a -> b) -> (a -> b) -> (a -> Bit)
 f !== g = \(x) -> f(x) != g(x)
 
 
@@ -368,41 +368,41 @@ primitive type Cmp : * -> Prop
  *
  * Bitvectors are compared using unsigned arithmetic.
  */
-primitive (<) : {a} (Cmp a) => a -> a -> Bit
+primitive (<) : {a} Cmp{a} => a -> a -> Bit
 
 /**
  * Greater-than of two comparable arguments.
  *
  * Bitvectors are compared using unsigned arithmetic.
  */
-primitive (>) : {a} (Cmp a) => a -> a -> Bit
+primitive (>) : {a} Cmp{a} => a -> a -> Bit
 
 /**
  * Less-than or equal of two comparable arguments.
  *
  * Bitvectors are compared using unsigned arithmetic.
  */
-primitive (<=) : {a} (Cmp a) => a -> a -> Bit
+primitive (<=) : {a} Cmp{a} => a -> a -> Bit
 
 /**
  * Greater-than or equal of two comparable arguments.
  *
  * Bitvectors are compared using unsigned arithmetic.
  */
-primitive (>=) : {a} (Cmp a) => a -> a -> Bit
+primitive (>=) : {a} Cmp{a} => a -> a -> Bit
 
 /**
  * Returns the smaller of two comparable arguments.
  * Bitvectors are compared using unsigned arithmetic.
  */
-min : {a} (Cmp a) => a -> a -> a
+min : {a} Cmp{a} => a -> a -> a
 min(x, y) = if x < y then x else y
 
 /**
  * Returns the greater of two comparable arguments.
  * Bitvectors are compared using unsigned arithmetic.
  */
-max : {a} (Cmp a) => a -> a -> a
+max : {a} Cmp{a} => a -> a -> a
 max(x, y) = if x > y then x else y
 
 /**
@@ -410,7 +410,7 @@ max(x, y) = if x > y then x else y
  * Bitvector values are considered unsigned, so this is
  * the identity function on [n].
  */
-abs : {a} (Cmp a, Ring a) => a -> a
+abs : {a} (Cmp{a}, Ring{a}) => a -> a
 abs(x) = if x < fromInteger(0) then negate(x) else x
 
 
@@ -423,7 +423,7 @@ abs(x) = if x < fromInteger(0) then negate(x) else x
  * functions, i.e., functions that are not defined over their entire input
  * range. In these situations, 'None' can be used as a placeholder return value.
  */
-enum Option a = None | Some a
+enum Option{a} = None | Some{a}
 
 /**
  * Values of the 'Result t e' type can either be 'Ok', representing success and
@@ -432,7 +432,7 @@ enum Option a = None | Some a
  * expected and recoverable. For instance, 'e' might be a 'String' with an error
  * message, or it might be an 'Integer' with an error code.
  */
-enum Result t e = Ok t | Err e
+enum Result{t, e} = Ok{t} | Err{e}
 
 // Bit specific operations ----------------------------------------
 
@@ -477,7 +477,7 @@ a ==> b = if a then b else True
  * Index operator.  The first argument is a sequence.  The second argument is
  * the zero-based index of the element to select from the sequence.
  */
-primitive at : {n, a, ix} (Integral ix) => [n]a -> ix -> a
+primitive at : {n, a, ix} Integral{ix} => [n]a -> ix -> a
 
 /**
  * Produce a sequence using a generating function.
@@ -486,7 +486,7 @@ primitive at : {n, a, ix} (Integral ix) => [n]a -> ix -> a
  * Declarations of the form 'x[i] = e' are syntactic sugar for
  * 'x = generate (\i -> e)'.
  */
-primitive generate : {n, a, ix} (Integral ix, LiteralLessThan n ix) => (ix -> a) -> [n]a
+primitive generate : {n, a, ix} (Integral{ix}, LiteralLessThan{n, ix}) => (ix -> a) -> [n]a
 
 /**
  * Concatenates two sequences.  On bitvectors, the most-significant bits
@@ -564,31 +564,31 @@ groupBy = split{parts=parts}
  * Left shift.  The first argument is the bitvector to shift, the second is the
  * number of positions to shift by.
  */
-primitive (<<) : {n, ix} (Integral ix) => [n] -> ix -> [n]
+primitive (<<) : {n, ix} Integral{ix} => [n] -> ix -> [n]
 
 /**
  * Right shift.  The first argument is the bitvector to shift, the second is the
  * number of positions to shift by.
  */
-primitive (>>) : {n, ix} (Integral ix) => [n] -> ix -> [n]
+primitive (>>) : {n, ix} Integral{ix} => [n] -> ix -> [n]
 
 /**
  * Left rotate.  The first argument is the bitvector to rotate, the second is the
  * number of positions to rotate by.
  */
-primitive (<<<) : {n, ix} (Integral ix) => [n] -> ix -> [n]
+primitive (<<<) : {n, ix} Integral{ix} => [n] -> ix -> [n]
 
 /**
  * Right rotate.  The first argument is the bitvector to rotate, the second is
  * the number of positions to rotate by.
  */
-primitive (>>>) : {n, ix} (Integral ix) => [n] -> ix -> [n]
+primitive (>>>) : {n, ix} Integral{ix} => [n] -> ix -> [n]
 
 /**
  * Bulk index operator.  The first argument is a sequence.  The second argument
  * is a sequence of the zero-based indices of the elements to select.
  */
-(@@) : {n, k, ix, a} (Integral ix) => [n]a -> [k]ix -> [k]a
+(@@) : {n, k, ix, a} Integral{ix} => [n]a -> [k]ix -> [k]a
 xs @@ is = ys where ys[i] = xs[is[i]]
 
 /**
@@ -598,7 +598,7 @@ xs @@ is = ys where ys[i] = xs[is[i]]
  * The third argument is the new element.  The return value is the
  * initial sequence updated so that the indicated index has the given value.
  */
-primitive update : {n, a, ix} (Integral ix) => [n]a -> ix -> a -> [n]a
+primitive update : {n, a, ix} Integral{ix} => [n]a -> ix -> a -> [n]a
 
 /**
  * Perform a series of updates to a sequence.  The first argument is
@@ -607,7 +607,7 @@ primitive update : {n, a, ix} (Integral ix) => [n]a -> ix -> a -> [n]a
  * This function applies the 'update' function in sequence with the
  * given update pairs.
  */
-updates : {n, k, ix, a} (Integral ix) => [n]a -> [k]ix -> [k]a -> [n]a
+updates : {n, k, ix, a} Integral{ix} => [n]a -> [k]ix -> [k]a -> [n]a
 updates(xs0, idxs, vals) = foldl(upd, xs0, zip(idxs, vals))
   where
     upd(xs, (i,b)) = update(xs, i, b)
@@ -615,7 +615,7 @@ updates(xs0, idxs, vals) = foldl(upd, xs0, zip(idxs, vals))
 /**
  * Sort a sequence of elements. Equivalent to 'sortBy (<=)'.
  */
-sort : {a, n} (Cmp a) => [n]a -> [n]a
+sort : {a, n} Cmp{a} => [n]a -> [n]a
 sort = sortBy((<=))
 
 /**
@@ -727,7 +727,7 @@ sext(x) = x # newbits
  * the second argument is the number of positions to shift
  * by (considered as an unsigned value).
  */
-primitive (>>$) : {n, ix} (n >= 1, Integral ix) => [n] -> ix -> [n]
+primitive (>>$) : {n, ix} (n >= 1, Integral{ix}) => [n] -> ix -> [n]
 
 /**
  * The ceiling of the base-2 logarithm of an unsigned bitvector.
@@ -771,7 +771,7 @@ primitive pmod : {u, v} [u] -> [1 + v] -> [v]
  *
  * This function is experimental.
  */
-primitive parmap : {a, b, n} (Eq b) => (a -> b) -> [n]a -> [n]b
+primitive parmap : {a, b, n} Eq{b} => (a -> b) -> [n]a -> [n]b
 
 
 // Utility operations -----------------------------------------------------------------
@@ -784,7 +784,7 @@ primitive parmap : {a, b, n} (Eq b) => (a -> b) -> [n]a -> [n]b
  * The Eq constraint restricts this operation to types
  * where reduction to normal form makes sense.
  */
-primitive deepseq : {a, b} Eq a => a -> b -> b
+primitive deepseq : {a, b} Eq{a} => a -> b -> b
 
 /**
  * Reduce to normal form.
@@ -792,14 +792,14 @@ primitive deepseq : {a, b} Eq a => a -> b -> b
  * The Eq constraint restricts this operation to types
  * where reduction to normal form makes sense.
  */
-rnf : {a} Eq a => a -> a
+rnf : {a} Eq{a} => a -> a
 rnf(x) = deepseq(x, x)
 
 /**
  * Raise a run-time error with the given message.
  * This function can be called at any type.
  */
-primitive error : {a, n} String n -> a
+primitive error : {a, n} String{n} -> a
 
 /**
  * Raise a run-time error with a generic message.
@@ -813,7 +813,7 @@ undefined = error("undefined")
  * with the given message if it does not.  If the condition
  * holds, return the third argument unchanged.
  */
-assert : {a, n} Bit -> String n -> a -> a
+assert : {a, n} Bit -> String{n} -> a -> a
 assert(pred, msg, x) = if pred then x else error(msg)
 
 /**
@@ -833,7 +833,7 @@ primitive random : {a} [256] -> a
  * which are unspecified.  Thus, the output produced by this
  * operation may be difficult to predict.
  */
-primitive trace : {n, a, b} String n -> a -> b -> b
+primitive trace : {n, a, b} String{n} -> a -> b -> b
 
 /**
  * Debugging function for tracing values.  The first argument is a string,
@@ -846,7 +846,7 @@ primitive trace : {n, a, b} String n -> a -> b -> b
  * which are unspecified.  Thus, the output produced by this
  * operation may be difficult to predict.
  */
-traceVal : {n, a} String n -> a -> a
+traceVal : {n, a} String{n} -> a -> a
 traceVal(msg, x) = trace(msg, x, x)
 
 
@@ -896,7 +896,7 @@ primitive foldl : {n, a, b} (a -> b -> a) -> a -> [n]b -> a
  *
  * foldl' (+) 0 [1,2,3] = ((0 + 1) + 2) + 3
  */
-primitive foldl' : {n, a, b} (Eq a) => (a -> b -> a) -> a -> [n]b -> a
+primitive foldl' : {n, a, b} Eq{a} => (a -> b -> a) -> a -> [n]b -> a
 
 /**
  * Functional right fold.
@@ -913,20 +913,20 @@ foldr(f, acc, xs) = foldl(g, acc, reverse(xs))
  *
  * foldr' (-) 0 [1,2,3] = 0 - (1 - (2 - 3))
  */
-foldr' : {n, a, b} (Eq b) => (a -> b -> b) -> b -> [n]a -> b
+foldr' : {n, a, b} Eq{b} => (a -> b -> b) -> b -> [n]a -> b
 foldr'(f, acc, xs) = foldl'(g, acc, reverse(xs))
   where g(b, a) = f(a, b)
 
 /**
  * Compute the sum of the values in the sequence.
  */
-sum : {n, a} (Eq a, Ring a) => [n]a -> a
+sum : {n, a} (Eq{a}, Ring{a}) => [n]a -> a
 sum(xs) = foldl'((+), fromInteger(0), xs)
 
 /**
  * Compute the product of the values in the sequence.
  */
-product : {n, a} (Eq a, Ring a) => [n]a -> a
+product : {n, a} (Eq{a}, Ring{a}) => [n]a -> a
 product(xs) = foldl'((*), fromInteger(1), xs)
 
 /**
@@ -949,7 +949,7 @@ repeat(x) = ys where ys[i] = x
 /**
  * 'elem x xs' returns true if x is equal to a value in xs.
  */
-elem : {n, a} (Eq a) => a -> [n]a -> Bit
+elem : {n, a} Eq{a} => a -> [n]a -> Bit
 elem(a, xs) = any(\(x) -> x == a, xs)
 
 /**

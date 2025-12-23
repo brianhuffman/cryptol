@@ -826,8 +826,7 @@ infix_type                     :: { Type PName }
 
 app_type                       :: { Type PName }
   : dimensions atype              { at ($1,$2) $ foldr TSeq $2 (reverse (thing $1)) }
-  | qname atypes                  { at ($1,head $2)
-                                     $ TUser (thing $1) (reverse $2) }
+  | qname '{' atypes '}'          { at ($1,$4) $ TUser (thing $1) (reverse $3) }
   | atype                         { $1                    }
 
 atype                          :: { Type PName }
@@ -848,8 +847,8 @@ ktype                          :: { Type PName }
   | type                          { TParens $1 Nothing }
 
 atypes                         :: { [ Type PName ] }
-  : atype                         { [ $1 ]    }
-  | atypes atype                  { $2 : $1   }
+  : type                          { [ $1 ]    }
+  | atypes ',' type               { $3 : $1   }
 
 dimensions                     :: { Located [Type PName]  }
   : '[' type ']'                  { Located (rComb $1 $3) [ $2 ] }

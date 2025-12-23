@@ -601,15 +601,6 @@ xs @@ is = ys where ys[i] = xs[is[i]]
 primitive update : {n, a, ix} (Integral ix) => [n]a -> ix -> a -> [n]a
 
 /**
- * Update the given sequence with new value at the given index position.
- * The first argument is a sequence. The second argument is the zero-based
- * index of the element to update, starting from the end of the sequence.
- * The third argument is the new element.  The return value is the
- * initial sequence updated so that the indicated index has the given value.
- */
-primitive updateEnd : {n, a, ix} (Integral ix) => [n]a -> ix -> a -> [n]a
-
-/**
  * Perform a series of updates to a sequence.  The first argument is
  * the initial sequence to update.  The second argument is a sequence
  * of indices, and the third argument is a sequence of values.
@@ -620,18 +611,6 @@ updates : {n, k, ix, a} (Integral ix) => [n]a -> [k]ix -> [k]a -> [n]a
 updates(xs0, idxs, vals) = foldl(upd, xs0, zip(idxs, vals))
   where
     upd(xs, (i,b)) = update(xs, i, b)
-
-/**
- * Perform a series of updates to a sequence.  The first argument is
- * the initial sequence to update.  The second argument is a sequence
- * of indices, and the third argument is a sequence of values.
- * This function applies the 'updateEnd' function in sequence with the
- * given update pairs.
- */
-updatesEnd : {n, k, ix, a} (Integral ix) => [n]a -> [k]ix -> [k]a -> [n]a
-updatesEnd(xs0, idxs, vals) = foldl(upd, xs0, zip(idxs, vals))
-  where
-    upd(xs, (i,b)) = updateEnd(xs, i, b)
 
 /**
  * Sort a sequence of elements. Equivalent to 'sortBy (<=)'.

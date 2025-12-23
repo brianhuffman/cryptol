@@ -58,7 +58,6 @@ primTable sym getEOpts =
     ("at"          , indexPrim sym IndexForward  (indexFront_int sym) (indexFront_segs sym))
 
   , ("update"      , updatePrim sym (updateFrontSym_word sym) (updateFrontSym sym))
-  , ("updateEnd"   , updatePrim sym (updateBackSym_word sym)  (updateBackSym sym))
 
   ]
 
@@ -183,32 +182,6 @@ updateFrontSym sym len _eltTy vs (Right wv) val =
       do b <- wordValueEqualsInteger sym wv i
          iteValue sym b val (lookupSeqMap vs i)
 
-updateBackSym ::
-  W4.IsSymExprBuilder sym =>
-  What4 sym ->
-  Nat ->
-  TValue ->
-  SeqMap (What4 sym) (GenValue (What4 sym)) ->
-  Either (SInteger (What4 sym)) (WordValue (What4 sym)) ->
-  SEval (What4 sym) (Value sym) ->
-  SEval (What4 sym) (SeqMap (What4 sym) (GenValue (What4 sym)))
-
-updateBackSym sym (Nat n) _eltTy vs (Left idx) val =
-  case W4.asInteger idx of
-    Just i -> return $ updateSeqMap vs (n - 1 - i) val
-    Nothing -> return $ indexSeqMap $ \i ->
-      do b <- intEq sym idx =<< integerLit sym (n - 1 - i)
-         iteValue sym b val (lookupSeqMap vs i)
-
-updateBackSym sym (Nat n) _eltTy vs (Right wv) val =
-  wordValAsLit sym wv >>= \case
-    Just j ->
-      return $ updateSeqMap vs (n - 1 - j) val
-    Nothing ->
-      memoMap sym (Nat n) $ indexSeqMap $ \i ->
-      do b <- wordValueEqualsInteger sym wv (n - 1 - i)
-         iteValue sym b val (lookupSeqMap vs i)
-
 
 updateFrontSym_word ::
   W4.IsSymExprBuilder sym =>
@@ -225,20 +198,3 @@ updateFrontSym_word sym (Nat n) _eltTy w (Left idx) val =
      updateWordByWord sym IndexForward w (wordVal idx') (fromVBit <$> val)
 updateFrontSym_word sym (Nat _n) _eltTy w (Right idx) val =
   updateWordByWord sym IndexForward w idx (fromVBit <$> val)
-
-
-updateBackSym_word ::
-  W4.IsSymExprBuilder sym =>
-  What4 sym ->
-  Nat ->
-  TValue ->
-  WordValue (What4 sym) ->
-  Either (SInteger (What4 sym)) (WordValue (What4 sym)) ->
-  SEval (What4 sym) (GenValue (What4 sym)) ->
-  SEval (What4 sym) (WordValue (What4 sym))
-
-updateBackSym_word sym (Nat n) _eltTy w (Left idx) val =
-  do idx' <- wordFromInt sym n idx
-     updateWordByWord sym IndexBackward w (wordVal idx') (fromVBit <$> val)
-updateBackSym_word sym (Nat _n) _eltTy w (Right idx) val =
-  updateWordByWord sym IndexBackward w idx (fromVBit <$> val)

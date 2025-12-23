@@ -598,7 +598,7 @@ by corresponding type classes:
 
 * Shifting: `<<`, `>>`, `<<<`, `>>>`
 
-* Indexing: `@`, `@@`, `!`, `!!`, `update`, `updateEnd`
+* Indexing: `@`, `@@`, `!`, `!!`, `update`
 
 * Enumerations: `fromTo`, `fromThenTo`, `fromToLessThan`,
                 `infFrom`, `infFromThen`
@@ -774,7 +774,6 @@ by corresponding type classes:
 >   -- Indexing:
 >   , "at"         ~> indexPrimOne  indexFront
 >   , "update"     ~> updatePrim updateFront
->   , "updateEnd"  ~> updatePrim updateBack
 >
 >   -- Enumerations
 >   , "fromTo"     ~> vFinPoly $ \first -> pure $
@@ -1341,9 +1340,6 @@ length of the list produces a run-time error.
 >
 > updateFront :: Nat -> Integer -> Integer
 > updateFront _ j = j
->
-> updateBack :: Nat -> Integer -> Integer
-> updateBack (Nat n) j = n - j - 1
 
 Error Handling
 --------------

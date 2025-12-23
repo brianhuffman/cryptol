@@ -56,7 +56,6 @@ primTable sym getEOpts =
     ("at"          , indexPrim sym IndexForward  (indexFront sym) (indexFront_segs sym))
 
   , ("update"      , updatePrim sym (updateFrontSym_word sym) (updateFrontSym sym))
-  , ("updateEnd"   , updatePrim sym (updateBackSym_word sym) (updateBackSym sym))
 
   ]
 
@@ -161,44 +160,4 @@ updateFrontSym_word sym (Nat n) _eltTy w (Left idx) val =
      updateWordByWord sym IndexForward w (wordVal idx') (fromVBit <$> val)
 updateFrontSym_word sym (Nat _n) _eltTy w (Right idx) val =
   updateWordByWord sym IndexForward w idx (fromVBit <$> val)
-
-
-updateBackSym ::
-  SBV ->
-  Nat ->
-  TValue ->
-  SeqMap SBV (GenValue SBV) ->
-  Either (SInteger SBV) (WordValue SBV) ->
-  SEval SBV (GenValue SBV) ->
-  SEval SBV (SeqMap SBV (GenValue SBV))
-
-updateBackSym sym (Nat n) _eltTy vs (Left idx) val =
-  case SBV.svAsInteger idx of
-    Just i -> return $ updateSeqMap vs (n - 1 - i) val
-    Nothing -> return $ indexSeqMap $ \i ->
-      do b <- intEq sym idx =<< integerLit sym (n - 1 - i)
-         iteValue sym b val (lookupSeqMap vs i)
-
-updateBackSym sym (Nat n) _eltTy vs (Right wv) val =
-  wordValAsLit sym wv >>= \case
-    Just j -> return $ updateSeqMap vs (n - 1 - j) val
-    Nothing ->
-      return $ indexSeqMap $ \i ->
-      do b <- wordValueEqualsInteger sym wv (n - 1 - i)
-         iteValue sym b val (lookupSeqMap vs i)
-
-updateBackSym_word ::
-  SBV ->
-  Nat ->
-  TValue ->
-  WordValue SBV ->
-  Either (SInteger SBV) (WordValue SBV) ->
-  SEval SBV (GenValue SBV) ->
-  SEval SBV (WordValue SBV)
-
-updateBackSym_word sym (Nat n) _eltTy w (Left idx) val =
-  do idx' <- wordFromInt sym n idx
-     updateWordByWord sym IndexBackward w (wordVal idx') (fromVBit <$> val)
-updateBackSym_word sym (Nat _n) _eltTy w (Right idx) val =
-  updateWordByWord sym IndexBackward w idx (fromVBit <$> val)
 

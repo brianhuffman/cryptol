@@ -151,9 +151,6 @@ primTable getEOpts = let sym = Concrete in
   , ("update"     , {-# SCC "Prelude::update" #-}
                     updatePrim sym updateFront_word updateFront)
 
-  , ("updateEnd"  , {-# SCC "Prelude::updateEnd" #-}
-                    updatePrim sym updateBack_word updateBack)
-
    , ("pmult",
         PFinPoly \u ->
         PFinPoly \v ->
@@ -238,29 +235,3 @@ updateFront_word _len _eltTy bs (Left idx) val = do
 updateFront_word _len _eltTy bs (Right w) val = do
   idx <- bvVal <$> asWordVal Concrete w
   updateWordValue Concrete bs idx (fromVBit <$> val)
-
-updateBack ::
-  Nat                {- ^ length of the sequence -} ->
-  TValue             {- ^ type of values in the sequence -} ->
-  SeqMap Concrete (GenValue Concrete) {- ^ sequence to update -} ->
-  Either Integer (WordValue Concrete) {- ^ index -} ->
-  Eval Value         {- ^ new value at index -} ->
-  Eval (SeqMap Concrete (GenValue Concrete))
-updateBack (Nat n) _eltTy vs (Left idx) val = do
-  return $ updateSeqMap vs (n - idx - 1) val
-updateBack (Nat n) _eltTy vs (Right w) val = do
-  idx <- bvVal <$> asWordVal Concrete w
-  return $ updateSeqMap vs (n - idx - 1) val
-
-updateBack_word ::
-  Nat                {- ^ length of the sequence -} ->
-  TValue             {- ^ type of values in the sequence -} ->
-  WordValue Concrete {- ^ bit sequence to update -} ->
-  Either Integer (WordValue Concrete) {- ^ index -} ->
-  Eval Value         {- ^ new value at index -} ->
-  Eval (WordValue Concrete)
-updateBack_word (Nat n) _eltTy bs (Left idx) val = do
-  updateWordValue Concrete bs (n - idx - 1) (fromVBit <$> val)
-updateBack_word (Nat n) _eltTy bs (Right w) val = do
-  idx <- bvVal <$> asWordVal Concrete w
-  updateWordValue Concrete bs (n - idx - 1) (fromVBit <$> val)

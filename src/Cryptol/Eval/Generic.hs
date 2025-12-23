@@ -863,7 +863,7 @@ generateV sym n a ix f =
       fmap (VWord n) $ bitmapWordVal sym n $ indexSeqMap $ \i ->
          fromVBit <$> fromVFun sym f (mkLit sym ix i)
     _ ->
-      pure $ VSeq n $ indexSeqMap $ \i ->
+      fmap (VSeq n) $ memoMap sym (Nat n) $ indexSeqMap $ \i ->
         fromVFun sym f (mkLit sym ix i)
 
 

@@ -165,6 +165,7 @@ noPatE expr =
     EVar {}       -> return expr
     ELit {}       -> return expr
     EGenerate e   -> EGenerate <$> noPatE e
+    EFor t e      -> EFor t  <$> noPatE e
     ETuple es     -> ETuple  <$> mapM noPatE es
     ERecord es    -> ERecord <$> traverse (traverse noPatE) es
     ESel e s      -> ESel    <$> noPatE e <*> return s

@@ -1137,6 +1137,7 @@ instance Rename Expr where
     ELit l          -> return (ELit l)
     EGenerate e     -> EGenerate
                                <$> rename e
+    EFor t e        -> EFor    <$> rename t <*> rename e
     ETuple es       -> ETuple  <$> traverse rename es
     ERecord fs      -> ERecord <$> traverse (traverse rename) fs
     ESel e' s       -> ESel    <$> rename e' <*> pure s

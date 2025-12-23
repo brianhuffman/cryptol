@@ -93,6 +93,7 @@ namesE expr =
     EVar x        -> Set.singleton x
     ELit _        -> Set.empty
     EGenerate e   -> namesE e
+    EFor _ e      -> namesE e
     ETuple es     -> Set.unions (map namesE es)
     ERecord fs    -> Set.unions (map (namesE . snd) (recordElements fs))
     ESel e _      -> namesE e
@@ -237,6 +238,7 @@ tnamesE expr =
     EVar _          -> Set.empty
     ELit _          -> Set.empty
     EGenerate e     -> tnamesE e
+    EFor t e        -> Set.union (tnamesT t) (tnamesE e)
     ETuple es       -> Set.unions (map tnamesE es)
     ERecord fs      -> Set.unions (map (tnamesE . snd) (recordElements fs))
     ESel e _        -> tnamesE e

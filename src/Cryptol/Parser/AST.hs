@@ -589,6 +589,7 @@ data Literal  = ECNum Integer NumInfo           -- ^ @0x10@  (HexLit 2)
 data Expr n   = EVar n                          -- ^ @ x @
               | ELit Literal                    -- ^ @ 0x10 @
               | EGenerate (Expr n)              -- ^ @ generate f @
+              | EFor (Type n) (Expr n)          -- ^ @ [ for i < n : e ] @ or @ generate`{n} f @
               | ETuple [Expr n]                 -- ^ @ (1,2,3) @
               | ERecord (Rec (Expr n))          -- ^ @ { x = 1, y = 2 } @
               | ESel (Expr n) Selector          -- ^ @ e.l @
@@ -1212,6 +1213,7 @@ instance (Show name, PPName name) => PP (Expr name) where
       ELit x        -> pp x
 
       EGenerate x   -> wrap n 3 (text "generate" <+> ppPrec 4 x)
+      EFor t x      -> wrap n 3 (text "generate" <.> text "." <.> braces (pp t) <+> ppPrec 4 x)
 
       ETuple es     -> parens (commaSep (map pp es))
       ERecord fs    -> braces (commaSep (map (ppNamed' "=") (displayFields fs)))
@@ -1549,6 +1551,7 @@ instance NoPos (Expr name) where
       EVar x          -> EVar     x
       ELit x          -> ELit     x
       EGenerate x     -> EGenerate (noPos x)
+      EFor t x        -> EFor     (noPos t) (noPos x)
       ETuple x        -> ETuple   (noPos x)
       ERecord x       -> ERecord  (fmap noPos x)
       ESel x y        -> ESel     (noPos x) y

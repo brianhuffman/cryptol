@@ -171,6 +171,7 @@ appTys expr ts tGoal =
          if cs then pure (ELocated r e') else pure e'
 
     P.EGenerate   {} -> mono
+    P.EFor        {} -> mono
 
     P.ETuple    {} -> mono
     P.ERecord   {} -> mono
@@ -235,6 +236,10 @@ checkE expr tGoal =
     P.EGenerate e ->
       do prim <- mkPrim "generate"
          checkE (P.EApp prim e) tGoal
+
+    P.EFor t e ->
+      do prim <- mkPrim "generate"
+         checkE (P.EApp (P.EAppT prim [P.PosInst t]) e) tGoal
 
     P.ELit l@(P.ECNum _ (P.DecLit _)) ->
       do e <- desugarLiteral l

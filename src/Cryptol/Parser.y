@@ -92,6 +92,8 @@ import Paths_cryptol
   'foreign'   { Located $$ (Token (KW KW_foreign) _)}
   'Prop'      { Located $$ (Token (KW KW_Prop) _)}
 
+  'for'       { Located $$ (Token (KW KW_for) _)}
+
   '['         { Located $$ (Token (Sym BracketL) _)}
   ']'         { Located $$ (Token (Sym BracketR) _)}
   '<-'        { Located $$ (Token (Sym ArrL    ) _)}
@@ -626,6 +628,8 @@ no_sel_aexpr                   :: { Expr PName                             }
                                        Left upd -> pure $ at ($1,$3) upd;
                                        Right fs -> mkRecord (rComb $1 $3) ERecord fs; }}
   | '[' ']'                       { at ($1,$2) $ EList []                  }
+  | '[' 'for' cpat '<' type ':' expr ']'
+                                  { at ($1,$8) $ EFor $5 (EFun emptyFunDesc [$3] $7) }
   | '[' list_expr  ']'            { at ($1,$3) $2                          }
 
   | '(' qop ')'                   { at ($1,$3) $ EVar $ thing $2           }

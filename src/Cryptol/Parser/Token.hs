@@ -55,6 +55,7 @@ data TokenKW  = KW_else
               | KW_interface
               | KW_foreign
               | KW_Prop
+              | KW_for
                 deriving (Eq, Show, Generic, NFData)
 
 -- | The named operators are a special case for parsing types, and 'Other' is

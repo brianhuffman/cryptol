@@ -128,6 +128,8 @@ $white+                   { emit $ White Space }
 
 "Prop"                    { emit $ KW KW_Prop }
 
+"for"                     { emit $ KW KW_for }
+
 @num                      { emitS numToken }
 
 "_"                       { emit $ Sym Underscore }

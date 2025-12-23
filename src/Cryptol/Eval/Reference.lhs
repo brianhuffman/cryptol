@@ -773,7 +773,6 @@ by corresponding type classes:
 >
 >   -- Indexing:
 >   , "at"         ~> indexPrimOne  indexFront
->   , "!"          ~> indexPrimOne  indexBack
 >   , "update"     ~> updatePrim updateFront
 >   , "updateEnd"  ~> updatePrim updateBack
 >

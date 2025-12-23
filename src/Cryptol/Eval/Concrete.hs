@@ -147,8 +147,6 @@ primTable getEOpts = let sym = Concrete in
   [ -- Indexing and updates
     ("at"         , {-# SCC "Prelude::at" #-}
                     indexPrim sym IndexForward indexFront_int indexFront_segs)
-  , ("!"          , {-# SCC "Prelude::(!)" #-}
-                    indexPrim sym IndexBackward indexFront_int indexFront_segs)
 
   , ("update"     , {-# SCC "Prelude::update" #-}
                     updatePrim sym updateFront_word updateFront)

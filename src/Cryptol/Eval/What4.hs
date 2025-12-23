@@ -56,7 +56,6 @@ primTable sym getEOpts =
 
   [ -- Indexing and updates
     ("at"          , indexPrim sym IndexForward  (indexFront_int sym) (indexFront_segs sym))
-  , ("!"           , indexPrim sym IndexBackward (indexFront_int sym) (indexFront_segs sym))
 
   , ("update"      , updatePrim sym (updateFrontSym_word sym) (updateFrontSym sym))
   , ("updateEnd"   , updatePrim sym (updateBackSym_word sym)  (updateBackSym sym))

@@ -18,7 +18,7 @@ infixl 70 <<, <<<, >>, >>>, >>$
 infixl 80 +, -
 infixl 90 *, /, %, /$, %$, %^, /^
 infixr 95 ^^
-infixl 100 @@, !
+infixl 100 @@
 
 
 // Base types -----------------------------------------------------------------------
@@ -550,7 +550,7 @@ head(xs) = xs[0]
  * Return the right-most element of a sequence.
  */
 last : {n, a} [1 + n]a -> a
-last(xs) = xs ! 0
+last(xs) = head(reverse(xs))
 
 /**
  * Same as 'split', but with a different type argument order.
@@ -590,13 +590,6 @@ primitive (>>>) : {n, ix} (Integral ix) => [n] -> ix -> [n]
  */
 (@@) : {n, k, ix, a} (Integral ix) => [n]a -> [k]ix -> [k]a
 xs @@ is = ys where ys[i] = xs[is[i]]
-
-/**
- * Reverse index operator.  The first argument is a finite sequence.  The second
- * argument is the zero-based index of the element to select, starting from the
- * end of the sequence.
- */
-primitive (!) : {n, a, ix} (Integral ix) => [n]a -> ix -> a
 
 /**
  * Update the given sequence with new value at the given index position.

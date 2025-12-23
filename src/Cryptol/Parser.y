@@ -628,8 +628,8 @@ no_sel_aexpr                   :: { Expr PName                             }
                                        Left upd -> pure $ at ($1,$3) upd;
                                        Right fs -> mkRecord (rComb $1 $3) ERecord fs; }}
   | '[' ']'                       { at ($1,$2) $ EList []                  }
-  | '[' 'for' cpat '<' type ':' expr ']'
-                                  { at ($1,$8) $ EFor $5 (EFun emptyFunDesc [$3] $7) }
+  | '[' 'for' index_bounds ':' expr ']'
+                                  { at ($1,$6) $ mkFor $3 $5               }
   | '[' list_expr  ']'            { at ($1,$3) $2                          }
 
   | '(' qop ')'                   { at ($1,$3) $ EVar $ thing $2           }
@@ -767,7 +767,10 @@ opt_iapats_indices      :: { ([Pattern PName], [Pattern PName]) }
   : {- empty -}            { ([],[]) }
 --  | iapats_indices         { $1 }
 
-
+index_bounds            :: { [(Pattern PName, Type PName)] }
+  : cpat '<' type          { [($1, $3)] }
+  | index_bounds ',' cpat '<' type
+                           { ($3, $5) : $1 }
 
 --------------------------------------------------------------------------------
 

@@ -708,6 +708,11 @@ mkGenerate :: [Pattern PName] -> Expr PName -> Expr PName
 mkGenerate pats body =
   foldr (\pat e -> EGenerate (EFun emptyFunDesc [pat] e)) body pats
 
+-- NOTE: The lists of patterns are reversed!
+mkFor :: [(Pattern PName, Type PName)] -> Expr PName -> Expr PName
+mkFor ps body =
+  foldl (\e (p, t) -> EFor t (EFun emptyFunDesc [p] e)) body ps
+
 mkIf :: [(Expr PName, Expr PName)] -> Expr PName -> Expr PName
 mkIf ifThens theElse = foldr addIfThen theElse ifThens
     where

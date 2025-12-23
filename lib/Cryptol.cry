@@ -660,15 +660,16 @@ sort = sortBy((<=))
  * pair of elements that are equivalent according to the order relation.
  */
 sortBy : {a, n} (a -> a -> Bit) -> [n]a -> [n]a
-sortBy(le, ((xs : [n/2]a) # (ys : [n/^2]a))) = [ z.0 | z <- zs ]
+sortBy(le, ((xs : [n/2]a) # (ys : [n/^2]a))) = [for i < n: zs[i].0 ]
   where
     xs' = if number{n/2} == 1 then xs else sortBy(le, xs)
     ys' = if number{n/^2} == 1 then ys else sortBy(le, ys)
-    zs  = [ if i == number{n/2}   then (ys'[j], i  , j+1) else
+    zs  = [ for k < n:
+            if i == number{n/2}   then (ys'[j], i  , j+1) else
             if j == number{n/^2}  then (xs'[i], i+1, j  ) else
             if le(xs'[i], ys'[j]) then (xs'[i], i+1, j  )
             else                       (ys'[j], i  , j+1)
-          | (_, i, j) <- take{n}([ (undefined, 0, 0) ] # zs)
+            where (_, i, j) = take{n}([ (undefined, 0, 0) ] # zs)[k]
           ]
 
 // Bitvector specific operations ----------------------------------

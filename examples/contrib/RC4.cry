@@ -12,7 +12,7 @@ ksa_step(key, i, j, s) = (j', swap(s, i, j'))
  where j' = j + s[i] + key[i]
 
 ksa : [256][8] -> [256][8]
-ksa(key) = (go ! 0).1 where
+ksa(key) = last(go).1 where
  go : [257]([8],[256][8])
  go = [(0,[0..255])] # [ ksa_step(key, i, j, s)
                        | i <- [0..255]

@@ -65,7 +65,7 @@ G'(r, i, vals, ms) = [a2, b2, c2, d2]
 
 // Section 3.2: Compression function
 F : State -> Block -> BCounter -> Bit -> State
-F(h, ms, t, f) =  h ^ (take (vs!0)) ^ (drop (vs!0))
+F(h, ms, t, f) =  h ^ take(last(vs)) ^ drop(last(vs))
  where
   v   = h # IV ^ (zero # [t0,t1,f0,zero])
   [t1,t0] = split(t)     : [2][32]
@@ -74,7 +74,7 @@ F(h, ms, t, f) =  h ^ (take (vs!0)) ^ (drop (vs!0))
 
 // Sub-function of F (first for loop)
 round : [4] -> Block -> LocalState -> LocalState
-round(r, ms, v) = vs ! 0
+round(r, ms, v) = last(vs)
   where
   vs = [v] # [ G(r, i, v', ix, ms)
                 | v'   <- vs
@@ -103,7 +103,7 @@ blake2s' : {ll,dd,nn}
          )
           => [ll][8]
           -> [nn*8]
-blake2s'(m) = take{nn*8}(blake2sFinish({ state = (hs!0).state, counter = number{ll}}, lastBlock))
+blake2s'(m) = take{nn*8}(blake2sFinish({ state = last(hs).state, counter = number{ll}}, lastBlock))
  where
 
  fullBlocks : [dd]Block

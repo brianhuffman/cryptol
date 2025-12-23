@@ -15,7 +15,7 @@ version1_5 = False
 // addition in GF(2^31-1) over a list of terms
 add : {a} (fin a) => [a][31] -> [31]
 add xs =
-    sums ! 0
+    last(sums)
     where
       sums =
           [0] #

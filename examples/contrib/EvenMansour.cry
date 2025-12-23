@@ -50,7 +50,7 @@ swap(xs, a, b) = [ if(i == a) then xs[b] else
                  | i <- [0 .. a-1] ]
 
 generate_random_permutation : {a} (a >= 1, width a >= width(a-1)) => [256] -> [a][width(a-1)]
-generate_random_permutation(seed) = pss!0
+generate_random_permutation(seed) = last(pss)
   where
     indices = [ take{width(a-1)}(b % number{a}) | b <- random(seed) : [a][width a] ]
     pss = [ [0 .. a-1] ] # [ swap(ps, a, b) | ps <- pss | a <- [0 .. a-1] | b <- indices ]
@@ -65,7 +65,7 @@ unique(xs) = [ exist(x, i+1) | x <- xs | i <- [0...] ] == 0
 leq(xs, a) = [ x <= a | x <- xs ] == ~0
 
 index_of : {a, b} (a>=1, Cmp b) => [a]b -> b -> [width(a-1)]
-index_of(xs, a) = (ret!0).1
+index_of(xs, a) = last(ret).1
   where ret = [(False, 0)] # [ if(xs[i] == a) then (True, i) else r
                              | i <- [0 .. a-1 ]
                              | r <- ret ]

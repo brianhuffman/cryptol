@@ -49,7 +49,7 @@ mod_div(p,x,y) = egcd(p,0,y,x)
         egcd(b, rb, (a - b) >> 1, mod_half(p, mod_sub(p, ra, rb)))
 
 mod_pow : {a} (a >= 1) => [a] -> [a] -> [a] -> [a]
-mod_pow (p,x0,e0) = (results ! 0).2
+mod_pow (p,x0,e0) = last(results).2
  where
- results = [(x0,e0,1)] # [ (mod_mul(p,x,x), e>>1, if(e!0) then mod_mul(p,result,x) else result)
+ results = [(x0,e0,1)] # [ (mod_mul(p,x,x), e>>1, if last(e) then mod_mul(p,result,x) else result)
                                 | (x,e,result) <- results | _ <- [0..a] :[_][width a] ]

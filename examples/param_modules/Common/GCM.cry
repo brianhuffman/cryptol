@@ -67,7 +67,7 @@ enc_dec(K, IV, A, P) = (C,T)
 
 /** Section 2.3, equation (2) */
 GHASH : {C,A} (64 >= width C, 64 >= width A) => [128] -> [A] -> [C] -> [128]
-GHASH(H, A, C) = step(XS ! 0, wa # wc)
+GHASH(H, A, C) = step(last(XS), wa # wc)
   where
   wa = number{A} : [64]
   wc = number{C} : [64]

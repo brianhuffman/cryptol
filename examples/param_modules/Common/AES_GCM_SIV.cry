@@ -87,7 +87,7 @@ counter_mode(K2, (tUpper,tLower), M) =
 
 /** See Section 2.2 */
 polyvalFrom : {n} [128] -> [n][128] -> [128] -> [128]
-polyvalFrom(H, Xs, start) = psums ! 0
+polyvalFrom(H, Xs, start) = last(psums)
   where psums = [start] # [ dot (s ^ x, H) | s <- psums | x <- Xs ]
 
 dot : [128] -> [128] -> [128]

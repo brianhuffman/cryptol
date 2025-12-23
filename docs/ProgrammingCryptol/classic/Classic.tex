@@ -578,7 +578,7 @@ ASCII character, which can be interpreted as {\em not found}.
 \end{Exercise}
 \begin{Answer}\ansref{ex:subst:1}
 \begin{code}
-  invSubst (key, c) = candidates ! 0
+  invSubst (key, c) = last(candidates)
     where candidates = [0] # [ if c == k then a else p
                              | k <- key
                              | a <- ['A' .. 'Z']

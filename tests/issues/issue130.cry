@@ -1,7 +1,7 @@
-parity(xs) = ys!0
+parity(xs) = last(ys)
   where ys = [False] # [y ^ x | x <- xs | y <- ys ]
 
-foldl1(f, xs) = ys!0
+foldl1(f, xs) = last(ys)
   where ys = [xs[0]] # [ f(y, x) | y <- ys | x <- tail(xs) ]
 
 par = foldl1((^))

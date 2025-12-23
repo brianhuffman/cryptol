@@ -33,10 +33,10 @@ lfsrki(poly, conds, init) = (stream, fills)
   where
     lfsrki' = lfsrki_step(poly)
     fills = [init] # [ lfsrki'(c, f) | c <- conds | f <- take{back=1}(fills) ]
-    stream = [ f!0 | f <- fills ]
+    stream = [ last(f) | f <- fills ]
 
 
-prefix(f, xs) = ys!0
+prefix(f, xs) = last(ys)
   where ys = [xs[0]] # [ f(y, x) | y <- ys | x <- tail(xs) ]
 
 majv(a, b, c) = (a & b) || (a & c) || (b & c)

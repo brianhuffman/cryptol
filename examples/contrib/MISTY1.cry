@@ -26,7 +26,7 @@ keySchedule(K) = EK_1 # EK_2 # EK_3 # EK_4
 //
 
 FO : [32] -> [8] -> [32][16] -> [32]
-FO(FO_IN, k, EK) = (FO_OUT ! 0).1 # (FO_OUT ! 0).0
+FO(FO_IN, k, EK) = last(FO_OUT).1 # last(FO_OUT).0
     where FO_OUT = [(take(FO_IN), drop(FO_IN))] # [ f(t0, t1)
                                                   | f        <- funcs
                                                   | (t0, t1) <- FO_OUT
@@ -46,7 +46,7 @@ FO(FO_IN, k, EK) = (FO_OUT ! 0).1 # (FO_OUT ! 0).0
                   ]
 
 FI : [16] -> [16] -> [16]
-FI(FI_IN, FI_KEY) = (FI_OUT ! 0).1 # (FI_OUT ! 0).0
+FI(FI_IN, FI_KEY) = last(FI_OUT).1 # last(FI_OUT).0
     where FI_OUT = [(take(FI_IN), drop(FI_IN))] # [ f(d9, d7)
                                                   | f        <- funcs
                                                   | (d9, d7) <- FI_OUT
@@ -154,7 +154,7 @@ FLINV(FL_IN, k, EK) =
 //
 
 misty1Encrypt : [64] -> [32][16] -> [64]
-misty1Encrypt(P, EK) = (C ! 0).1 # (C ! 0).0
+misty1Encrypt(P, EK) = last(C).1 # last(C).0
     where
         // 64-bit plaintext P is divided into the leftmost 32-bit D0 and the
         // rightmost 32-bit D1
@@ -193,7 +193,7 @@ misty1Encrypt(P, EK) = (C ! 0).1 # (C ! 0).0
                 ]
 
 misty1Decrypt : [64] -> [32][16] -> [64]
-misty1Decrypt(C, EK) = (P ! 0).0 # (P ! 0).1
+misty1Decrypt(C, EK) = last(P).0 # last(P).1
     where P = [(drop(C), take(C))] # [ f(D0, D1)
                                      | f        <- funcs
                                      | (D0, D1) <- P
@@ -227,7 +227,7 @@ extend : {total, n} (total >= n) => [n] -> [total]
 extend(n) = zero # n
 
 isEven : {a} [a] -> Bool
-isEven(n) = ~(n ! 0)
+isEven(n) = ~ n[0]
 
 //
 // Examples

@@ -2113,7 +2113,7 @@ property all_test_vectors_correct =
 # Appendix: Utility functions
 
 ```cryptol
-indexOf(e, xs:[a+1]b) = ixs ! 0 where
+indexOf(e, xs:[a+1]b) = last(ixs) where
     ixs = [ 0 ] #
                  [ if ix == e then j else old
                  | ix <- xs

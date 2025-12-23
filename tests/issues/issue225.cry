@@ -19,4 +19,4 @@ joinRotors((rotors, inputChar)) = (rotors', outputChar)
                  | (notch, char, rotor') <- ncrs
                  ]
     rotors' = tail([ r | (_, _, r) <- ncrs ])
-    (_, outputChar, _) = ncrs ! 0
+    (_, outputChar, _) = last(ncrs)

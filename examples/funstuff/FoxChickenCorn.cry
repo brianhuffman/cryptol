@@ -74,7 +74,7 @@ all(xs) = xs == ~zero
 
 // "population count" - how many bits are on
 popCount : {a} (a >= 1) => [a] -> [width a]
-popCount(bs) = ic ! 0 where
+popCount(bs) = last(ic) where
     ic = [0] # [ if elt then prev + 1 else prev | elt <- bs | prev <- ic]
 
 // pretty printing
@@ -89,7 +89,7 @@ noString      = "       "
 ppArray = [farmerString, chickenString, cornString, foxString]
 
 ppBits : [4] -> [4]StringRep
-ppBits(s) =  [ if b then ppArray!i else noString
+ppBits(s) =  [ if b then reverse(ppArray)[i] else noString
              | b <- s
              | i <- [0..3]:[4][4] ]
 

@@ -505,7 +505,7 @@ Internet-Draft                  cfrgcurve                     March 2015
 ```
 // Decode little endian bytes into Curve25519
 decodeLittleEndian : {a} (a >= 1) => [a][8] -> [a*8]
-decodeLittleEndian(bytes) = s ! 0
+decodeLittleEndian(bytes) = last(s)
   where s = [zero] # [(acc<<8) + (zero#byte) | acc <- s | byte <- reverse(bytes)]
 
 decodeUCoordinate25519 : [32][8] -> [256]
@@ -667,8 +667,8 @@ curveX(a24, p, s, x) = mul(p, x2F, power(p, z2F, p - 2))
  Z2  = 0
  X3  = x
  Z3  = 1
- xzs = [(X2,X3,Z2,Z3)] # [curveX'(a24, p, s!t, X1, x2, x3, z2, z3) | t <- [a-1,a-2..0] : [_][9] | (x2,x3,z2,z3) <- xzs]
- (x2F,_,z2F,_) = xzs ! 0
+ xzs = [(X2,X3,Z2,Z3)] # [curveX'(a24, p, s[t], X1, x2, x3, z2, z3) | t <- [0..a-1] : [_][9] | (x2,x3,z2,z3) <- xzs]
+ (x2F,_,z2F,_) = last(xzs)
 
 // curveX' : {a} (10 >= width (a-1)) => [a] -> [a] -> Bit -> [a] -> [a] -> [a] -> [a] -> [a] ->
 //          ([a],[a],[a],[a])

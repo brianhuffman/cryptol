@@ -35,7 +35,7 @@ type RoundKey    = State
 type KeySchedule = (RoundKey, [Nr-1]RoundKey, RoundKey)
 
 // GF28 operations
-gf28Add{n}(ps : [n]GF28) : GF28 = sums ! 0
+gf28Add{n}(ps : [n]GF28) : GF28 = last(sums)
   where sums = [zero] # [  p ^ s | p <- ps | s <- sums ]
 
 irreducible = 0b100011011
@@ -163,13 +163,13 @@ msgToState(msg : [128]) : State = transpose(split(reverse(split(msg))))
 stateToMsg(st : State) : [128] = join(reverse(join(transpose(st))))
 
 // AES Encryption
-aesEncrypt(pt : [128], key : [AESKeySize]) : [128] = stateToMsg(AESFinalRound(kFinal, rounds ! 0))
+aesEncrypt(pt : [128], key : [AESKeySize]) : [128] = stateToMsg(AESFinalRound(kFinal, last(rounds)))
   where   (kInit, ks, kFinal) = ExpandKey(key)
           state0 = AddRoundKey(kInit, msgToState(pt))
           rounds = [state0] # [ AESRound(rk, s) | rk <- ks | s <- rounds ]
 
 // AES Decryption
-aesDecrypt(ct : [128], key : [AESKeySize]) : [128] = stateToMsg(AESFinalInvRound(kFinal, rounds ! 0))
+aesDecrypt(ct : [128], key : [AESKeySize]) : [128] = stateToMsg(AESFinalInvRound(kFinal, last(rounds)))
   where   (kFinal, ks, kInit) = ExpandKey(key)
           state0 = AddRoundKey(kInit, msgToState(ct))
           rounds = [state0] # [ AESInvRound(rk, s)

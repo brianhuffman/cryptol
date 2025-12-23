@@ -37,7 +37,7 @@ type KeySchedule = (RoundKey, [Nr-1]RoundKey, RoundKey)
 This is useful if many things will be encrypted with the same key. */
 encrypt : KeySchedule -> [128] -> [128]
 encrypt((kInit,ks,kFinal), pt) =
-                            stateToMsg(AESFinalRound(kFinal, rounds ! 0))
+                            stateToMsg(AESFinalRound(kFinal, last(rounds)))
   where
   state0 = kInit ^ msgToState(pt)
   rounds = [state0] # [ encRound(rk, s) | rk <- ks | s <- rounds ]
@@ -46,7 +46,7 @@ encrypt((kInit,ks,kFinal), pt) =
 This is useful if many things will be decrypted with the same key. */
 decrypt : KeySchedule -> [128] -> [128]
 decrypt((kInit, ks, kFinal), ct) =
-                          stateToMsg(AESFinalInvRound(kFinal, rounds ! 0))
+                          stateToMsg(AESFinalInvRound(kFinal, last(rounds)))
   where
   state0 = kInit ^ msgToState(ct)
   rounds = [state0] # [ decRound(rk, s) | rk <- ks | s <- rounds ]

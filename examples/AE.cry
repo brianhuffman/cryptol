@@ -66,7 +66,7 @@ encrypt{m}(key : K, nonce : Nonce, state : A, inputMsg : [m * (p * n)])
 
   tag = take{tagAmount}(Tag(key, tweak(1 - final.1), final.0.state))
 
-  final = steps ! 0
+  final = last(steps)
 
   steps = [ ({ message = undefined, state = zero }, 1) ] # rest
   rest  = [ (Enc(key, tweak(v), { message = m, state = prev.state }), v + Cost)

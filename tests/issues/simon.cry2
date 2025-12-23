@@ -55,7 +55,7 @@ f(x) = ((x <<< 1) & (x <<< 8)) ^ (x <<< 2)
 encrypt : {n, m, T, j : #}
     ( n >= 2, T - 1 >= m, T >= 1
     ) => [m][n] -> ([n], [n]) -> ([n], [n])
-encrypt(k0, p0) = ps ! 0
+encrypt(k0, p0) = last(ps)
   where
     ps = [p0] # [ R(k, p) | p <- ps | k <- ks ]
     ks = expandKey{n=n,m=m,T=T,j=j}(reverse(k0))
@@ -64,7 +64,7 @@ encrypt(k0, p0) = ps ! 0
 decrypt : {n, m, T, j : #}
     ( n >= 2, T - 1 >= m, T >= 1
     ) => [m][n] -> ([n], [n]) -> ([n], [n])
-decrypt(k0, p0) = ps ! 0
+decrypt(k0, p0) = last(ps)
   where
     ps = [p0] # [ R'(k, p) | p <- ps | k <- reverse(ks) ]
     ks = expandKey{n=n,m=m,T=T,j=j}(reverse(k0))

@@ -1,3 +1,6 @@
 Loading module Cryptol
 Loading module Cryptol
 Loading module Main
+
+[error] at issue314.cry:2:11--2:12
+    Value not in scope: (!)

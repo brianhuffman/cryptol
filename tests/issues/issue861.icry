@@ -7,11 +7,11 @@ xs[2]
 xs[3]
 xs[-1]
 
-xs!0
-xs!1
-xs!2
-xs!3
-xs!(-1)
+reverse(xs)[0]
+reverse(xs)[1]
+reverse(xs)[2]
+reverse(xs)[3]
+reverse(xs)[-1]
 
 update(xs, 0, 5)
 update(xs, 1, 5)

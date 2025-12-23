@@ -22,4 +22,4 @@ property wordUpdateEnd2 (x:[16], y:[8], b:Bit) =
   y < 16 ==> updateEnd(x, y, b) == x'
 
  where
- x' = [ if i == y then b else x!i | i <- reverse([0 .. 15]) ]
+ x' = [ if i == y then b else reverse(x)[i] | i <- reverse([0 .. 15]) ]

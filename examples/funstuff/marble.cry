@@ -13,7 +13,7 @@ all : {n} [n] -> Bit
 all(xs) = xs == ~zero
 
 popCount : {a} (a >= 1) => [a] -> [width a]
-popCount(bs) = ic ! 0 where
+popCount(bs) = last(ic) where
     ic = [0] # [ if elt then prev + 1 else prev | elt <- bs | prev <- ic]
 
 posns : Board
@@ -71,7 +71,7 @@ validRowJump(a, a') = validBoard(a)
                  /\ validRowMove(differentRow(a, a'))
 
 differentRow : Board -> Board -> ([7], [7])
-differentRow(a, a') = rows ! 0
+differentRow(a, a') = last(rows)
     where rows = [(0b0000000,0b0000000)]
                # [ if row != row' then (row,row') else old
                  | row <- a

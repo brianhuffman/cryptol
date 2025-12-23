@@ -18,7 +18,7 @@ infixl 70 <<, <<<, >>, >>>, >>$
 infixl 80 +, -
 infixl 90 *, /, %, /$, %$, %^, /^
 infixr 95 ^^
-infixl 100 @@, !, !!
+infixl 100 @@, !
 
 
 // Base types -----------------------------------------------------------------------
@@ -597,14 +597,6 @@ xs @@ is = ys where ys[i] = xs[is[i]]
  * end of the sequence.
  */
 primitive (!) : {n, a, ix} (Integral ix) => [n]a -> ix -> a
-
-/**
- * Bulk reverse index operator.  The first argument is a finite sequence.  The
- * second argument is a sequence of the zero-based indices of the elements to
- * select, starting from the end of the sequence.
- */
-(!!) : {n, k, ix, a} (Integral ix) => [n]a -> [k]ix -> [k]a
-xs !! is = ys where ys[i] = xs ! is[i]
 
 /**
  * Update the given sequence with new value at the given index position.

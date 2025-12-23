@@ -139,7 +139,6 @@ Symbols
     (/$) : {n} (n >= 1) => [n] -> [n] -> [n]
     (^^) : {a, e} (Ring a, Integral e) => a -> e -> a
     (!) : {n, a, ix} (Integral ix) => [n]a -> ix -> a
-    (!!) : {n, k, ix, a} (Integral ix) => [n]a -> [k]ix -> [k]a
     (@@) : {n, k, ix, a} (Integral ix) => [n]a -> [k]ix -> [k]a
     abs : {a} (Cmp a, Ring a) => a -> a
     all : {n, a} (a -> Bit) -> [n]a -> Bit

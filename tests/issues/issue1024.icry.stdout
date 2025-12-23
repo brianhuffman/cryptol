@@ -13,20 +13,20 @@ Loading module Main
     Unused name: g
 
 [error] at issue1024a.cry:1:6--1:24:
-  Illegal kind assigned to type variable: f`978
+  Illegal kind assigned to type variable: f`954
   Unexpected: # -> *
   where
-  f`978 is signature variable 'f' at issue1024a.cry:1:13--1:14
+  f`954 is signature variable 'f' at issue1024a.cry:1:13--1:14
 [error] at issue1024a.cry:2:6--2:24:
-  Illegal kind assigned to type variable: f`979
+  Illegal kind assigned to type variable: f`955
   Unexpected: Prop
   where
-  f`979 is signature variable 'f' at issue1024a.cry:2:15--2:16
+  f`955 is signature variable 'f' at issue1024a.cry:2:15--2:16
 [error] at issue1024a.cry:4:13--4:49:
-  Illegal kind assigned to type variable: f`981
+  Illegal kind assigned to type variable: f`957
   Unexpected: # -> *
   where
-  f`981 is signature variable 'f' at issue1024a.cry:4:22--4:32
+  f`957 is signature variable 'f' at issue1024a.cry:4:22--4:32
 Loading module Cryptol
 Loading module Main
 0xffff

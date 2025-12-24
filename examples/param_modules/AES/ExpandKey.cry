@@ -7,11 +7,11 @@ import AES::SubByteSBox
 parameter
   /** Number of 32 bit words in the key */
   type Nk : #
-  type constraint (8 >= width Nk, Nk >= 1)
+  type constraint (8 >= width{Nk}, Nk >= 1)
 
   /** Number of rounds */
   type Nr : #
-  type constraint (8 >= width Nr, Nr >= 2)
+  type constraint (8 >= width{Nr}, Nr >= 2)
 
 expandKey : [32 * Nk] -> (RoundKey, [Nr-1]RoundKey, RoundKey)
 expandKey(key) = ( keys[0]

@@ -18,12 +18,12 @@ BlockMix(B) = ys @@ ([0,2..2*r-2] # [1,3..2*r-1])
 // N = 2^^17
 SMix : {N,r} ( r >= 1
              , N >= 1
-             , 512 >= width N
-             , 1 + width N >= width (N-1)
+             , 512 >= width{N}
+             , 1 + width{N} >= width{N-1}
              ) => [128 * 8 * r] -> [128 * 8 * r]
 SMix(B) = join (last(Xs))
  where
-  Vs = [split(B)] # [ BlockMix(x) | x <- Vs | _ <- [0..N-1] : [_][width N + 1]]
+  Vs = [split(B)] # [ BlockMix(x) | x <- Vs | _ <- [0..N-1] : [_][width{N} + 1]]
   V  = take{front=N}(Vs)
 
   Xs : [N+1][2*r][64*8]
@@ -31,7 +31,7 @@ SMix(B) = join (last(Xs))
                             j  = integerify(x)
                             T  = x ^ V[j]
                             x' = BlockMix(T))
-                        | x <- Xs | _ <- [0..N-1] : [_][width N + 1] ]
+                        | x <- Xs | _ <- [0..N-1] : [_][width{N} + 1] ]
 
   integerify(w) = (join (reverse (split {each=8} (last(w))))) % number{N}
 
@@ -40,11 +40,11 @@ SMix(B) = join (last(Xs))
 MFcrypt : { pwBytes, saltBytes, dkLen, r, N }
           ( 4*r >= 1
           , 8 * dkLen >= 1
-          , 64 >= width (8 * pwBytes)
-          , 32 >= width (4 + saltBytes)
-          ,  512 >= width N, 1+width N >= width (N-1)
-          , 32 >= width ((255 + 8 * dkLen) / 256)
-          , 32 >= width (4 + 128 * r)
+          , 64 >= width{8 * pwBytes}
+          , 32 >= width{4 + saltBytes}
+          ,  512 >= width{N}, 1+width{N} >= width{N-1}
+          , 32 >= width{(255 + 8 * dkLen) / 256}
+          , 32 >= width{4 + 128 * r}
           , N >= 1
           )
         => [pwBytes][8] -> [saltBytes][8] -> [dkLen][8]
@@ -57,11 +57,11 @@ MFcrypt(P, S) = split(DK)
 SCrypt : {pwBytes, saltBytes, dkBytes, r, N}
          ( 4*r >= 1
          , 8 * dkBytes >= 1
-         , 32 >= width ((255 + 8 * dkBytes) / 256)
-         , 64 >= width (8 * pwBytes)
-         , 512 >= width N, 1+width N >= width (N-1)
-         , 32 >= width (4 + saltBytes)
-         , 32 >= width (4 + 128 * r)
+         , 32 >= width{(255 + 8 * dkBytes) / 256}
+         , 64 >= width{8 * pwBytes}
+         , 512 >= width{N}, 1+width{N} >= width{N-1}
+         , 32 >= width{4 + saltBytes}
+         , 32 >= width{4 + 128 * r}
          , N >= 1
          )
       => [pwBytes][8] -> [saltBytes][8] -> [dkBytes][8]

@@ -7,7 +7,7 @@ module instance where
 // checker.
 
 // we use this to test that newtypes do not inhabit any instances
-newtype Box a = { contents : a }
+newtype Box{a} = { contents : a }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Zero
@@ -25,27 +25,27 @@ zeroWord : {n} [n]
 zeroWord = zero
 
 /** instance (Zero a) => Zero [n]a */
-zeroSeq : {n, a} (Zero a) => [n]a
+zeroSeq : {n, a} Zero{a} => [n]a
 zeroSeq = zero
 
 /** instance (Zero b) => Zero (a -> b) */
-zeroFun : {a, b} (Zero b) => a -> b
+zeroFun : {a, b} Zero {b} => a -> b
 zeroFun = zero
 
 /** instance Zero () */
 zeroUnit : ()
 zeroUnit = zero
 
-/** instance (Zero a, Zero b, ...) => Zero (a, b, ...) */
-zeroTuple : {a, b} (Zero a, Zero b) => (a, b)
+/** instance (Zero{a}, Zero{b}, ...) => Zero{(a, b, ...)} */
+zeroTuple : {a, b} (Zero{a}, Zero{b}) => (a, b)
 zeroTuple = zero
 
 /** instance Zero {} */
 zeroEmpty : {}
 zeroEmpty = zero
 
-/** instance (Zero a, Zero b, ...) => Zero { x : a, y : b, ... } */
-zeroRecord : {a, b} (Zero a, Zero b) => {x : a, y : b}
+/** instance (Zero{a}, Zero{b}, ...) => Zero{{ x : a, y : b, ... }} */
+zeroRecord : {a, b} (Zero{a}, Zero{b}) => {x : a, y : b}
 zeroRecord = zero
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -55,110 +55,110 @@ zeroRecord = zero
 logicBit : Bit -> Bit
 logicBit = complement
 
-/** instance Logic [n] */
+/** instance Logic{[n]} */
 logicWord : {n} [n] -> [n]
 logicWord = complement
 
-/** instance (Logic a) => Logic [n]a */
-logicSeq : {n, a} (Logic a) => [n]a -> [n]a
+/** instance Logic{a} => Logic{[n]a} */
+logicSeq : {n, a} Logic{a} => [n]a -> [n]a
 logicSeq = complement
 
-/** instance (Logic b) => Logic (a -> b) */
-logicFun : {a, b} (Logic b) => (a -> b) -> (a -> b)
+/** instance Logic{b} => Logic{a -> b} */
+logicFun : {a, b} Logic{b} => (a -> b) -> (a -> b)
 logicFun = complement
 
-/** instance Logic () */
+/** instance Logic{()} */
 logicUnit : () -> ()
 logicUnit = complement
 
-/** instance (Logic a, Logic b, ...) => Logic (a, b, ...) */
-logicTuple : {a, b} (Logic a, Logic b) => (a, b) -> (a, b)
+/** instance (Logic{a}, Logic{b}, ...) => Logic{(a, b, ...)} */
+logicTuple : {a, b} (Logic{a}, Logic{b}) => (a, b) -> (a, b)
 logicTuple = complement
 
-/** instance Logic {} */
+/** instance Logic{{}} */
 logicEmpty : {} -> {}
 logicEmpty = complement
 
-/** instance (Logic a, Logic b, ...) => Logic { x : a, y : b, ... } */
-logicRecord : {a, b} (Logic a, Logic b) => {x : a, y : b} -> {x : a, y : b}
+/** instance (Logic{a}, Logic{b}, ...) => Logic{{ x : a, y : b, ... }} */
+logicRecord : {a, b} (Logic{a}, Logic{b}) => {x : a, y : b} -> {x : a, y : b}
 logicRecord = complement
 
 ////////////////////////////////////////////////////////////////////////////////
 // Ring
 
-/** instance Ring Integer */
+/** instance Ring{Integer} */
 ringInteger : Integer -> Integer
 ringInteger = negate
 
-/** instance Ring [n] */
+/** instance Ring{[n]} */
 ringWord : {n} [n] -> [n]
 ringWord = negate
 
 ////////////////////////////////////////////////////////////////////////////////
 // Integral
 
-/** instance Integral Integer */
+/** instance Integral{Integer} */
 integralInteger : Integer -> Integer -> Integer
 integralInteger = (%)
 
-/** instance Integral [n] */
+/** instance Integral{[n]} */
 integralWord : {n} [n] -> [n] -> [n]
 integralWord = (%)
 
 ////////////////////////////////////////////////////////////////////////////////
 // Eq
 
-/** instance Eq Bit */
+/** instance Eq{Bit} */
 eqBit : Bit -> Bit -> Bit
 eqBit = (==)
 
-/** instance Eq Integer */
+/** instance Eq{Integer} */
 eqInteger : Integer -> Integer -> Bit
 eqInteger = (==)
 
-/** instance Eq [n] */
+/** instance Eq{[n]} */
 eqWord : {n} [n] -> [n] -> Bit
 eqWord = (==)
 
-/** instance (Eq a) => Eq [n]a */
-eqSeq : {n, a} (Eq a) => [n]a -> [n]a -> Bit
+/** instance Eq{a} => Eq{[n]a} */
+eqSeq : {n, a} Eq{a} => [n]a -> [n]a -> Bit
 eqSeq = (==)
 
-/** instance Eq () */
+/** instance Eq{()} */
 eqUnit : () -> () -> Bit
 eqUnit = (==)
 
-/** instance (Eq a, Eq b, ...) => Eq (a, b, ...) */
-eqTuple : {a, b} (Eq a, Eq b) => (a, b) -> (a, b) -> Bit
+/** instance (Eq{a}, Eq{b}, ...) => Eq{(a, b, ...)} */
+eqTuple : {a, b} (Eq{a}, Eq{b}) => (a, b) -> (a, b) -> Bit
 eqTuple = (==)
 
-/** instance Eq {} */
+/** instance Eq{{}} */
 eqEmpty : {} -> {} -> Bit
 eqEmpty = (==)
 
-/** instance (Eq a, Eq b, ...) => Eq { x : a, y : b, ... } */
-eqRecord : {a, b} (Eq a, Eq b) => {x : a, y : b} ->  {x : a, y : b} -> Bit
+/** instance (Eq{a}, Eq{b}, ...) => Eq{{ x : a, y : b, ... }} */
+eqRecord : {a, b} (Eq{a}, Eq{b}) => {x : a, y : b} ->  {x : a, y : b} -> Bit
 eqRecord = (==)
 
 ////////////////////////////////////////////////////////////////////////////////
 // Cmp
 
-/** instance Cmp Bit */
+/** instance Cmp{Bit} */
 cmpBit : Bit -> Bit -> Bit
 cmpBit = (<)
 
-/** instance Cmp Integer */
+/** instance Cmp{Integer} */
 cmpInteger : Integer -> Integer -> Bit
 cmpInteger = (<)
 
-/** instance Cmp [n] */
+/** instance Cmp{[n]} */
 cmpWord : {n} [n] -> [n] -> Bit
 cmpWord = (<)
 
 ////////////////////////////////////////////////////////////////////////////////
 // Literal
 
-/** instance (1 >= val) => Literal val Bit */
+/** instance (1 >= val) => Literal{val, Bit} */
 literalBit : {val} (1 >= val) => Bit
 literalBit = number{val}
 
@@ -166,14 +166,14 @@ literalBit = number{val}
 literalInteger : {val : #} Integer
 literalInteger = number{val}
 
-/** instance (n >= width val) => Literal val [n] */
-literalWord : {val, n} (n >= width val) => [n]
+/** instance (n >= width{val}) => Literal{val, [n]} */
+literalWord : {val, n} (n >= width{val}) => [n]
 literalWord = number{val}
 
 ////////////////////////////////////////////////////////////////////////////////
 // LiteralLessThan
 
-/* instance (2 >= val) => LiteralLessThan val Bit */
+/* instance (2 >= val) => LiteralLessThan{val, Bit} */
 literalLessThanBit : {val} (2 >= val) => [val]Bit
 literalLessThanBit = [0..<val]
 
@@ -181,6 +181,6 @@ literalLessThanBit = [0..<val]
 literalLessThanInteger : {val} [val]Integer
 literalLessThanInteger = [0..<val]
 
-/* instance (n >= lg2 val) => LiteralLessThan val [n] */
-literalLessThanWord : {val, n} (n >= lg2 val) => [val][n]
+/* instance (n >= lg2{val}) => LiteralLessThan{val, [n]} */
+literalLessThanWord : {val, n} (n >= lg2{val}) => [val][n]
 literalLessThanWord = [0..<val]

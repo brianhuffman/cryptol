@@ -1019,8 +1019,8 @@ data algorithm.  The inputs to AEAD_CHACHA20-POLY1305 are:
 
 ```cryptol
 AEAD_CHACHA20_POLY1305 : {m, n}
-                         (64 >= width m
-                         ,64 >= width n )
+                         (64 >= width{m}
+                         ,64 >= width{n} )
                        => [256] -> [96] -> [m][8] -> [n][8]
                        -> [m+16][8]
 
@@ -1096,7 +1096,7 @@ The output from the AEAD is twofold:
 Decryption is pretty much the same thing.
 
 ```cryptol
-AEAD_CHACHA20_POLY1305_DECRYPT : {m, n} (64 >= width m, 64 >= width n)
+AEAD_CHACHA20_POLY1305_DECRYPT : {m, n} (64 >= width{m}, 64 >= width{n})
                                  => [256] -> [96]
                                     -> [m+16][8] -> [n][8]
                                     -> ([m][8], Bit)

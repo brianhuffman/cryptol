@@ -5,7 +5,7 @@
 
 module Cipher where
 
-type Cipher KeySize BlockSize =
+type Cipher{KeySize, BlockSize} =
   { encrypt : [KeySize] -> [BlockSize] -> [BlockSize]
   , decrypt : [KeySize] -> [BlockSize] -> [BlockSize]
   }

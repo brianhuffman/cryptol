@@ -56,11 +56,11 @@ The header format is:
 
 ```cryptol
 // Size of a given minilock container depends soley on the number of recipients and the plaintext
-type MiniLockBytes nrRecip fileSize = 8 + 4 + 89 + (DecryptInfoSize + 1) * nrRecip + EncryptedBytes fileSize - 1
+type MiniLockBytes{nrRecip, fileSize} = 8 + 4 + 89 + (DecryptInfoSize + 1) * nrRecip + EncryptedBytes{fileSize} - 1
 
 minilock : {nrRecip, fileNameBytes, msgBytes}
-        ( nrRecip >= 1, 22 >= width nrRecip             // Between 1 and 4M recipients
-        , 63 >= width msgBytes                          // Messages leq 2^63 bytes
+        ( nrRecip >= 1, 22 >= width{nrRecip}            // Between 1 and 4M recipients
+        , 63 >= width{msgBytes}                         // Messages leq 2^63 bytes
         , fileNameBytes >= 1, 256 >= fileNameBytes      // Between 1 and 256 byte file name
         ) =>
         [nrRecip](MinilockID,[24][8])    // Recipients and nonces for the fileInfo field
@@ -70,7 +70,7 @@ minilock : {nrRecip, fileNameBytes, msgBytes}
         -> [32][8]                       // File key (random)
         -> [16][8]                       // File nonce (random)
         -> (Private25519, Public25519)   // Ephemeral keys (random)
-        -> [MiniLockBytes nrRecip msgBytes][8]
+        -> [MiniLockBytes{nrRecip, msgBytes}][8]
 minilock(rs, fileName0, msg, senderKeys, fileKey, fileNonce, ephemKeys) = lockFile
  where
   filename               = take{256}(fileName0 # (zero : [256][8]))
@@ -82,16 +82,16 @@ private
   magic : [8][8]
   magic = [0x6d, 0x69, 0x6e, 0x69, 0x4c, 0x6f, 0x63, 0x6b]
 
-  encryptData : {msgBytes} (63 >= width msgBytes)
-             => [32][8]-> [16][8] -> [256][8] -> [msgBytes][8] -> [EncryptedBytes msgBytes][8]
+  encryptData : {msgBytes} (63 >= width{msgBytes})
+             => [32][8]-> [16][8] -> [256][8] -> [msgBytes][8] -> [EncryptedBytes{msgBytes}][8]
   encryptData(k, n, f, m) = encryptChunks(k, n, f, cs, cN)
    where
     (cs,cN) = mkChunks(m)
 
   // encrypt chunks results in the ciphertext AND poly1305 tag for each chunk.
   encryptChunks : {chunks,rem}
-                  ( 32 >= width rem
-                  , 64 >= width chunks)
+                  ( 32 >= width{rem}
+                  , 64 >= width{chunks})
                => [32][8] -> [16][8] -> [256][8] -> [chunks]Chunk -> [rem][8]
                -> [4 + 16 + 256 + chunks*((2^^20) + 4 + 16) + 4 + 16 + rem][8]
   encryptChunks(key, nonce, c0, cs, end) = encChunk0 # join(ctChunks) # ctFinal
@@ -114,7 +114,7 @@ The minilock file format is a concatenation of the magic, header length field, h
   type DecryptInfoSize = 549
 
 
-  mkMiniLock : {nrRecip, ctBytes} (22 >= width nrRecip, nrRecip >= 1) =>
+  mkMiniLock : {nrRecip, ctBytes} (22 >= width{nrRecip}, nrRecip >= 1) =>
                [nrRecip](MinilockID,[24][8])
             -> (Private25519, Public25519)
             -> (Private25519, Public25519)
@@ -176,7 +176,7 @@ fileinfo inside a decryptInfo field as such:
    where
     ds = [ mkDecryptInfo(senderKeys, ephemKeys, recvID, recvNonce, infoBlob) # "," | (recvID,recvNonce) <- rs ]
     // Drop the trailing comma
-    decInfoFull = take{back = min nrRecip 1}(join(ds))
+    decInfoFull = take{back = min{nrRecip, 1}}(join(ds))
 
   // XXX return 'succ' for successful decode of the public id
   mkDecryptInfo :
@@ -193,22 +193,22 @@ fileinfo inside a decryptInfo field as such:
     fileInfoCT  = encryptWith(nonce, senderKeys.0, theirPublic, infoBlob)
     (succ,theirPublic) = decodeID(theirID)
 
-  encryptWith : {n} (64 >= width (32 + n)) => [24][8] -> Private25519 -> Public25519 -> [n][8] -> [Enc64 (n+16)][8]
+  encryptWith : {n} (64 >= width{32 + n}) => [24][8] -> Private25519 -> Public25519 -> [n][8] -> [Enc64{n+16}][8]
   encryptWith(nonce, secret, public, pt) = base64enc(crypto_box(pt, nonce, public, secret))
 
-  type NrChunks ptBytes = ptBytes / (2^^20)
-  type LastChunkSize ptBytes = ptBytes - (NrChunks ptBytes) * 2^^20
-  type EncryptedBytes ptBytes = 4 + 16 + 256 + (NrChunks ptBytes) * ((2^^20) + 4 + 16) + 4 + 16 + LastChunkSize ptBytes
+  type NrChunks{ptBytes} = ptBytes / (2^^20)
+  type LastChunkSize{ptBytes} = ptBytes - NrChunks{ptBytes} * 2^^20
+  type EncryptedBytes{ptBytes} = 4 + 16 + 256 + NrChunks{ptBytes} * ((2^^20) + 4 + 16) + 4 + 16 + LastChunkSize{ptBytes}
 
   type ChunkSize = 2^^20
   type Chunk = [ChunkSize][8]
-  type FullChunks bytes = bytes / ChunkSize
-  type Rem bytes = bytes - FullChunks bytes * ChunkSize
+  type FullChunks{bytes} = bytes / ChunkSize
+  type Rem{bytes} = bytes - FullChunks{bytes} * ChunkSize
 
-  mkChunks : {bytes} [bytes][8] -> ([FullChunks bytes]Chunk, [Rem bytes][8])
+  mkChunks : {bytes} [bytes][8] -> ([FullChunks{bytes}]Chunk, [Rem{bytes}][8])
   mkChunks(pt) = (cs,lst)
-    where cs  = split(take{front = FullChunks bytes * ChunkSize, back = Rem bytes}(pt))
-          lst = drop{FullChunks bytes * ChunkSize}(pt)
+    where cs  = split(take{front = FullChunks{bytes} * ChunkSize, back = Rem{bytes}}(pt))
+          lst = drop{FullChunks{bytes} * ChunkSize}(pt)
 ```
 
 The above code used some custom utility functions, which appear below.
@@ -249,6 +249,6 @@ test_lock(fname, cont) = file
   key       = zero # "file key"
   file      = minilock([(theirID,nonceA)], fname, cont, (myPriv,myPub), key, nonceF, (ephemPriv,ephemPub))
 
-test_construction : [MiniLockBytes 1 13][8]
+test_construction : [MiniLockBytes{1, 13}][8]
 test_construction = test_lock("some_filename", "some contents")
 ```

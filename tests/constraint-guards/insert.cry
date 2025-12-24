@@ -1,16 +1,16 @@
 // assumes that `xs` is sorted
-insert : {n, a} (Cmp a) => a -> [n]a -> [n+1]a
+insert : {n, a} Cmp{a} => a -> [n]a -> [n+1]a
 insert(x', xs)
   | n == 0         => [x']
   | n == 1         => if x' <= x then [x', x] else [x, x']
                       where [x] = xs
   | ( n % 2 == 0
-    , n     >  1 ) => if x' <= x 
+    , n     >  1 ) => if x' <= x
                         then insert(x', xs1 # [x]) # xs2
                         else xs1 # [x] # insert(x', xs2)
                       where (xs1 : [n/2 - 1]_) # [x] # (xs2 : [n/2]_) = xs
   | ( n % 2 == 1
-    , n     >  1 ) => if x' <= x 
+    , n     >  1 ) => if x' <= x
                         then insert(x', xs1 # [x]) # xs2
                         else xs1 # [x] # insert(x', xs2)
                       where (xs1 : [n/2]_) # [x] # (xs2 : [n/2]_) = xs

@@ -12,7 +12,7 @@ submodule F where
 submodule I where
   type n = 8
 
-  x : {a} Literal 42 a => a
+  x : {a} Literal{42, a} => a
   x = 42
 
 submodule M = submodule F { submodule I }

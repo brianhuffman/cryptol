@@ -5,7 +5,7 @@ Loading module Cryptol
     Expected: a numeric type
     Inferred: a value type
 
-[error] at tc-errors.icry:2:10--2:17:
+[error] at tc-errors.icry:2:10--2:19:
   Malformed type.
     Kind '*' is not a function,
     but it was applied to 2 parameters.
@@ -37,7 +37,7 @@ Loading module Cryptol
 Loading module Cryptol
 Loading module Main
 
-[error] at tc-errors-1.cry:1:9--1:12:
+[error] at tc-errors-1.cry:1:9--1:13:
   Malformed type.
     Type variables cannot be applied to parameters.
 Loading module Cryptol

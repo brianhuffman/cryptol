@@ -1,5 +1,5 @@
 
-type constraint PredSyn (a : *) (p:Prop) = (Zero a, Cmp a, p)
+type constraint PredSyn{(a : *), (p:Prop)} = (Zero{a}, Cmp{a}, p)
 
-someFunc : {a} (PredSyn a (Logic a)) => a
+someFunc : {a} (PredSyn{a, Logic{a}}) => a
 someFunc = ~zero

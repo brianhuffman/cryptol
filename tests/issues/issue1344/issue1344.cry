@@ -2,4 +2,4 @@ import A ((<+>), (∸))
 
 plus = (<+>)
 
-type monus a b = a ∸ b
+type monus{a, b} = a ∸ b

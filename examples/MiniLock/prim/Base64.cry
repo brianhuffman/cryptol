@@ -4,10 +4,10 @@
  */
 module Base64 where
 
-type Enc64 n = 4*(((3-(n%3))%3) + n)/3
+type Enc64{n} = 4*(((3-(n%3))%3) + n)/3
 
 base64enc : {n,m,padZ} (4*(padZ + n)/3 == m, padZ == (3-(n%3))%3, 2>=padZ)
-          => [n][8] -> [Enc64 n][8]
+          => [n][8] -> [Enc64{n}][8]
 base64enc(ns) = take{m}(chunks # padEq)
  where
   chunks      = take{(4*n+2)/3}(base64chunks{(n+2)/3}(ns # padZero))

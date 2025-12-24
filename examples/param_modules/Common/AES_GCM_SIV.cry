@@ -20,7 +20,7 @@ parameter
   type constraint (1 >= Mode)
 
   type AAD : #
-  type constraint ( (36 + 8) >= width AAD )
+  type constraint ( (36 + 8) >= width{AAD} )
 
 
 type K  = 128 + 128 * Mode
@@ -33,7 +33,7 @@ do the swapping so that inputs/ouputs match the test vectors at
 https://tools.ietf.org/html/draft-irtf-cfrg-gcmsiv-06
 */
 aes_gcm_siv :
-  {n} ((36 + 8) >= width n) =>
+  {n} ((36 + 8) >= width{n}) =>
       { key   : [K]
       , nonce : [96]
       , aad   : [AAD]
@@ -63,7 +63,7 @@ derive_key(K, N) = (mkKey(parts1), expandKey(mkKey(parts2)))
 
 /** See Figure 1 in Section 3 */
 gcm_siv_plus :
-  {n} (64 >= width n) => ([128], KS) -> [96] -> [AAD] -> [n] -> ([n],[128])
+  {n} (64 >= width{n}) => ([128], KS) -> [96] -> [AAD] -> [n] -> ([n],[128])
 gcm_siv_plus((K1,K2), N, AAD, MSG) = (unblockify(Cs), TAG)
   where
 

@@ -12,12 +12,12 @@ Loading module Main
 [warning] at issue1024a.cry:4:34--4:39
     Unused name: g
 
-[error] at issue1024a.cry:1:6--1:24:
+[error] at issue1024a.cry:1:6--1:25:
   Illegal kind assigned to type variable: f`908
   Unexpected: # -> *
   where
   f`908 is signature variable 'f' at issue1024a.cry:1:13--1:14
-[error] at issue1024a.cry:2:6--2:24:
+[error] at issue1024a.cry:2:6--2:25:
   Illegal kind assigned to type variable: f`909
   Unexpected: Prop
   where

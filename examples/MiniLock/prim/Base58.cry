@@ -19,7 +19,7 @@ base58enc(ns) = [ x.1 | x <- reverse(drop{1}(enc)) ]
 charMap : [58][8]
 charMap = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
 
-base58dec : {n,m} (n >= 1, n >= width m, n >= 8) => [m][8] -> [n]
+base58dec : {n,m} (n >= 1, n >= width{m}, n >= 8) => [m][8] -> [n]
 base58dec(ms) = sum([ dec(m) * 58 ^^ i | m <- reverse(ms) | i <- [0..m] ])
  where
   dec : [8] -> [n]

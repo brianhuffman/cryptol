@@ -1,16 +1,16 @@
 module superclass where
 
-zeroRing : {a} (Ring a) => a
+zeroRing : {a} Ring{a} => a
 zeroRing = zero
 
-zeroLogic : {a} (Logic a) => a
+zeroLogic : {a} Logic{a} => a
 zeroLogic = zero
 
-zeroIntegral : {a} (Integral a) => a
+zeroIntegral : {a} Integral{a} => a
 zeroIntegral = zero
 
-fromIntIntegral : {a} (Integral a) => a
+fromIntIntegral : {a} Integral{a} => a
 fromIntIntegral = fromInteger(42)
 
-eqCmp : {a} (Cmp a) => a -> a -> Bit
+eqCmp : {a} Cmp{a} => a -> a -> Bit
 eqCmp(x, y) = x == y

@@ -14,11 +14,11 @@ parameter
 
   /** Size of initialization vector */
   type IV : #
-  type constraint (64 >= width IV, IV >= 1)
+  type constraint (64 >= width{IV}, IV >= 1)
 
   /** Size of additional authenticated data */
   type AAD  : #
-  type constraint (64 >= width AAD)
+  type constraint (64 >= width{AAD})
 
   /** Size of authentication tag */
   type T : #
@@ -66,7 +66,7 @@ enc_dec(K, IV, A, P) = (C,T)
 
 
 /** Section 2.3, equation (2) */
-GHASH : {C,A} (64 >= width C, 64 >= width A) => [128] -> [A] -> [C] -> [128]
+GHASH : {C,A} (64 >= width{C}, 64 >= width{A}) => [128] -> [A] -> [C] -> [128]
 GHASH(H, A, C) = step(last(XS), wa # wc)
   where
   wa = number{A} : [64]
@@ -101,7 +101,7 @@ unblockify(ms) = take(join(ms))
 
 
 ifWidth : {w,n,a} [n] -> ([w] -> a) -> a -> a
-ifWidth(thing, yep, nope) = if number{w} == (number{n} : [max (width w) (width n)])
+ifWidth(thing, yep, nope) = if number{w} == (number{n} : [max{width{w}, width{n}}])
                             then yep (take (thing # (zero : [w])))
                             else nope
 

@@ -1,4 +1,4 @@
-enum M a = N | J a
+enum M{a} = N | J{a}
 
 f(x) = case x of
         J (a#b) -> a + b

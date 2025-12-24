@@ -6,7 +6,7 @@ mk_buggy_fib_no_init(magic, (_, (fn, fn1, k))) = (fn', (fn1, fn2, k+1))
   // Change output when state has magic value.
   fn' = fn + if k == magic then 1 else 0
 
-generate : {n, ix, a} (n >= 1, ix >= width (n - 1)) => ([ix] -> a) -> [n]a
+generate : {n, ix, a} (n >= 1, ix >= width{n - 1}) => ([ix] -> a) -> [n]a
 generate(f) = [ f(i) | i <- [0 .. n-1] ]
 
 infixl 1 $

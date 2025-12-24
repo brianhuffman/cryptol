@@ -659,7 +659,7 @@ Internet-Draft                  cfrgcurve                     March 2015
 
 ```cryptol
 // curveX private public prime == public
-curveX : {a} (9 >= width a, 9 >= width (a-2), 9 >= width (a-1), a>=2) => [a] -> [a] -> [a] -> [a] -> [a]
+curveX : {a} (9 >= width{a}, 9 >= width{a-2}, 9 >= width{a-1}, a>=2) => [a] -> [a] -> [a] -> [a] -> [a]
 curveX(a24, p, s, x) = mul(p, x2F, power(p, z2F, p - 2))
  where
  X1  = x
@@ -742,7 +742,7 @@ Internet-Draft                  cfrgcurve                     March 2015
          Return (x_2, x_3)
 
 ```cryptol
-cswap : {a} (a >= 1,10 >= width (a-1)) => Bit -> [a] -> [a] -> ([a] , [a])
+cswap : {a} (a >= 1,10 >= width{a-1}) => Bit -> [a] -> [a] -> ([a] , [a])
 cswap(st, x2, x3) = (x2 ^ dummy, x3 ^ dummy)
   where dummy = [st | _ <- [0..a-1] : [_][10] ] & (x2 ^ x3)
 ```

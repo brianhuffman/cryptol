@@ -6,25 +6,25 @@ module CAST5 where
 
 import Cipher
 
-CAST128 : Cipher 128 64
+CAST128 : Cipher{128, 64}
 CAST128 =
     { encrypt = \(key, pt) -> cast5_16(pt, expandKey(key))
     , decrypt = \(key, ct) -> cast5_16(ct, bireverse(expandKey(key)))
     }
 
-CAST5_80 : Cipher 80 64
+CAST5_80 : Cipher{80, 64}
 CAST5_80 =
     { encrypt = \(key, pt) -> cast5_12(pt, expandKey(key))
     , decrypt = \(key, ct) -> cast5_12(ct, bireverse(expandKey(key)))
     }
 
-CAST5_64 : Cipher 64 64
+CAST5_64 : Cipher{64, 64}
 CAST5_64 =
     { encrypt = \(key, pt) -> cast5_12(pt, expandKey(key))
     , decrypt = \(key, ct) -> cast5_12(ct, bireverse(expandKey(key)))
     }
 
-CAST5_40 : Cipher 40 64
+CAST5_40 : Cipher{40, 64}
 CAST5_40 =
     { encrypt = \(key, pt) -> cast5_12(pt, expandKey(key))
     , decrypt = \(key, ct) -> cast5_12(ct, bireverse(expandKey(key)))

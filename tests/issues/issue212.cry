@@ -3,8 +3,8 @@
 
 // Want: exact width values is nice (width x == const ==> width x >= const)
 // Issue: Cryptol wants 'width x >= const'
-// width_eq_geq : {n} (32 == width n, n >= 1, 32 >= width n) => [n]Bit
-width_eq_geq : {n} (32 == width n, n >= 1) => [n]Bit
+// width_eq_geq : {n} (32 == width{n}, n >= 1, 32 >= width n) => [n]Bit
+width_eq_geq : {n} (32 == width{n}, n >= 1) => [n]Bit
 width_eq_geq = [True | _ <- [1..n] : [_][32] ]
 
 // Want: const >= width (x+1) ==> const > width x
@@ -12,8 +12,8 @@ width_eq_geq = [True | _ <- [1..n] : [_][32] ]
 //
 // Issue: Cryptol wants '64 >= width n'
 // can_not_width : {n} (64 >= width (8*(n+1)), 64 >= width n) => [64]
-can_not_width : {n} (64 >= width (8*(n+1))) => [64]
-can_not_width = zero # (number{n} : [width n])
+can_not_width : {n} (64 >= width{8*(n+1)}) => [64]
+can_not_width = zero # (number{n} : [width{n}])
 
 // Want: Honestly, I don't know what's going on here.  It seems to relate to some of our regressions though.
 // Tell me if there should be another ticket - probably one that already exists. -TMD

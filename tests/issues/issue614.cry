@@ -1,4 +1,4 @@
-f : {m, n, k} (n == max 2 m k == m + 1) => [m] -> [k][n]
+f : {m, n, k} (n == max{2, m, k} == m + 1) => [m] -> [k][n]
 f(x) = zero
 
 

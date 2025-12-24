@@ -7,8 +7,8 @@ module HMAC where
 import SHA256
 
 hmacSHA256 : {pwBytes, msgBytes}
-             ( 32 >= width msgBytes
-             , 64 >= width (8*pwBytes)
+             ( 32 >= width{msgBytes}
+             , 64 >= width{8*pwBytes}
              ) => [pwBytes][8] -> [msgBytes][8] -> [256]
 hmacSHA256 = hmac{blockLength=64}(SHA256, SHA256, SHA256)
 
@@ -25,7 +25,7 @@ hmac : { msgBytes, pwBytes, digest, blockLength }
 hmac(hash, hash2, hash3, key, message) = hash2 (okey # internal)
  where
  ks : [blockLength][8]
- ks   = if number{pwBytes} > (number{blockLength} : [max (width pwBytes) (width blockLength)])
+ ks   = if number{pwBytes} > (number{blockLength} : [max{width{pwBytes}, width{blockLength}}])
             then take{blockLength}(split(hash3(key)) # (zero : [blockLength][8]))
             else take{blockLength}(key # (zero : [blockLength][8]))
  okey = [k ^ 0x5C | k <- ks]

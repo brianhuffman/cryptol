@@ -1,4 +1,4 @@
-type Int n = Integer
+type Int{n} = Integer
 
-foo : {n} [n] -> Int n
+foo : {n} [n] -> Int{n}
 foo(x) = number{n}

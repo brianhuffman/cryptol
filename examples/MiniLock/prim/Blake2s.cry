@@ -92,14 +92,14 @@ round(r, ms, v) = last(vs)
 //        bb == block bytes (64, 1024 bits)
 //        dd == nr Blocks
 
-blake2s : {ll,nn} (32 >= nn, 64 >= width ll)
+blake2s : {ll,nn} (32 >= nn, 64 >= width{ll})
       => [ll][8] -> [nn*8]
 blake2s(m) = blake2s'{ll=ll,nn=nn}(m)
 
 blake2s' : {ll,dd,nn}
          ( 32  >= nn
-         , dd  == max 1 ((ll+63)/64) - 1
-         , 64 >= width ll
+         , dd  == max{1, (ll+63)/64} - 1
+         , 64 >= width{ll}
          )
           => [ll][8]
           -> [nn*8]
@@ -128,7 +128,7 @@ blake2Update(ctx, d) = { state = newState, counter = newCount }
   where newState = F(ctx.state, d, newCount, False)
         newCount = ctx.counter + (64 : [64])
 
-postprocess : {ll} (64 >= ll, 64 >= width ll) => BCounter -> [ll][8] -> Block
+postprocess : {ll} (64 >= ll, 64 >= width{ll}) => BCounter -> [ll][8] -> Block
 postprocess(c, m) =
     if c == 0 /\ number{ll} == (zero:[64])
         then zero
@@ -151,7 +151,7 @@ bytes(x) = split(x) : [_] [8]
 
 
 // XXX can probably do a cleaner merge-sort style update.
-updateVector : {a, b, c} (c >= width (a-1), a >= 1) => [a]b -> ([c], b) -> [a]b
+updateVector : {a, b, c} (c >= width{a-1}, a >= 1) => [a]b -> ([c], b) -> [a]b
 updateVector(orig, idxNew) = vs
  where
  idx = idxNew.0
@@ -419,7 +419,7 @@ property katsPass = ~zero ==
                         ]
 
 
-nthKat : {n} (8 >= width n) => Bit
+nthKat : {n} (8 >= width{n}) => Bit
 nthKat = blake2s(nthKatInput{n}) == kats[number{n} : [8]]
 
 nthKatInput : {n} [n][8]

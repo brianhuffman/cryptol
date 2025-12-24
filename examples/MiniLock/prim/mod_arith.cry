@@ -52,4 +52,4 @@ mod_pow : {a} (a >= 1) => [a] -> [a] -> [a] -> [a]
 mod_pow (p,x0,e0) = last(results).2
  where
  results = [(x0,e0,1)] # [ (mod_mul(p,x,x), e>>1, if last(e) then mod_mul(p,result,x) else result)
-                                | (x,e,result) <- results | _ <- [0..a] :[_][width a] ]
+                                | (x,e,result) <- results | _ <- [0..a] :[_][width{a}] ]

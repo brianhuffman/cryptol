@@ -1,6 +1,6 @@
 :m r03
 :set show-examples=off
-:sat nQueens:Solution 5
+:sat nQueens:Solution{5}
 it.result
-:prove (nQueensProve:Solution 4)
+:prove (nQueensProve:Solution{4})
 it.result

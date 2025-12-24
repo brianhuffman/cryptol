@@ -129,7 +129,7 @@ property doubleround_passes_tests =
                 0xca531c29, 0x8e7943db, 0xac1680cd, 0xd503ca00,
                 0xa74b2ad6, 0xbc331c5c, 0x1dda24c7, 0xee928277])
 
-Salsa20 : {r} (8 >= width r) => [64][8] -> [64][8]
+Salsa20 : {r} (8 >= width{r}) => [64][8] -> [64][8]
 Salsa20(xs) = join(ar)
   where
     ar = [ littleendian_inverse(words) | words <- zipWith((+), xw, zs[number{r/2} : [8]]) ]
@@ -200,7 +200,7 @@ Salsa20_encrypt(k, v, m) = c
     salsa = take{back=l%^64}(join([ Salsa20_expansion(k, v#(split(i))) | i <- [0, 1 ... ] : [l/^64]Counter ]))
     c     = m ^ salsa
 
-HSalsa20 : {r} (8 >= width r) => Key -> Nonce -> [8][32]
+HSalsa20 : {r} (8 >= width{r}) => Key -> Nonce -> [8][32]
 HSalsa20(key0, nonce0) = zs @@ ([0,5,10,15,6,7,8,9] : [_][8])
   where
   zs    = infZs[number{r/2} :[8]]
@@ -214,7 +214,7 @@ HSalsa20(key0, nonce0) = zs @@ ([0,5,10,15,6,7,8,9] : [_][8])
   xs : [16][32]
   xs     = [x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11,x12,x13,x14,x15]
 
-HSalsa20_bytes : {r} (8 >= width r) => Key -> Nonce -> [32][8]
+HSalsa20_bytes : {r} (8 >= width{r}) => Key -> Nonce -> [32][8]
 HSalsa20_bytes(key0, nonce0) = join([littleendian_inverse(x) | x <- HSalsa20{r=r}(key0, nonce0)])
 
 type Key      = [256/8][8]
@@ -224,7 +224,7 @@ type Counter  = [64]
 Salsa20_Constant : [4][32]
 Salsa20_Constant = [littleendian(split(x)) | x <- split(join("expand 32-byte k")) : [4][32]]
 
-XSalsa20 : {r} (8 >= width r) => Key -> Nonce -> Counter -> [64][8]
+XSalsa20 : {r} (8 >= width{r}) => Key -> Nonce -> Counter -> [64][8]
 XSalsa20(key0, nonce0, ctr) =
     split(join([littleendian(split(x' + z')) | x' <- xs' | z' <- zs']))
   where
@@ -244,12 +244,12 @@ XSalsa20(key0, nonce0, ctr) =
   infZs'    = [xs'] # [ doubleround(x) | x <- take{back=1}(infZs') ]
   zs'       = infZs'[number{r/2} : [8]]
 
-XSalsa20_expansion : {n,r} (8 >= width r, 64 >= width n) => Key -> Nonce -> [n][8]
+XSalsa20_expansion : {n,r} (8 >= width{r}, 64 >= width{n}) => Key -> Nonce -> [n][8]
 XSalsa20_expansion(k, n) = take(join(ks))
    where
    ks = [XSalsa20{r=r}(k, n, i) | i <- [0..n/^64]]
 
-XSalsa20_encrypt : {n,r} (8 >= width r, 64 >= width n) => Key -> Nonce -> [n][8] -> [n][8]
+XSalsa20_encrypt : {n,r} (8 >= width{r}, 64 >= width{n}) => Key -> Nonce -> [n][8] -> [n][8]
 XSalsa20_encrypt(k, n, msg) = ks ^ msg
  where ks = XSalsa20_expansion{r=r}(k, n)
 

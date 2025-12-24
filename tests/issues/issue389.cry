@@ -1,4 +1,4 @@
-pad : {n, m, b} (64>=width(n), b==512-((n+65)%512), m==65+n+b) => [n]->[m]
+pad : {n, m, b} (64>=width{n}, b==512-((n+65)%512), m==65+n+b) => [n]->[m]
 pad(message) = sz#(0:[b])#([True]#message)
      where
                 sz : [64]

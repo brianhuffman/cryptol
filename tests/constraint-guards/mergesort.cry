@@ -1,14 +1,14 @@
-sort : {n,a} Cmp a => [n]a -> [n]a
+sort : {n,a} Cmp{a} => [n]a -> [n]a
 sort(xs)
   | n <= 1 => xs
   | ()     => merge(sort(left), sort(right))
               where (left : [n/2] _) # right = xs
 
-merge : {m,n,a} Cmp a => [m]a -> [n]a -> [m+n]a
+merge : {m,n,a} Cmp{a} => [m]a -> [n]a -> [m+n]a
 merge(xs, ys)
   | m == 0  => ys
   | n == 0  => xs
-  | (m > 0, n > 0) => if x <= y 
+  | (m > 0, n > 0) => if x <= y
                         then [x] # merge(restX, ys)
                         else [y] # merge(xs, restY)
                       where

@@ -1,9 +1,9 @@
-type base t = { zero: t }
+type base{t} = { zero: t }
 
-B: base Bool
+B: base{Bool}
 B = { zero = False }
 
-foo: {t,k} base t -> [k]t
+foo: {t,k} base{t} -> [k]t
 foo(b) = repeat(b.zero)
 
 bar: {t,k} (k >= 1) => [k]t -> [k]t -> [k]t -> [k]t

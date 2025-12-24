@@ -9,7 +9,7 @@ import PBKDF2
 
 // SCrypt paper page 10: BlockMix specialized to Salsa20
 BlockMix : {r} (r >= 1) =>  [2*r][64*8] -> [2*r][64*8]
-BlockMix(B) = ys @@ ([0,2..2*r-2] # [1,3..2*r-1])
+BlockMix(B) = [for i < r: ys[2*i]] # [for i < r: ys[2*i+1]]
  where
   rs = [last(B)] # [ join(Salsa20{r=8}(split(X ^ bi))) | X <- rs | bi <- B ]
   ys = drop{1}(rs)

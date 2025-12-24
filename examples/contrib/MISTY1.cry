@@ -237,7 +237,7 @@ property testMisty1Encrypt = [ misty1Encrypt(block, EK)
                              | block <- plaintext
                              ] == ciphertext
     where EK         = keySchedule(key)
-          key        = [0x00, 0x11 .. 0xff]
+          key        = [for i < 16: i * 0x11]
           plaintext  = [0x0123456789abcdef, 0xfedcba9876543210]
           ciphertext = [0x8b1da5f56ab3d07c, 0x04b68240b13be95d]
 

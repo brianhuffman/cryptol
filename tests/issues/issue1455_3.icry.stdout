@@ -79,7 +79,6 @@ Primitive Types
     Literal : # -> * -> Prop
     LiteralLessThan : # -> * -> Prop
     Logic : * -> Prop
-    lengthFromThenTo : # -> # -> # -> #
     max : # -> # -> #
     min : # -> # -> #
     Ring : * -> Prop
@@ -159,11 +158,6 @@ Symbols
     foldr : {n, a, b} (a -> b -> b) -> b -> [n]a -> b
     foldr' : {n, a, b} (Eq b) => (a -> b -> b) -> b -> [n]a -> b
     fromInteger : {a} (Ring a) => Integer -> a
-    fromThenTo :
-      {first, next, last, a, len}
-        (Literal first a, Literal next a, Literal last a, first != next,
-         lengthFromThenTo first next last == len) =>
-        [len]a
     fromTo :
       {first, last, a} (last >= first, Literal last a) => [1 + (last - first)]a
     fromToLessThan :

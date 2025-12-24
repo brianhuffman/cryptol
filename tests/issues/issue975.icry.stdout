@@ -1,6 +1,6 @@
 Loading module Cryptol
 
-Parse error at issue975.icry:1:6--1:8
+Parse error at issue975.icry:1:8--1:10
   The boundaries of .. sequences should be valid numeric types.
   The expression `-1` is not.
 

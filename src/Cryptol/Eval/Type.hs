@@ -207,7 +207,6 @@ evalTF f vs
   | TCMax           <- f, [x,y]   <- vs  =      nMax x y
   | TCCeilDiv       <- f, [x,y]   <- vs  = mb $ nCeilDiv x y
   | TCCeilMod       <- f, [x,y]   <- vs  = mb $ nCeilMod x y
-  | TCLenFromThenTo <- f, [x,y,z] <- vs  = mb $ nLenFromThenTo x y z
   | otherwise  = evalPanic "evalTF"
                         ["Unexpected type function:", show ty]
 

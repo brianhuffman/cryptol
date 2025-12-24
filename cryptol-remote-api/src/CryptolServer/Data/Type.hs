@@ -130,7 +130,6 @@ instance JSON.ToJSON JSONType where
               TCMax -> "max"
               TCCeilDiv -> "/^"
               TCCeilMod -> "%^"
-              TCLenFromThenTo -> "lengthFromThenTo"
       convert (TCon (PC pc) args) =
         JSON.object $
         case (pc, args) of
@@ -274,7 +273,6 @@ instance JSON.FromJSON JSONPType where
       asType "max" = tyFun "max"
       asType "/^" = tyFun "/^"
       asType "%^" = tyFun "%^"
-      asType "lengthFromThenTo" = tyFun "lengthFromThenTo"
       asType other = const $ fail $ "Didn't understand type tag " <> show other
 
       typeField o fname = (o .: fname) >>= getType

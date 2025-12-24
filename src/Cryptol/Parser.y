@@ -674,8 +674,7 @@ list_expr                      :: { Expr PName }
      is being parsed.  For this reason, we use `expr` temporarily and
      then convert it to the corresponding type in the AST. -}
 
-  | expr          '..' expr       {% eFromTo $2 $1 Nothing   $3 }
-  | expr ',' expr '..' expr       {% eFromTo $4 $1 (Just $3) $5 }
+  | expr          '..' expr       {% eFromTo $2 $1 $3           }
 
   | expr '..' '<' expr            {% eFromToLessThan $2 $1 $4   }
   | expr '..<'    expr            {% eFromToLessThan $2 $1 $3   }

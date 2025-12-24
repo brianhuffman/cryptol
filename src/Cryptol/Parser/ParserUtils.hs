@@ -317,13 +317,12 @@ binOp :: Expr PName -> Located PName -> Expr PName -> Expr PName
 binOp x f y = at (x,y) $ EInfix x f defaultFixity y
 
 -- An element type ascription is allowed to appear on one of the arguments.
-eFromTo :: Range -> Expr PName -> Maybe (Expr PName) -> Expr PName -> ParseM (Expr PName)
-eFromTo r e1 e2 e3 =
-  case (asETyped e1, asETyped =<< e2, asETyped e3) of
-    (Just (e1', t), Nothing, Nothing) -> eFromToType r e1' e2 e3 (Just t)
-    (Nothing, Just (e2', t), Nothing) -> eFromToType r e1 (Just e2') e3 (Just t)
-    (Nothing, Nothing, Just (e3', t)) -> eFromToType r e1 e2 e3' (Just t)
-    (Nothing, Nothing, Nothing) -> eFromToType r e1 e2 e3 Nothing
+eFromTo :: Range -> Expr PName -> Expr PName -> ParseM (Expr PName)
+eFromTo r e1 e2 =
+  case (asETyped e1, asETyped e2) of
+    (Just (e1', t), Nothing) -> eFromToType r e1' e2 (Just t)
+    (Nothing, Just (e2', t)) -> eFromToType r e1 e2' (Just t)
+    (Nothing, Nothing) -> eFromToType r e1 e2 Nothing
     _ -> errorMessage r ["A sequence enumeration may have at most one element type annotation."]
 
 asETyped :: Expr n -> Maybe (Expr n, Type n)
@@ -332,11 +331,10 @@ asETyped (ETyped e t) = Just (e, t)
 asETyped _ = Nothing
 
 eFromToType ::
-  Range -> Expr PName -> Maybe (Expr PName) -> Expr PName -> Maybe (Type PName) -> ParseM (Expr PName)
-eFromToType r e1 e2 e3 t =
+  Range -> Expr PName -> Expr PName -> Maybe (Type PName) -> ParseM (Expr PName)
+eFromToType r e1 e2 t =
   EFromTo <$> exprToNumT r e1
-          <*> mapM (exprToNumT r) e2
-          <*> exprToNumT r e3
+          <*> exprToNumT r e2
           <*> pure t
 
 eFromToLessThan ::

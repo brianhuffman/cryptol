@@ -1145,8 +1145,7 @@ instance Rename Expr where
     EUpd mb fs      -> do checkLabels fs
                           EUpd <$> traverse rename mb <*> traverse rename fs
     EList es        -> EList   <$> traverse rename es
-    EFromTo s n e t -> EFromTo <$> rename s
-                               <*> traverse rename n
+    EFromTo s e t   -> EFromTo <$> rename s
                                <*> rename e
                                <*> traverse rename t
     EFromToLessThan s e t ->

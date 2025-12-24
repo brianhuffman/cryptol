@@ -371,7 +371,6 @@ ppUse expr =
       | prim == "infFrom"      -> "infinite enumeration"
       | prim == "infFromThen"  -> "infinite enumeration (with step)"
       | prim == "fromTo"       -> "finite enumeration"
-      | prim == "fromThenTo"   -> "finite enumeration"
     _                          -> "expression" <+> pp expr
   where
   isPrelPrim x = do PrimIdent p i <- asPrim x

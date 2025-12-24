@@ -99,12 +99,6 @@ primitive type
   (n >= 1) =>
   m %^ n : #
 
-/** The length of an enumeration. */
-primitive type
-  { start : #, next : #, last : # }
-  (start != next) =>
-  lengthFromThenTo{start, next, last} : #
-
 /**
  * Assert that the first numeric type is less than or equal to the second.
  */
@@ -171,17 +165,6 @@ primitive fromTo : {first, last, a}
 primitive fromToLessThan :
   {first, bound, a} (bound >= first, LiteralLessThan{bound, a}) =>
   [bound - first]a
-
-/**
- * A finite arithmetic sequence starting with 'first' and 'next',
- * stopping when the values reach or would skip over 'last'.
- *
- * '[x,y..z]' is syntactic sugar for 'fromThenTo{first=x,next=y,last=z}'.
- */
-primitive fromThenTo : {first, next, last, a, len}
-                       ( Literal{first, a}, Literal{next, a}, Literal{last, a}
-                       , first != next
-                       , lengthFromThenTo{first, next, last} == len) => [len]a
 
 // The Zero class -------------------------------------------------------
 

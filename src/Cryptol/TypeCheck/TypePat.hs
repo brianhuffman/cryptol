@@ -8,7 +8,6 @@ module Cryptol.TypeCheck.TypePat
   , aMin, aMax
   , aWidth
   , aCeilDiv, aCeilMod
-  , aLenFromThenTo
 
   , aLiteral
   , aLiteralLessThan
@@ -56,9 +55,6 @@ ar1 ~[a] = a
 
 ar2 :: [a] -> (a,a)
 ar2 ~[a,b] = (a,b)
-
-ar3 :: [a] -> (a,a,a)
-ar3 ~[a,b,c] = (a,b,c)
 
 tf :: TFun -> ([Type] -> a) -> Pat Type a
 tf f ar = tcon (TF f) ar
@@ -112,9 +108,6 @@ aCeilDiv = tf TCCeilDiv ar2
 
 aCeilMod :: Pat Type (Type,Type)
 aCeilMod = tf TCCeilMod ar2
-
-aLenFromThenTo :: Pat Type (Type,Type,Type)
-aLenFromThenTo = tf TCLenFromThenTo ar3
 
 --------------------------------------------------------------------------------
 aTVar :: Pat Type TVar

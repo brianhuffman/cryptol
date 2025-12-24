@@ -2,7 +2,7 @@
 module Cryptol.TypeCheck.SimpleSolver ( simplify , simplifyStep) where
 
 import Cryptol.TypeCheck.Type hiding
-  ( tSub, tMul, tDiv, tMod, tExp, tMin, tLenFromThenTo)
+  ( tSub, tMul, tDiv, tMod, tExp, tMin)
 import Cryptol.TypeCheck.Solver.Types
 import Cryptol.TypeCheck.Solver.Numeric(cryIsEqual, cryIsNotEqual, cryIsGeq)
 import Cryptol.TypeCheck.Solver.Class

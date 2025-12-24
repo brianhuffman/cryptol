@@ -380,7 +380,6 @@ toSMT tvs ty = matchDefault (panic "toSMT" [ "Unexpected type", show ty ])
   , aWidth          ~> "cryWidth"
   , aCeilDiv        ~> "cryCeilDiv"
   , aCeilMod        ~> "cryCeilMod"
-  , aLenFromThenTo  ~> "cryLenFromThenTo"
 
   , anError KNum    ~> "cryErr"
   , anError KProp   ~> "cryErrProp"

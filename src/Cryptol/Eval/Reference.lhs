@@ -600,7 +600,7 @@ by corresponding type classes:
 
 * Indexing: `@`, `@@`, `!`, `!!`, `update`
 
-* Enumerations: `fromTo`, `fromThenTo`, `fromToLessThan`,
+* Enumerations: `fromTo`, `fromToLessThan`,
                 `infFrom`, `infFromThen`
 
 * Polynomials: `pmult`, `pdiv`, `pmod`
@@ -791,15 +791,6 @@ by corresponding type classes:
 >                       Nat bound' ->
 >                         let len = bound' - first in
 >                         VList (Nat len) (map f (genericTake len [first ..]))
->
->   , "fromThenTo" ~> vFinPoly $ \first -> pure $
->                     vFinPoly $ \next  -> pure $
->                     vFinPoly $ \_lst  -> pure $
->                     VPoly    $ \ty    -> pure $
->                     vFinPoly $ \len   -> pure $
->                     let f i = literal i ty in
->                     VList (Nat len)
->                           (map f (genericTake len [first, next ..]))
 >
 >   , "infFrom"    ~> VPoly $ \ty -> pure $
 >                     vFinPoly $ \n -> pure $

@@ -308,23 +308,17 @@ checkE expr tGoal =
                   ]
          checkE e' tGoal
 
-    P.EFromTo t1 mbt2 t3 mety ->
+    P.EFromTo t1 t3 mety ->
       do l <- curRange
          let fs0 =
                case mety of
                  Just ety -> [("a", ety)]
                  Nothing -> []
-         let (c,fs) =
-               case mbt2 of
-                 Nothing ->
-                    ("fromTo", ("last", t3) : fs0)
-                 Just t2 ->
-                    ("fromThenTo", ("next",t2) : ("last",t3) : fs0)
 
-         prim <- mkPrim c
+         prim <- mkPrim "fromTo"
          let e' = P.EAppT prim
                   [ P.NamedInst P.Named { name = Located l (packIdent x), value = y }
-                  | (x,y) <- ("first",t1) : fs
+                  | (x,y) <- ("first",t1) : ("last", t3) : fs0
                   ]
 
          checkE e' tGoal

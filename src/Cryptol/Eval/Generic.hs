@@ -1107,22 +1107,6 @@ fromToV sym =
         let len = 1 + (lst' - first')
         in mkSeq sym (Nat len) ty $ indexSeqMap $ \i -> f (first' + i)
 
-{-# INLINE fromThenToV #-}
--- @[ 0, 1 .. 10 ]@
-fromThenToV :: Backend sym => sym -> Prim sym
-fromThenToV sym =
-  PNumPoly \first ->
-  PNumPoly \next  ->
-  PNumPoly \lst   ->
-  PTyPoly  \ty    ->
-  PNumPoly \len   ->
-  PPrim
-    let !f = mkLit sym ty in
-    case (first, next, lst, len) of
-      (Nat first', Nat next', Nat _lst', Nat len') ->
-        let diff = next' - first'
-        in mkSeq sym (Nat len') ty $ indexSeqMap $ \i -> f (first' + i*diff)
-
 {-# INLINE fromToLessThanV #-}
 -- @[ 0 .. <10 ]@
 fromToLessThanV :: Backend sym => sym -> Prim sym
@@ -1576,9 +1560,6 @@ genericPrimTable sym getEOpts =
     -- Finite enumerations
   , ("fromTo"     , {-# SCC "Prelude::fromTo" #-}
                     fromToV sym)
-
-  , ("fromThenTo" , {-# SCC "Prelude::fromThenTo" #-}
-                    fromThenToV sym)
 
   , ("fromToLessThan"
                   , {-# SCC "Prelude::fromToLessThan" #-}

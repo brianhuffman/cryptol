@@ -246,9 +246,8 @@ tnamesE expr =
     EUpd mb fs      -> let e = maybe Set.empty tnamesE mb
                        in Set.unions (e : map tnamesUF fs)
     EList es        -> Set.unions (map tnamesE es)
-    EFromTo a b c t -> tnamesT a
-                       `Set.union` maybe Set.empty tnamesT b
-                       `Set.union` tnamesT c
+    EFromTo a b t   -> tnamesT a
+                       `Set.union` tnamesT b
                        `Set.union` maybe Set.empty tnamesT t
     EFromToLessThan a b t -> tnamesT a `Set.union` tnamesT b
                                        `Set.union` maybe Set.empty tnamesT t

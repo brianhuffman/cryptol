@@ -596,8 +596,8 @@ data Expr n   = EVar n                          -- ^ @ x @
               | EIndex (Expr n) (Expr n)        -- ^ @ f[x] @
               | EUpd (Maybe (Expr n)) [ UpdField n ]  -- ^ @ { r | x = e } @
               | EList [Expr n]                  -- ^ @ [1,2,3] @
-              | EFromTo (Type n) (Maybe (Type n)) (Type n) (Maybe (Type n))
-                                                -- ^ @ [1, 5 .. 117 : t] @
+              | EFromTo (Type n) (Type n) (Maybe (Type n))
+                                                -- ^ @ [1 .. 117 : t] @
               | EFromToLessThan (Type n) (Type n) (Maybe (Type n))
                                                 -- ^ @ [ 1 .. < 10 : t ] @
 
@@ -1218,9 +1218,8 @@ instance (Show name, PPName name) => PP (Expr name) where
       ETuple es     -> parens (commaSep (map pp es))
       ERecord fs    -> braces (commaSep (map (ppNamed' "=") (displayFields fs)))
       EList es      -> brackets (commaSep (map pp es))
-      EFromTo e1 e2 e3 t1 -> brackets (pp e1 <.> step <+> text ".." <+> end)
-        where step = maybe mempty (\e -> comma <+> pp e) e2
-              end = maybe (pp e3) (\t -> pp e3 <+> colon <+> pp t) t1
+      EFromTo e1 e2 t1 -> brackets (pp e1 <+> text ".." <+> end)
+        where end = maybe (pp e2) (\t -> pp e2 <+> colon <+> pp t) t1
       EFromToLessThan e1 e2 t1 -> brackets (strt <+> text ".. <" <+> end)
         where strt = maybe (pp e1) (\t -> pp e1 <+> colon <+> pp t) t1
               end  = pp e2
@@ -1558,7 +1557,7 @@ instance NoPos (Expr name) where
       EIndex x y      -> EIndex   (noPos x) (noPos y)
       EUpd x y        -> EUpd     (noPos x) (noPos y)
       EList x         -> EList    (noPos x)
-      EFromTo x y z t -> EFromTo  (noPos x) (noPos y) (noPos z) (noPos t)
+      EFromTo x y t   -> EFromTo  (noPos x) (noPos y) (noPos t)
       EFromToLessThan x y t -> EFromToLessThan (noPos x) (noPos y) (noPos t)
       EInfFrom x y    -> EInfFrom (noPos x) (noPos y)
       EComp x y       -> EComp    (noPos x) (noPos y)

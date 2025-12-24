@@ -47,8 +47,6 @@ typeInterval varInfo = go
           (TF TCCeilDiv, [x,y]) -> iCeilDiv (go x) (go y)
           (TF TCCeilMod, [x,y]) -> iCeilMod (go x) (go y)
 
-          (TF TCLenFromThenTo, [x,y,z]) ->
-            iLenFromThenTo (go x) (go y) (go z)
           _ -> iAny
 
       TVar x -> tvarInterval varInfo x
@@ -344,9 +342,3 @@ iWidth i = Interval { iLower = nWidth (iLower i)
                                  Nothing -> Nothing
                                  Just n  -> Just (nWidth n)
                     }
-
-iLenFromThenTo :: Interval -> Interval -> Interval -> Interval
-iLenFromThenTo i j k
-  | Just x <- iIsExact i, Just y <- iIsExact j, Just z <- iIsExact k
-  , Just r <- nLenFromThenTo x y z = iConst r
-  | otherwise = iAny

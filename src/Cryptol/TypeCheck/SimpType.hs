@@ -6,7 +6,7 @@ module Cryptol.TypeCheck.SimpType where
 
 import Control.Applicative((<|>))
 import Cryptol.TypeCheck.Type hiding
-  (tSub,tMul,tDiv,tMod,tExp,tMin,tCeilDiv,tCeilMod,tLenFromThenTo)
+  (tSub,tMul,tDiv,tMod,tExp,tMin,tCeilDiv,tCeilMod)
 import Cryptol.TypeCheck.TypePat
 import Cryptol.TypeCheck.Solver.Nat
 import Control.Monad(msum,guard)
@@ -44,7 +44,6 @@ tCon tc ts =
         (TCWidth, [x]) -> tWidth x
         (TCCeilDiv, [x, y]) -> tCeilDiv x y
         (TCCeilMod, [x, y]) -> tCeilMod x y
-        (TCLenFromThenTo, [x, y, z]) -> tLenFromThenTo x y z
         _ -> TCon tc ts
     _ -> TCon tc ts
 
@@ -289,11 +288,6 @@ tWidth x
   , Just 2 <- tIsNum p = q
 
   | otherwise = tf1 TCWidth x
-
-tLenFromThenTo :: Type -> Type -> Type -> Type
-tLenFromThenTo x y z
-  | Just t <- tOp TCLenFromThenTo (op3 nLenFromThenTo) [x,y,z] = t
-  | otherwise = tf3 TCLenFromThenTo x y z
 
 total :: ([Nat] -> Nat) -> ([Nat] -> Maybe Nat)
 total f xs = Just (f xs)

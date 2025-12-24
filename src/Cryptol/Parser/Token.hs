@@ -29,7 +29,6 @@ data TokenKW  = KW_else
               | KW_inf
               | KW_lg2
               | KW_lengthFromThen
-              | KW_lengthFromThenTo
               | KW_max
               | KW_min
               | KW_module

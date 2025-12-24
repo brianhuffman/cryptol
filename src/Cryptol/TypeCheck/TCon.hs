@@ -78,7 +78,6 @@ builtInType nm =
     , "max"              ~> TF TCMax
     , "/^"               ~> TF TCCeilDiv
     , "%^"               ~> TF TCCeilMod
-    , "lengthFromThenTo" ~> TF TCLenFromThenTo
     ]
 
 
@@ -148,8 +147,6 @@ instance HasKind TFun where
       TCCeilDiv -> KNum :-> KNum :-> KNum
       TCCeilMod -> KNum :-> KNum :-> KNum
 
-      TCLenFromThenTo -> KNum :-> KNum :-> KNum :-> KNum
-
 
 
 -- | Type constants.
@@ -206,10 +203,6 @@ data TFun
   | TCMax                 -- ^ @ : Num -> Num -> Num @
   | TCCeilDiv             -- ^ @ : Num -> Num -> Num @
   | TCCeilMod             -- ^ @ : Num -> Num -> Num @
-
-  -- Computing the lengths of explicit enumerations
-  | TCLenFromThenTo       -- ^ @ : Num -> Num -> Num -> Num@
-    -- Example: @[ 1, 5 .. 9 ] :: [lengthFromThenTo 1 5 9][b]@
 
     deriving (Show, Eq, Ord, Bounded, Enum, Generic, NFData)
 
@@ -276,4 +269,3 @@ instance PP TFun where
       TCMax             -> text "max"
       TCCeilDiv         -> text "/^"
       TCCeilMod         -> text "%^"
-      TCLenFromThenTo   -> text "lengthFromThenTo"
